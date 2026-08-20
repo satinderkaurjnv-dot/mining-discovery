@@ -169,7 +169,14 @@ export const EarthGlobe: React.FC<EarthGlobeProps> = ({
       renderer = new THREE.WebGLRenderer({
         canvas,
         alpha: true,
-        antialias: true,
+        // MSAA is deliberately off. It smooths *geometry* edges only — the limb and the
+        // atmosphere shell — and does nothing for the surface texture, which is what goes
+        // soft when the box is CSS-scaled at a tour stop. Its memory (a multisampled
+        // renderbuffer, commonly 4x) buys far more sharpness spent on drawing-buffer
+        // resolution instead: the larger buffer is downsampled to the element at rest,
+        // which supersamples those same edges, *and* it holds real detail to magnify
+        // into when the zoom arrives. See applySize for the resulting budget.
+        antialias: false,
         powerPreference: "high-performance",
       });
     } catch {
@@ -291,10 +298,26 @@ export const EarthGlobe: React.FC<EarthGlobeProps> = ({
       // The box is deliberately far wider than the viewport, so a raw devicePixelRatio
       // would allocate an enormous framebuffer. Cap the longest drawing-buffer edge; the
       // globe is smooth-gradient heavy and holds up well below 2x.
-      const maxEdge = isSmallViewport ? 2200 : 3000;
+      //
+      // ZOOM_HEADROOM is why the ratio is not simply capped at devicePixelRatio. The tour
+      // magnifies this element with a CSS scale(), so its on-screen size at a stop is far
+      // larger than the size measured here — and a buffer sized to the *resting* box has
+      // no detail left to supply once it is stretched, which is what read as blur at 2-3x.
+      // On a 1x display the old cap made the buffer exactly the CSS size, so every pixel
+      // of the zoom was pure upscale. Rendering above the device ratio is normally waste;
+      // here it is the whole point.
+      const ZOOM_HEADROOM = 1.6;
+      const maxEdge = isSmallViewport ? 2600 : 4096;
       const ratioCap = maxEdge / Math.max(width, height);
       renderer.setPixelRatio(
-        Math.max(1, Math.min(window.devicePixelRatio || 1, isSmallViewport ? 1.75 : 2, ratioCap))
+        Math.max(
+          1,
+          Math.min(
+            (window.devicePixelRatio || 1) * ZOOM_HEADROOM,
+            isSmallViewport ? 2.5 : 3,
+            ratioCap
+          )
+        )
       );
 
       camera.aspect = width / height;

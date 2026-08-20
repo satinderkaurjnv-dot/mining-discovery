@@ -85,17 +85,41 @@ function horizonDiameter(width: number, height: number) {
  *
  * `closest-side` makes 100% the box's half-width, so GLOBE_FIT is directly the stop
  * where the silhouette sits — the halo tracks the sphere at any size.
+ *
+ * The band is deliberately tight and bright rather than wide and faint. The card crops
+ * at the sphere's crown, so glow living far out at 96–100% of the half-width is cut off
+ * across most of the arc and never paid for itself; concentrating the same alpha budget
+ * into 89.6–95.5% puts the brightest ring immediately outside the limb, where it clears
+ * the crop over far more of the visible curve. Peak sits just *past* the silhouette —
+ * an atmosphere reads as a rim of light on the edge, not a wash centred on it.
  */
 const SILHOUETTE_STOP = GLOBE_FIT * 100;
+/** Where the bloom finally reaches zero, as a percent of the box's half-width. */
+const HALO_OUTER_STOP = SILHOUETTE_STOP + 5.5;
 const ATMOSPHERE_HALO = [
   "radial-gradient(circle closest-side at 50% 50%,",
-  `rgba(143,179,217,0) ${SILHOUETTE_STOP - 7}%,`,
-  `rgba(143,179,217,0.06) ${SILHOUETTE_STOP - 3}%,`,
-  `rgba(143,179,217,0.20) ${SILHOUETTE_STOP - 0.5}%,`,
-  `rgba(143,179,217,0.13) ${SILHOUETTE_STOP + 2}%,`,
-  `rgba(143,179,217,0.05) ${SILHOUETTE_STOP + 5.5}%,`,
-  "rgba(143,179,217,0) 100%)",
+  `rgba(143,179,217,0) ${SILHOUETTE_STOP - 8}%,`,
+  `rgba(150,187,224,0.07) ${SILHOUETTE_STOP - 3.5}%,`,
+  `rgba(163,199,233,0.26) ${SILHOUETTE_STOP - 0.4}%,`,
+  `rgba(178,210,240,0.34) ${SILHOUETTE_STOP + 0.7}%,`,
+  `rgba(163,199,233,0.20) ${SILHOUETTE_STOP + 1.8}%,`,
+  `rgba(150,187,224,0.08) ${SILHOUETTE_STOP + 3.4}%,`,
+  `rgba(143,179,217,0) ${HALO_OUTER_STOP}%)`,
 ].join(" ");
+
+/**
+ * How far the bloom reaches past the silhouette, as a fraction of the box's edge.
+ *
+ * The break in the ring at the crown was never a shape mismatch — the bloom and the
+ * canvas share one box, so they cannot drift. It was the crop: boxTop used to seat the
+ * crown exactly on the card's top edge, which leaves the ring above it nowhere to
+ * render. Dropping the crown by precisely this fraction lands the bloom's outermost
+ * pixel flush with that edge instead, so the arc closes with no space wasted.
+ *
+ * Derived from the gradient's own outer stop rather than dialled in, so retuning the
+ * bloom moves the headroom with it and the two cannot fall out of sync.
+ */
+const HALO_HEADROOM = (HALO_OUTER_STOP / 100 - GLOBE_FIT) / 2;
 
 /** Below this projected opacity a pin is edge-on: no label, no pointer events. */
 const LABEL_OPACITY_FLOOR = 0.5;
@@ -318,7 +342,12 @@ export const GlobeHero: React.FC = () => {
       // GLOBE_FIT leaves haze room around the silhouette; lift the box by that margin so
       // the sphere's crown, not the transparent canvas edge, sits on the slot's top.
       // Everything below the card's floor is cropped by its overflow-hidden.
-      const boxTop = -(boxSize - sphereSize) / 2;
+      //
+      // Then give the bloom its headroom back: seating the crown *exactly* on the top
+      // edge clipped the ring above it, which is the break in the arc at top-centre.
+      // This drops the crown by the bloom's own reach, so its outermost pixel lands on
+      // the edge and the curve runs unbroken from limb to limb.
+      const boxTop = -(boxSize - sphereSize) / 2 + boxSize * HALO_HEADROOM;
 
       // Aiming puts a coordinate at the centre of the projected disc, which in a horizon
       // framing is far below the card's floor. tiltBias is the extra pitch that lifts it
@@ -645,7 +674,7 @@ export const GlobeHero: React.FC = () => {
   return (
     <section className="relative w-full bg-white">
       {/* Copy — normal flow, scrolls away before anything pins. */}
-      <div className="flex flex-col items-center px-6 pb-20 pt-[148px] text-center sm:px-10 lg:pb-24 lg:pt-[196px]">
+      <div className="flex flex-col items-center px-6 pb-10 pt-[148px] text-center sm:px-10 lg:pb-12 lg:pt-[196px]">
         <h1 className="hero-rise [animation-delay:120ms] max-w-[16ch] font-geist font-semibold leading-[1.04] tracking-[-0.035em] text-[#15181C] text-[clamp(2.5rem,5.2vw,4.5rem)]">
           All over the world
         </h1>
@@ -658,7 +687,7 @@ export const GlobeHero: React.FC = () => {
       {/* Globe range — its top edge is where the tour begins. */}
       <div
         ref={rangeRef}
-        className="relative"
+        className="relative -mt-5 lg:-mt-6"
         // One viewport of travel per stop, derived from the tour so the two cannot drift.
         style={{ height: reduceMotion ? "100vh" : `${STAGE_COUNT * 100}vh` }}
       >

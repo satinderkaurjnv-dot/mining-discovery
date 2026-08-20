@@ -35,8 +35,8 @@ export const Header: React.FC = () => {
     <header
       className={`fixed top-0 z-50 w-full transition-all duration-300 font-sans ${
         isScrolled
-          ? "bg-[#0B1F3A]/95 backdrop-blur-md border-b border-white/10 shadow-lg py-2"
-          : "bg-transparent border-b border-transparent py-2.5"
+          ? "bg-[#0B1F3A]/95 backdrop-blur-md border-b border-white/10 shadow-lg py-2.5"
+          : "bg-transparent border-b border-transparent py-3"
       }`}
     >
       {/* Full-width container */}
@@ -53,7 +53,7 @@ export const Header: React.FC = () => {
             width={220}
             height={85}
             priority
-            className="h-8 sm:h-9 w-auto object-contain transition-transform duration-300 group-hover:scale-102"
+            className="h-11 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-102"
           />
         </Link>
 

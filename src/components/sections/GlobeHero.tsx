@@ -138,6 +138,17 @@ const TOUR = [
   "antarctica",
 ] as const;
 const STAGE_COUNT = TOUR.length;
+/**
+ * Viewport heights of scroll each continent owns.
+ *
+ * This is the primary pacing dial. It buys time without touching a single easing curve:
+ * every fraction below is a fraction OF a stage, so lengthening the stage stretches the
+ * hop and the dwell together and the sequence keeps its shape exactly.
+ *
+ * 165 puts the range at 7 x 165 = 1155vh, of which 1055vh is actual travel once the
+ * sticky card's own viewport is subtracted.
+ */
+const STAGE_VH = 165;
 
 /** Scale held at every stop, so each continent gets the same treatment. */
 const STOP_ZOOM = 2.8;
@@ -147,23 +158,44 @@ const TRAVEL_ZOOM = 1.55;
  * Where inside a stage the hop happens. Up to ARRIVE the globe is still settling onto
  * this stop, past DEPART it has started leaving for the next; the span between is the
  * held stop. The two halves of a hop straddle a stage boundary and meet at its centre.
+ *
+ * So the dwell is not an added pause — it is the majority of every stage, and always was.
+ * Narrowed from 0.18/0.82 to 0.13/0.87, which takes the moving part of a stage from 36%
+ * to 26% and the held part from 64% to 74%. Against the longer STAGE_VH that is a hop
+ * with ~19% more scroll behind it and a dwell with ~91% more, so the globe both travels
+ * more slowly and rests visibly longer once it arrives.
  */
-const STAGE_ARRIVE = 0.18;
-const STAGE_DEPART = 0.82;
+const STAGE_ARRIVE = 0.13;
+const STAGE_DEPART = 0.87;
 /** Progress over which the globe hands off from free drift to the tour. */
 const ENGAGE = 0.03;
 /**
- * Rate the sampled progress is damped toward the true scroll position, per second.
+ * How the sampled progress follows the true scroll position.
  *
- * Sampling is once per rendered frame now, so this is not carrying much weight — it
- * only has to absorb the odd frame where the globe's loop and Lenis's ticker land out
- * of order, or a dropped frame. Hence a short 1/20s time constant, about three frames
- * of steady-state lag: Lenis already applies its own easing upstream, and stacking a
- * long constant on top of it reads as float rather than as smoothness.
+ * This was a first-order lag, which can only ever decay toward the target — its velocity
+ * jumps the instant the wheel moves, so a hard scroll still starts hard. A second-order
+ * spring has to accelerate into the move and decelerate out of it, which is the weight
+ * that reads as deliberate rather than as 1:1 scrubbing.
  *
- * Lower it to soften further, raise it to track the wheel harder.
+ * Overdamped on purpose: zeta = 20 / (2 * sqrt(60)) = 1.29, so progress never overshoots
+ * the scroll position and the tour cannot run past a stop and come back. The bounce lives
+ * in ZOOM_SPRING instead, where it is a deliberate effect on one property.
+ *
+ * Raise stiffness to track the wheel harder; lower it to soften further.
  */
-const PROGRESS_SMOOTHING = 20;
+const PROGRESS_SPRING = { stiffness: 60, damping: 20 };
+/**
+ * The zoom's own spring, and the only underdamped one.
+ *
+ * zeta = 14 / (2 * sqrt(90)) = 0.738, and peak overshoot of a step response is
+ * exp(-pi * zeta / sqrt(1 - zeta^2)) = 0.03 — a 3% pass beyond the target scale before it
+ * settles. During a hop the target is moving and the spring simply trails it; the
+ * overshoot only appears where the target stops changing, which is the arrival at a stop.
+ * That is the settle, and it costs nothing at rest because the spring latches exactly.
+ *
+ * Set damping to 2 * sqrt(stiffness) = 18.97 to remove the bounce and keep the easing.
+ */
+const ZOOM_SPRING = { stiffness: 90, damping: 14 };
 /**
  * A frame gap longer than this means the loop was parked — tab hidden, or the globe
  * scrolled out of view and its render loop suspended. Damping across that gap would
@@ -171,8 +203,94 @@ const PROGRESS_SMOOTHING = 20;
  */
 const RESUME_GAP = 0.2;
 
+interface SpringState {
+  value: number;
+  velocity: number;
+}
+
+/**
+ * One semi-implicit Euler step of a damped harmonic oscillator toward `target`.
+ *
+ * Substepped at 60Hz because the integrator is only conditionally stable: a single 100ms
+ * step at this stiffness overshoots hard enough to ring, and a dropped frame would show
+ * as a visible kick rather than as a stutter.
+ */
+function stepSpring(
+  spring: SpringState,
+  target: number,
+  dt: number,
+  { stiffness, damping }: { stiffness: number; damping: number },
+) {
+  const steps = Math.min(6, Math.max(1, Math.ceil(dt * 60)));
+  const h = dt / steps;
+  for (let i = 0; i < steps; i += 1) {
+    const accel = (target - spring.value) * stiffness - spring.velocity * damping;
+    spring.velocity += accel * h;
+    spring.value += spring.velocity * h;
+  }
+  // Latch, so a settled globe stops rewriting its transform every frame.
+  if (Math.abs(target - spring.value) < 1e-4 && Math.abs(spring.velocity) < 1e-3) {
+    spring.value = target;
+    spring.velocity = 0;
+  }
+}
+
 /** Labels other than the active stop's are dimmed to this while the tour runs. */
 const RESTING_LABEL_OPACITY = 0.32;
+
+/**
+ * Where in the tour the wipe into Stats begins.
+ *
+ * The last stage has no hop after it, so Antarctica is held from u = STAGE_ARRIVE to the
+ * end of the range — the final zoom has fully settled by progress (6 + 0.13) / 7 = 0.876.
+ * Starting at 0.90 puts the wipe inside that dwell, a little over 25vh after the motion
+ * has stopped, and gives it the last 10% of a 1055vh range: about 105vh of scroll, and no
+ * page height added. Lower it to begin earlier still — 0.876 is the floor, where the wipe
+ * would start on top of the final zoom rather than after it.
+ */
+const CURTAIN_START = 0.90;
+
+/**
+ * The wipe: a layered fall of light down the gold family, deep at the top and resolving
+ * into Stats at the foot.
+ *
+ * Every colour is a token already in @theme, and the depth comes from moving DOWN the
+ * family rather than from adding one:
+ *   #9E7208  --color-gold-hover, the darkest gold on the site. Carries the top.
+ *   #B8860B  --color-gold. The rich body.
+ *   #D4AF37  --color-gold-muted. The vivid band.
+ *   #FAF5E8  --color-gold-light. Where it softens.
+ *   #FBFBFA  Stats' own section background, verbatim from Stats.tsx.
+ * Hue barely moves across those four (42deg to 46deg) — what changes is saturation and
+ * lightness, which is what reads as depth rather than as a second colour.
+ *
+ * The stop POSITIONS are not arbitrary, and this is the part worth keeping straight. The
+ * element is 130vh, bottom-anchored in a 100vh card, so its top 23.1% is clipped and the
+ * card shows 23.1% to 100%. Screen position maps as `element% = 23.1 + p * 76.9`:
+ *   24%  -> the very top of the screen        -> darkest (#9E7208)
+ *   58%  -> 45% down the screen               -> most saturated (#D4AF37, opaque)
+ *   74%  -> 66% down                          -> softening to cream
+ *   90%  -> 87% down                          -> Stats' colour, and flat from there
+ * Placed by screen position instead of by element position, the richest band lands mid
+ * view rather than off the top edge, which is what a flat-looking version gets wrong.
+ *
+ * The flat #FBFBFA run at the foot is deliberate and load-bearing: the panel's bottom
+ * edge and the card's bottom edge coincide, and Stats begins on the next pixel, so that
+ * run is what makes the handoff seamless. Everything above 58% is translucent, so the
+ * planet still reads through the rich part instead of being covered by it.
+ */
+const STATS_WIPE = [
+  "linear-gradient(180deg,",
+  "rgba(212,175,55,0) 0%,",
+  "rgba(212,175,55,0.30) 8%,",
+  "rgba(184,134,11,0.65) 16%,",
+  "rgba(158,114,8,0.90) 24%,",
+  "rgba(184,134,11,0.95) 40%,",
+  "rgba(212,175,55,1) 58%,",
+  "#FAF5E8 74%,",
+  "#FBFBFA 90%,",
+  "#FBFBFA 100%)",
+].join(" ");
 
 const TOUR_SITES = TOUR.map((id) => {
   const site = MINING_SITES.find((entry) => entry.id === id);
@@ -183,6 +301,18 @@ const TOUR_SITES = TOUR.map((id) => {
 function smoothstep(edge0: number, edge1: number, x: number) {
   const t = Math.min(Math.max((x - edge0) / (edge1 - edge0), 0), 1);
   return t * t * (3 - 2 * t);
+}
+
+/**
+ * Quintic ease-in-out. Zero first AND second derivative at both ends, where cubic
+ * smoothstep only zeroes the first — so a hop leaves and arrives with no acceleration
+ * step, and the join to the flat dwell either side of it is invisible rather than merely
+ * continuous. This is the curve doing the work that a CSS cubic-bezier would do; it is a
+ * function of scroll position rather than of time, so it cannot be expressed as one.
+ */
+function smootherstep(x: number) {
+  const t = Math.min(Math.max(x, 0), 1);
+  return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
 /** Shortest-arc interpolation between two longitudes, in degrees. */
@@ -228,7 +358,7 @@ function stageAt(progress: number): StageState {
 
   const a = TOUR_SITES[from];
   const b = TOUR_SITES[to];
-  const eased = smoothstep(0, 1, hop);
+  const eased = smootherstep(hop);
 
   return {
     index: hop > 0.5 ? to : from,
@@ -257,6 +387,7 @@ export const GlobeHero: React.FC = () => {
   const slotRef = useRef<HTMLDivElement>(null);
   const globeBoxRef = useRef<HTMLDivElement>(null);
   const markerLayerRef = useRef<HTMLDivElement>(null);
+  const curtainRef = useRef<HTMLDivElement>(null);
   const markerRefs = useRef(new Map<string, HTMLDivElement | null>());
   const labelRefs = useRef(new Map<string, HTMLDivElement | null>());
 
@@ -291,6 +422,12 @@ export const GlobeHero: React.FC = () => {
    * re-renders the tree.
    */
   const progressRef = useRef(0);
+  /**
+   * Progress and zoom as sprung values rather than as raw scroll readings. Refs, and
+   * mutated in place: these change every frame and must never re-render the tree.
+   */
+  const progressSpring = useRef<SpringState>({ value: 0, velocity: 0 });
+  const zoomSpring = useRef<SpringState>({ value: 1, velocity: 0 });
 
   /** Aim target handed to the globe; mutated in place, never triggers a render. */
   const focusRef = useRef<GlobeFocus | null>(null);
@@ -420,15 +557,31 @@ export const GlobeHero: React.FC = () => {
     const gap = (now - lastSampleRef.current) / 1000;
     lastSampleRef.current = now;
 
-    let t = progressRef.current;
+    const progress = progressSpring.current;
     if (gap <= 0 || gap > RESUME_GAP) {
-      t = target;
+      // Parked loop: snap, and kill the velocity with it. Integrating across the skipped
+      // span would play it back as a slide, and a spring would ring on top of that.
+      progress.value = target;
+      progress.velocity = 0;
     } else {
-      t += (target - t) * (1 - Math.exp(-gap * PROGRESS_SMOOTHING));
-      // Settle exactly, so a resting globe stops rewriting its transform every frame.
-      if (Math.abs(target - t) < 1e-4) t = target;
+      stepSpring(progress, target, gap, PROGRESS_SPRING);
     }
+    const t = clamp(progress.value, 0, 1);
     progressRef.current = t;
+
+    // The wipe, written here rather than through framer-motion's useScroll.
+    //
+    // useScroll with a ref target is what this component already tried and backed out of
+    // — see the progressRef comment above — and the curtain has to be a child of the
+    // sticky card regardless: that card is the only thing on this screen that stays
+    // parked over the globe, so an overlay anywhere else would scroll away from what it
+    // is meant to be covering. Sharing this frame also means the wipe cannot drift from
+    // the tour by even one frame, which a separate scroll listener could.
+    const curtain = curtainRef.current;
+    if (curtain) {
+      const rise = smootherstep((t - CURTAIN_START) / (1 - CURTAIN_START));
+      curtain.style.transform = `translate3d(0, ${((1 - rise) * 100).toFixed(2)}%, 0)`;
+    }
 
     // Only the highlighted stop has to travel through React, and that changes seven
     // times across the whole tour. The ref is updated here rather than further down,
@@ -447,6 +600,10 @@ export const GlobeHero: React.FC = () => {
       // back to the classes, so the entry reveal behaves as if the tour did not exist.
       focusRef.current = null;
       engagedRef.current = false;
+      // Rest the zoom spring too. Leaving stored velocity here means scrolling back down
+      // re-enters the tour mid-bounce, which reads as a glitch rather than as a settle.
+      zoomSpring.current.value = 1;
+      zoomSpring.current.velocity = 0;
       box.style.transitionProperty = "";
       box.style.transform = "";
       box.style.opacity = "";
@@ -461,7 +618,23 @@ export const GlobeHero: React.FC = () => {
 
     // Scale eases in from 1 alongside the aim, so engaging the tour is one continuous
     // move rather than a snap to STOP_ZOOM.
-    const scale = 1 + (stage.zoom - 1) * engage;
+    //
+    // That target then goes through a spring rather than to the element directly. Two
+    // things come out of it: the magnification accelerates and decelerates instead of
+    // tracking scroll rigidly, and because the spring is slightly underdamped it passes
+    // ~3% beyond the target at an arrival and settles back — the stop lands rather than
+    // stopping dead. Mid-hop the target is still moving and the spring just trails it,
+    // so the overshoot only ever appears where the motion actually ends.
+    const targetScale = 1 + (stage.zoom - 1) * engage;
+    if (gap > 0 && gap <= RESUME_GAP) {
+      stepSpring(zoomSpring.current, targetScale, gap, ZOOM_SPRING);
+    } else {
+      zoomSpring.current.value = targetScale;
+      zoomSpring.current.velocity = 0;
+    }
+    // Floored just above 1: the overshoot is upward at an arrival, but on the way back
+    // out of the tour the spring can dip under 1 and briefly shrink the globe.
+    const scale = Math.max(1, zoomSpring.current.value);
 
     // Pin the aimed point at the middle of the visible slice and zoom around it.
     //
@@ -688,8 +861,8 @@ export const GlobeHero: React.FC = () => {
       <div
         ref={rangeRef}
         className="relative -mt-5 lg:-mt-6"
-        // One viewport of travel per stop, derived from the tour so the two cannot drift.
-        style={{ height: reduceMotion ? "100vh" : `${STAGE_COUNT * 100}vh` }}
+        // STAGE_VH of travel per stop, derived from the tour so the two cannot drift.
+        style={{ height: reduceMotion ? "100vh" : `${STAGE_COUNT * STAGE_VH}vh` }}
       >
         {/*
           The pinned frame. It is also what the markers are clipped to, so cardRef lives
@@ -812,12 +985,16 @@ export const GlobeHero: React.FC = () => {
                           transform:
                             "translate3d(calc(var(--dx, 0) * var(--len)), calc(var(--dy, 0) * var(--len)), 0)",
                         }}
-                        className="absolute left-0 top-0 transition-opacity duration-200"
+                        // 500ms rather than 200: the label's opacity is written as
+                        // discrete steps (1, resting, 0) as a stage takes over, so this
+                        // transition is the entire fade the viewer sees. At 200 it read
+                        // as a switch.
+                        className="absolute left-0 top-0 transition-opacity duration-500 ease-out"
                       >
                         <div
                           className={`
                             -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg px-2.5 py-1 text-center
-                            transition-colors duration-200
+                            transition-colors duration-300 ease-out
                             ${isActive ? "border border-[#E7DCC0] bg-white/95 shadow-[0_4px_16px_rgba(16,24,40,0.12)]" : "border border-transparent"}
                           `}
                         >
@@ -839,6 +1016,28 @@ export const GlobeHero: React.FC = () => {
                 })}
               </div>
             </div>
+
+            {/*
+              Layer 5 — the wipe into Stats.
+
+              Last child of the sticky card and above every globe layer, so it covers the
+              planet, the markers and the halo alike, and the card's own overflow-hidden
+              clips it with no extra rule. pointer-events-none: it is scenery, and the
+              markers underneath keep their hit targets until the card unpins.
+
+              Bottom-anchored and 130vh tall so that at rest the soft leading edge has
+              somewhere to go above the card. The initial inline transform is the resting
+              state for reduced motion and for first paint, where applyStage has not run.
+            */}
+            <div
+              ref={curtainRef}
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-30 h-[130vh] will-change-transform"
+              style={{
+                transform: "translate3d(0, 100%, 0)",
+                background: STATS_WIPE,
+              }}
+            />
           </div>
         </div>
       </div>

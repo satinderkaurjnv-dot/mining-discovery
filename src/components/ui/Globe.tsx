@@ -104,6 +104,22 @@ function projectCobePoint(
   return { left, top, xPx, yPx, depth, isFront, opacity };
 }
 
+/**
+ * Internal render resolution, fixed and deliberately far above the element's CSS size.
+ *
+ * The element displays at its container width (~680px) and the scroll tour magnifies it
+ * with a CSS scale() up to ~3x, so at a stop it occupies ~2040 screen pixels. A buffer
+ * sized to the resting element has nothing left to supply there and every zoomed pixel
+ * is pure upscale. Rendering at 2400 instead means the compositor is always DOWNscaling a
+ * denser render: crisp at rest, still native-ish at full zoom.
+ *
+ * Fixed rather than derived from offsetWidth so it never changes during scroll — the
+ * canvas is created exactly once and no zoom level can trigger a rebuild.
+ */
+const RENDER_SIZE = 2400;
+/** Dot-matrix density. Raised because individual dots are resolvable at full zoom. */
+const MAP_SAMPLES = 45000;
+
 export const Globe: React.FC<GlobeProps> = ({
   className = "",
   size = 680,
@@ -145,28 +161,27 @@ export const Globe: React.FC<GlobeProps> = ({
   }, []);
 
   useEffect(() => {
-    let width = 0;
     const currentCanvas = canvasRef.current;
     if (!currentCanvas || !isInView) return;
 
-    const onResize = () => {
-      if (currentCanvas) {
-        width = currentCanvas.offsetWidth;
-      }
-    };
-    onResize();
-    window.addEventListener("resize", onResize);
+    // No resize handling any more, and none is needed: the drawing buffer is fixed at
+    // RENDER_SIZE and the element is sized entirely by CSS (w-full h-full), so the
+    // browser rescales an already-dense render. The globe is created exactly once.
 
     // Initialize WebGL Globe with exact city lat/lng markers and arcs
     const globe = createGlobe(currentCanvas, {
-      devicePixelRatio: 2,
-      width: width * 2 || size * 2,
-      height: width * 2 || size * 2,
+      // 4, not 2. This is what actually multiplies the internal pixel count, and it also
+      // scales cobe's dot and marker sizing so the denser matrix keeps its proportions.
+      devicePixelRatio: 4,
+      // Fixed, and independent of offsetWidth: the buffer is sized for the zoomed-in
+      // stop, not for the resting element. See RENDER_SIZE.
+      width: RENDER_SIZE,
+      height: RENDER_SIZE,
       phi: phiRef.current,
       theta: thetaRef.current,
       dark: 0,
       diffuse: 1.35,
-      mapSamples: 22000,
+      mapSamples: MAP_SAMPLES,
       mapBrightness: 6.5,
       mapBaseBrightness: 0.12,
       baseColor: [0.86, 0.78, 0.65], // Warm rich copper-gold tan dots
@@ -265,7 +280,6 @@ export const Globe: React.FC<GlobeProps> = ({
     return () => {
       cancelAnimationFrame(animFrameId);
       globe.destroy();
-      window.removeEventListener("resize", onResize);
     };
   }, [isInView, size, enableMarkers]);
 

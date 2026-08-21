@@ -5,6 +5,7 @@
 // page's bundle even though nothing here renders it.
 import { GlobeHero } from "@/components/sections/GlobeHero";
 import { Stats } from "@/components/sections/Stats";
+import { About } from "@/components/sections/About";
 import { TrustedBy } from "@/components/sections/TrustedBy";
 import { ServicesScrollStory } from "@/components/sections/ServicesScrollStory";
 
@@ -22,6 +23,8 @@ export default function Home() {
       <div className="relative z-20">
         <Stats />
       </div>
+      {/* The header and footer both link to #about; this is what they resolve to. */}
+      <About />
       <TrustedBy />
       <ServicesScrollStory />
     </div>

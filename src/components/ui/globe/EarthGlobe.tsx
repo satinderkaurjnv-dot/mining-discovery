@@ -177,6 +177,13 @@ export const EarthGlobe: React.FC<EarthGlobeProps> = ({
         // which supersamples those same edges, *and* it holds real detail to magnify
         // into when the zoom arrives. See applySize for the resulting budget.
         antialias: false,
+        // No depth buffer. Nothing in this scene writes depth — all three materials set
+        // depthWrite: false and order themselves with renderOrder (earth 1, clouds 2,
+        // atmosphere 10) — so the attachment is allocated and never read. At the buffer
+        // sizes below that is ~130MB of pure waste, and spending it on drawing-buffer
+        // edge instead is what makes the higher pixel ratio affordable. Output is
+        // pixel-identical; only the allocation changes.
+        depth: false,
         powerPreference: "high-performance",
       });
     } catch {
@@ -306,15 +313,24 @@ export const EarthGlobe: React.FC<EarthGlobeProps> = ({
       // On a 1x display the old cap made the buffer exactly the CSS size, so every pixel
       // of the zoom was pure upscale. Rendering above the device ratio is normally waste;
       // here it is the whole point.
-      const ZOOM_HEADROOM = 1.6;
-      const maxEdge = isSmallViewport ? 2600 : 4096;
+      // ZOOM_HEADROOM now names the tour's real maximum (STOP_ZOOM = 2.8) rather than a
+      // token 1.6: at a stop the element is magnified 2.8x, so a buffer that wants to be
+      // 1:1 on screen there has to hold 2.8 buffer pixels per CSS pixel. It is an ask,
+      // not a promise — ratioCap below is what actually binds on a box this large.
+      const ZOOM_HEADROOM = 2.8;
+      // Longest drawing-buffer edge. Raised from 4096; the depth buffer dropped above
+      // pays for it, so total framebuffer memory is roughly unchanged. Clamped by what
+      // the driver will really allocate — past maxTextureSize the buffer is silently
+      // clamped or the context is lost, and that is a blank globe rather than a soft one.
+      const driverCap = renderer.capabilities.maxTextureSize || 4096;
+      const maxEdge = Math.min(isSmallViewport ? 3200 : 5760, driverCap);
       const ratioCap = maxEdge / Math.max(width, height);
       renderer.setPixelRatio(
         Math.max(
           1,
           Math.min(
             (window.devicePixelRatio || 1) * ZOOM_HEADROOM,
-            isSmallViewport ? 2.5 : 3,
+            isSmallViewport ? 3 : 4,
             ratioCap
           )
         )
@@ -499,7 +515,38 @@ export const EarthGlobe: React.FC<EarthGlobeProps> = ({
     document.addEventListener("visibilitychange", syncRunState);
 
     // --- Async texture build ----------------------------------------------------
-    buildEarthTextures(isSmallViewport ? 2048 : 4096)
+    //
+    // The framebuffer is only half the sharpness story. An equirectangular map spends its
+    // width on 360 degrees, so 4096 carries 11.4 texels per degree; at a stop the sphere
+    // shows ~51 screen pixels per degree, so every texel was stretched over ~4.5 of them
+    // and the coastlines stayed soft no matter how large the buffer grew. 6144 brings
+    // that to ~3.0.
+    //
+    // Deliberately NOT 8192: that needs a 134MB source canvas plus ~180MB uploaded, which
+    // on top of the buffer above is what a mid-range GPU refuses — and a refused upload
+    // is the blank globe from the last attempt, not a degraded one. Clamped by the driver
+    // and by device memory where the browser reports it.
+    const driverTextureCap = renderer.capabilities.maxTextureSize || 4096;
+    const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+    const desktopWidth = deviceMemory && deviceMemory < 8 ? 4096 : 6144;
+    const dayWidth = Math.min(isSmallViewport ? 2048 : desktopWidth, driverTextureCap);
+
+    // One step down, tried if the first size fails to allocate. Without this a failed
+    // build leaves earth.visible false for good, which reads as the globe having vanished
+    // while the CSS halo carries on.
+    const buildWithFallback = () =>
+      buildEarthTextures(dayWidth).catch((err) => {
+        if (dayWidth <= 2048) throw err;
+        console.warn(
+          "[EarthGlobe] texture build failed at",
+          dayWidth,
+          "- retrying at 2048",
+          err
+        );
+        return buildEarthTextures(2048);
+      });
+
+    buildWithFallback()
       .then(({ day, mask, clouds: cloudMap }) => {
         if (disposed) return;
 
@@ -578,8 +625,10 @@ export const EarthGlobe: React.FC<EarthGlobeProps> = ({
         if (prefersReducedMotion) return;
         syncRunState();
       })
-      .catch(() => {
-        /* Texture build failed; the hero stays readable without the globe. */
+      .catch((err) => {
+        // The hero stays readable without the globe, but this must not be silent: an
+        // invisible sphere and a working one differ only by this promise.
+        console.error("[EarthGlobe] textures unavailable, globe will not render", err);
       });
 
     return () => {

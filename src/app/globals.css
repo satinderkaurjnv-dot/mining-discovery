@@ -207,38 +207,3 @@ nextjs-portal,
   background: #0B1F3A;
 }
 
-/*
- * Featured-companies marquee. The track renders the card list twice, so shifting
- * it by exactly -50% puts the first duplicate on the pixel where the first
- * original started — an invisible loop point.
- *
- * Two details keep that maths exact:
- *  - the track is sized to its content (w-max), so the percentage resolves
- *    against the track's own width rather than the viewport's;
- *  - card spacing is a trailing margin on every card, not `gap`. With `gap`,
- *    N cards have only N-1 gaps, so half the track is half a gap short of the
- *    first set's true width and the loop snaps back by that amount each pass.
- */
-@keyframes marqueeScroll {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.marquee-track {
-  animation: marqueeScroll 45s linear infinite;
-  will-change: transform;
-}
-
-.marquee-viewport:hover .marquee-track {
-  animation-play-state: paused;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
-  }
-}

@@ -324,8 +324,9 @@ export async function buildEarthTextures(dayWidth: number): Promise<EarthTexture
   return {
     day: paintDayMap(land, borders, dayWidth),
     mask: paintMaskMap(land, Math.max(1024, Math.round(dayWidth / 2))),
-    // Clouds are soft, low-frequency shapes; half the day map's resolution is plenty
-    // and keeps the per-pixel alpha remap cheap.
-    clouds: paintCloudMap(Math.max(1024, Math.round(dayWidth / 2))),
+    // Clouds are soft, low-frequency shapes with nothing to resolve, so they are pinned
+    // rather than scaled with the day map. Following it to 3072 would cost ~19MB and a
+    // per-pixel alpha remap over 2.25x the area to render the same blurry puffs.
+    clouds: paintCloudMap(Math.max(1024, Math.min(2048, Math.round(dayWidth / 2)))),
   };
 }

@@ -6,12 +6,17 @@ import Image from "next/image";
 import { Menu, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
+/*
+ * ABOUT is a real route now, not an in-page anchor. The other four stay anchors but are
+ * root-relative ("/#services", not "#services") — a bare hash on /about would only set
+ * the fragment on a page that has no such section, and nothing would happen.
+ */
 const navLinks = [
-  { name: "About", href: "#about" },
-  { name: "Services", href: "#services" },
-  { name: "Companies", href: "#trusted-by" },
-  { name: "Submit News", href: "#submit-news" },
-  { name: "Contact", href: "#contact" },
+  { name: "About", href: "/about" },
+  { name: "Services", href: "/#services" },
+  { name: "Companies", href: "/#trusted-by" },
+  { name: "Submit News", href: "/#submit-news" },
+  { name: "Contact", href: "/#contact" },
 ];
 
 export const Header: React.FC = () => {

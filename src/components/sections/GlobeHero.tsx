@@ -2,6 +2,11 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { HeroBackdrop } from "@/components/sections/hero-layers/HeroBackdrop";
 import { FOCUS_ANCHOR_ID, GLOBE_FIT } from "@/components/ui/globe/EarthGlobe";
 import type {
   GlobeAnchor,
@@ -137,6 +142,35 @@ const TOUR = [
   "australia",
   "antarctica",
 ] as const;
+
+/**
+ * Headline exit. Three lines leaving one after another as the copy block scrolls away.
+ *
+ * `start` is where each line begins moving, as a fraction of the copy block's own scroll
+ * span; `span` is how much of that span the line takes to finish. The three overlap
+ * heavily on purpose — a gap between them would read as three separate events rather
+ * than as one headline coming apart.
+ *
+ * `rise` differs slightly per line so the stack opens up as it goes instead of travelling
+ * as a rigid unit. All three sit inside the 80–120px brief.
+ */
+const HEADLINE_LINES = [
+  { text: "Make your mining", start: 0.18 },
+  { text: "story impossible to", start: 0.34 },
+  { text: "ignore.", start: 0.5 },
+];
+
+/**
+ * How far a line travels, as a percentage of its own height. Past 100 it is fully behind
+ * the mask's top edge; 150 carries it clear with margin, and being a percentage it scales
+ * itself across the headline's whole clamp range instead of being right at one width.
+ */
+const HEADLINE_RISE_PERCENT = -150;
+/** Scroll fraction each line takes to complete. Overlaps its neighbours by design. */
+const HEADLINE_SPAN = 0.32;
+/** Peak blur in px. Past about 3 the type stops reading as type and starts reading as fog. */
+const HEADLINE_BLUR = 3;
+
 const STAGE_COUNT = TOUR.length;
 /**
  * Viewport heights of scroll each continent owns.
@@ -411,6 +445,76 @@ export const GlobeHero: React.FC = () => {
   const [metrics, setMetrics] = useState<Metrics>({ boxSize: 0, boxTop: 0 });
   const [ready, setReady] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+
+  // --- Headline exit ---------------------------------------------------------------
+  /**
+   * Three lines leaving one after another, each behind its own overflow-hidden mask.
+   *
+   * WHY THE MASKS ARE LOAD-BEARING, and why the first attempt at this read as one block:
+   * over the span this animation covers, the page itself is already carrying the whole
+   * headline upward by the copy block's full height — roughly 625px. A per-line offset of
+   * ~110px on top of that is a differential of under a fifth, which the eye reads as the
+   * heading simply scrolling. A mask changes the terms entirely: the line has a hard edge
+   * to disappear behind, so travelling 150% of its own height makes it *gone* while its
+   * neighbours are still sitting there. The stagger becomes an event rather than a
+   * gradient.
+   *
+   * GSAP with ScrollTrigger scrub, because SmoothScroll.tsx already registers the plugin
+   * and feeds Lenis into it (`lenis.on("scroll", ScrollTrigger.update)`), so this rides
+   * the project's existing scroll pipeline rather than opening a second one. It owns no
+   * pin and no snap: it reads scroll position and writes to three spans, nothing else, so
+   * the globe's own timeline below is untouched by it.
+   */
+  const copyRef = useRef<HTMLDivElement>(null);
+  const lineRefs = useRef<(HTMLSpanElement | null)[]>([]);
+
+  useEffect(() => {
+    const copy = copyRef.current;
+    const lines = lineRefs.current.filter((el): el is HTMLSpanElement => el !== null);
+    if (!copy || lines.length !== HEADLINE_LINES.length) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: copy,
+          // start: the copy block's top edge meets the top of the viewport, which is a
+          // little way into the scroll — so the headline holds its designed position for
+          // the whole of scroll 0. end: that same block has completely left.
+          start: "top top",
+          end: "bottom top",
+          scrub: 0.35,
+        },
+        defaults: { ease: "none" },
+      });
+
+      HEADLINE_LINES.forEach((line, i) => {
+        tl.to(
+          lines[i],
+          {
+            // Percent of the line's OWN height, not pixels: 150% clears the mask at every
+            // size the clamp produces, from ~46px on a phone to ~83px at 1440.
+            yPercent: HEADLINE_RISE_PERCENT,
+            opacity: 0,
+            filter: `blur(${HEADLINE_BLUR}px)`,
+            duration: HEADLINE_SPAN,
+          },
+          // Absolute position on a duration-1 timeline == fraction of scroll progress.
+          line.start
+        );
+      });
+
+      // Pins the timeline's total length to exactly 1. Without it GSAP would scale the
+      // 0.82 of timeline the tweens actually occupy across the whole scroll range, which
+      // stretches every window and leaves the last line finishing only as the block
+      // disappears. With it, the positions above ARE the scroll fractions.
+      tl.set({}, {}, 1);
+    }, copy);
+
+    return () => ctx.revert();
+  }, []);
 
   // --- Scroll-linked zoom ----------------------------------------------------------
   /**
@@ -846,15 +950,98 @@ export const GlobeHero: React.FC = () => {
   // own entrance, so the effect survives without the wrapper's.
   return (
     <section className="relative w-full bg-white">
+      {/*
+        Layers 1-4 of the hero ground. Painted at -z-10, which puts it above this
+        section's own white but below the copy's text and below the globe card, so it
+        needs nothing from either of them and neither needs to know it is here.
+      */}
+      <HeroBackdrop />
+
       {/* Copy — normal flow, scrolls away before anything pins. */}
-      <div className="flex flex-col items-center px-6 pb-10 pt-[148px] text-center sm:px-10 lg:pb-12 lg:pt-[196px]">
-        <h1 className="hero-rise [animation-delay:120ms] max-w-[16ch] font-geist font-semibold leading-[1.04] tracking-[-0.035em] text-[#15181C] text-[clamp(2.5rem,5.2vw,4.5rem)]">
-          All over the world
+      <div
+        ref={copyRef}
+        className="flex flex-col items-center px-6 pb-8 pt-[clamp(56px,calc(40vh-224px),112px)] text-center sm:px-10 sm:pt-[clamp(60px,calc(48vh-316px),132px)] lg:pt-[clamp(64px,calc(48vh-320px),160px)]"
+      >
+        {/*
+          Eyebrow, headline, support, CTAs. The wrapper above is untouched - same padding,
+          same centred column, same position in the tree - so only the message, its type
+          scale and the button row are new. Entrances stay on the existing .hero-rise
+          class, which is plain CSS keyframes with a reduced-motion opt-out; nothing here
+          adds a scroll listener, and nothing here holds a transform that could become a
+          containing block for the sticky globe frame below.
+        */}
+        <p className="hero-rise [animation-delay:60ms] font-mono text-[10px] font-semibold uppercase leading-none tracking-[0.2em] text-[#9E7208] sm:text-[11px] sm:tracking-[0.22em]">
+          Mining Media <span aria-hidden="true">&times;</span> Marketing{" "}
+          <span aria-hidden="true">&times;</span> Investor Reach
+        </p>
+
+        {/*
+          Display caps at 700. The words are written sentence-case in the markup and
+          uppercased in CSS, so the reading order a screen reader gets stays natural and
+          the caps are a single class to drop if the editorial voice wins out later.
+        */}
+        {/*
+          Still one h1, with the same classes, clamp, measure and three lines — the only
+          change is that the breaks are explicit spans rather than natural wrapping, since
+          a line cannot be animated on its own while it is just a run of text inside a
+          paragraph box. Reading order is unchanged: a screen reader still gets one
+          continuous sentence.
+        */}
+        <h1 className="hero-rise [animation-delay:160ms] mt-4 max-w-[1050px] font-geist text-[clamp(3rem,6vw,5.5rem)] font-bold uppercase leading-[0.96] tracking-[-0.02em] text-[#0B1F3A] sm:mt-5">
+          {HEADLINE_LINES.map((line, index) => (
+            /*
+              The mask. overflow-hidden is what turns a slow drift into a line leaving:
+              the span slides up behind this edge and is simply gone, while the lines
+              under it have not started.
+
+              pb/-mb cancel each other, so the box is taller than the glyphs by a hair
+              without moving anything: the line box at leading-[0.96] is shorter than the
+              type it holds, and without that slack the mask would shave the tops of the
+              caps at rest.
+            */
+            <span
+              key={line.text}
+              className="block overflow-hidden pb-[0.08em] -mb-[0.08em]"
+            >
+              <span
+                ref={(el) => {
+                  lineRefs.current[index] = el;
+                }}
+                className="block will-change-[transform,opacity,filter]"
+              >
+                {line.text}
+              </span>
+            </span>
+          ))}
         </h1>
 
-        <p className="hero-rise [animation-delay:220ms] mt-6 max-w-[30ch] font-geist font-normal leading-[1.45] tracking-[-0.01em] text-[#57595E] text-[clamp(1.125rem,1.7vw,1.625rem)] sm:mt-7 sm:max-w-[34ch] lg:mt-8">
-          Meet our distributed team of experts working across 6 continents.
+        <p className="hero-rise [animation-delay:260ms] mt-6 max-w-[600px] font-geist text-[clamp(1rem,1.35vw,1.25rem)] font-normal leading-[1.5] tracking-[-0.005em] text-[#57595E] sm:mt-7">
+          Mining Discovery combines industry media, digital marketing and investor-focused
+          communication to put mining companies in front of the audiences that matter.
         </p>
+
+        {/*
+          CTA row. Full-width stacked on phones, side by side from 640px. Gold solid for
+          the commercial action, hairline outline for the browse - navy on white rather
+          than the brief's white-on-dark, because this hero's ground is white.
+        */}
+        <div className="hero-rise [animation-delay:360ms] mt-7 flex w-full flex-col items-stretch gap-3 sm:mt-8 sm:w-auto sm:flex-row sm:items-center sm:gap-4">
+          <Link
+            href="/#contact"
+            className="group inline-flex items-center justify-center gap-2 rounded-lg bg-[#B8860B] px-7 py-3.5 font-sans text-[13px] font-semibold uppercase tracking-[0.08em] text-[#0B1F3A] shadow-sm transition-colors duration-200 hover:bg-[#D4AF37] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-2"
+          >
+            Start a Campaign
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Link>
+
+          <Link
+            href="/#services"
+            className="group inline-flex items-center justify-center gap-2 rounded-lg border border-[#15181C]/25 px-7 py-3.5 font-sans text-[13px] font-semibold uppercase tracking-[0.08em] text-[#15181C] transition-colors duration-200 hover:border-[#0B1F3A] hover:bg-[#0B1F3A]/[0.04] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B1F3A] focus-visible:ring-offset-2"
+          >
+            Explore Our Services
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+          </Link>
+        </div>
       </div>
 
       {/* Globe range — its top edge is where the tour begins. */}
@@ -882,6 +1069,23 @@ export const GlobeHero: React.FC = () => {
             to break out of any more — the copy's gutters are on the block above.
           */}
           <div ref={slotRef} className="relative h-full w-full">
+            {/*
+              The card is opaque white and covers the backdrop above, which would leave
+              the planet sitting on flat paper. This is the tonal floor that seats it: a
+              cool navy wash rising from the card's bottom edge at 5% and gone by 72%,
+              kept under the globe box's z-10 so it can only ever show around the limb.
+              Purely a background layer - the globe, its halo and its metrics are all
+              untouched by it.
+            */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-0"
+              style={{
+                background:
+                  "radial-gradient(120% 72% at 50% 100%, rgba(11,31,58,0.05) 0%, rgba(11,31,58,0.021) 44%, rgba(11,31,58,0) 72%)",
+              }}
+            />
+
             {/* Layer 2 + 3 — globe, clouds and atmosphere */}
             <div
               ref={globeBoxRef}

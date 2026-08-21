@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { SectionReveal, RevealItem } from "@/components/ui/SectionReveal";
 
 /**
  * Brand glyphs as inline paths rather than an icon package.
@@ -55,8 +56,8 @@ const COLUMNS: Array<{ heading: string; links: Array<{ name: string; href: strin
   {
     heading: "Content",
     links: [
-      { name: "Services", href: "#services" },
-      { name: "Submit News", href: "#submit-news" },
+      { name: "Services", href: "/#services" },
+      { name: "Submit News", href: "/#submit-news" },
       { name: "Newsletter", href: "#" },
       { name: "Magazine", href: "#" },
       { name: "News", href: "#" },
@@ -72,9 +73,9 @@ const COLUMNS: Array<{ heading: string; links: Array<{ name: string; href: strin
   {
     heading: "Company",
     links: [
-      { name: "About Us", href: "#about" },
+      { name: "About Us", href: "/about" },
       { name: "Management", href: "#" },
-      { name: "Contact", href: "#contact" },
+      { name: "Contact", href: "/#contact" },
     ],
   },
 ];
@@ -87,7 +88,13 @@ export const Footer: React.FC = () => {
      * the seam against Services' own surface.
      */
     <footer className="w-full border-t border-[#061224] bg-[#0B1F3A] font-sans text-white">
-      <div className="container-editorial py-10 md:py-16 lg:py-20">
+      {/*
+        The footer closes the page, so it gets the same entrance every section above it
+        has: brand, then the link columns left to right, then socials, then the bottom
+        bar. Nothing here needs state, so this file stays a server component - the two
+        wrappers below are the only client code involved.
+      */}
+      <SectionReveal className="container-editorial py-10 md:py-16 lg:py-20">
         {/*
           Twelve columns rather than five. The brand block needs roughly a third to keep
           its description from wrapping into a narrow ribbon, and 4 + 2 + 2 + 2 + 2 gives
@@ -96,7 +103,7 @@ export const Footer: React.FC = () => {
         */}
         <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-12">
           {/* Brand */}
-          <div className="lg:col-span-4">
+          <RevealItem className="lg:col-span-4">
             <Link
               href="/"
               className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B1F3A]"
@@ -116,31 +123,33 @@ export const Footer: React.FC = () => {
               profiles, company insights, and industry analysis — connecting the global
               mining community with the stories that matter.
             </p>
-          </div>
+          </RevealItem>
 
           {/* Link columns */}
           {COLUMNS.map((column) => (
-            <nav key={column.heading} aria-label={column.heading} className="lg:col-span-2">
-              <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-[#D4AF37]">
-                {column.heading}
-              </h2>
-              <ul className="mt-5 space-y-4">
-                {column.links.map((link) => (
-                  <li key={link.name}>
-                    <Link
-                      href={link.href}
-                      className="text-sm font-normal text-[#F0F4F8]/70 underline-offset-4 transition-colors duration-200 hover:text-[#D4AF37] hover:underline focus:outline-none focus-visible:text-[#D4AF37] focus-visible:underline"
-                    >
-                      {link.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
+            <RevealItem key={column.heading} className="lg:col-span-2">
+              <nav aria-label={column.heading}>
+                <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-[#D4AF37]">
+                  {column.heading}
+                </h2>
+                <ul className="mt-5 space-y-4">
+                  {column.links.map((link) => (
+                    <li key={link.name}>
+                      <Link
+                        href={link.href}
+                        className="text-sm font-normal text-[#F0F4F8]/70 underline-offset-4 transition-colors duration-200 hover:text-[#D4AF37] hover:underline focus:outline-none focus-visible:text-[#D4AF37] focus-visible:underline"
+                      >
+                        {link.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </nav>
+            </RevealItem>
           ))}
 
           {/* Social */}
-          <div className="lg:col-span-2">
+          <RevealItem className="lg:col-span-2">
             <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-[#D4AF37]">
               Follow Us
             </h2>
@@ -165,11 +174,11 @@ export const Footer: React.FC = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </RevealItem>
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row lg:mt-20">
+        <RevealItem className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row lg:mt-20">
           <p className="text-xs font-normal text-[#F0F4F8]/65">
             © {new Date().getFullYear()} Mining Discovery. All Rights Reserved.
           </p>
@@ -187,8 +196,8 @@ export const Footer: React.FC = () => {
               Terms of Use
             </Link>
           </div>
-        </div>
-      </div>
+        </RevealItem>
+      </SectionReveal>
     </footer>
   );
 };

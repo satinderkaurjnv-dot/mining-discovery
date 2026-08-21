@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { SectionReveal, itemVariants } from "@/components/ui/SectionReveal";
 
 interface Company {
   name: string;
@@ -137,12 +138,67 @@ export const TrustedBy: React.FC = () => {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="py-12 md:py-16 bg-[#F4F4F2] border-b border-[#E5E5E3] overflow-hidden font-sans">
-      <div className="container-editorial mb-8 text-center">
-        <p className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-[#57595E]">
-          Our Trusted Brands
-        </p>
-      </div>
+    <section className="relative py-12 md:py-16 bg-[#F4F4F2] border-b border-[#E5E5E3] overflow-hidden font-sans">
+      {/*
+        Display heading. Two lines, black weight, the second nudged right by 0.14em so the
+        stack steps rather than aligns - the indent is in em, not px, so it holds its
+        proportion across the whole clamp range.
+
+        justify-start, not justify-between: the arrow belongs to COMPANIES, and pushing it
+        to the container's right edge left it stranded in a metre of white on a wide
+        screen. It now trails the word by one gap.
+      */}
+      <SectionReveal className="container-editorial mb-6 md:mb-9">
+        <div className="flex items-end justify-start gap-4 sm:gap-6">
+          {/*
+            motion.h2 and motion.svg, both on the shared itemVariants. Neither carries a
+            whileInView of its own - they inherit state and stagger from the SectionReveal
+            through framer's context, which passes straight through the plain flex div
+            between them. So the heading lands, then the arrow, then the grid runs its own
+            existing stagger: one reading order rather than three independent reveals.
+          */}
+          <motion.h2
+            variants={itemVariants}
+            className="font-geist text-[clamp(3rem,8vw,7.5rem)] font-black uppercase leading-[0.86] tracking-[-0.035em] text-[#0B1F3A]"
+          >
+            <span className="block">Featured</span>
+            <span className="ml-[0.14em] block">Companies</span>
+          </motion.h2>
+
+          {/*
+            Down-left arrow, stroke only. Two paths: the diagonal shaft, and an L for the
+            head at its lower-left end.
+
+            The bottom margin is the baseline correction, and it has to be in the HEADING's
+            scale, not the arrow's: an em on this element resolves against the inherited
+            16px, not against the h2's clamp, so the old mb-[0.1em] was buying 1.6px and
+            the arrow was sitting on the line BOX's floor rather than on the text baseline.
+            Geist's descender plus this line's negative half-leading puts that floor about
+            0.17em of the heading's size below the baseline, hence a clamp built from the
+            same 8vw curve the heading uses.
+
+            Stroke scales with the box (no non-scaling-stroke, deliberately) so the arrow
+            keeps its proportions as it grows; 4.25 units holds its weight against a 900.
+          */}
+          <motion.svg
+            variants={itemVariants}
+            aria-hidden="true"
+            focusable="false"
+            viewBox="0 0 48 48"
+            fill="none"
+            stroke="#0B1F3A"
+            strokeWidth="4.25"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="mb-[clamp(0.5rem,1.35vw,1.25rem)] h-[clamp(2rem,4.8vw,4.5rem)] w-auto shrink-0"
+          >
+            {/* shaft, top-right to bottom-left */}
+            <path d="M40 8 10 38" />
+            {/* arrowhead */}
+            <path d="M10 14.5V38h23.5" />
+          </motion.svg>
+        </div>
+      </SectionReveal>
 
       <div className="container-editorial">
         {/*
@@ -203,6 +259,17 @@ export const TrustedBy: React.FC = () => {
           ))}
         </motion.div>
       </div>
+      {/*
+        Seam into ServicesScrollStory. Every other boundary on this page is one near-white
+        into another and needs nothing; this one drops #F4F4F2 straight into #0B1220, and
+        a 56px ramp is what stops that reading as a cut line. Decorative and inert, and it
+        sits inside this section so the pinned section below never has to know about it.
+      */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-b from-[#F4F4F2]/0 via-[#0B1220]/45 to-[#0B1220]"
+      />
+
     </section>
   );
 };

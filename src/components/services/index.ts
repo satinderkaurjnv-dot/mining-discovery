@@ -13,3 +13,4 @@ export * from "./ServicesCapabilities";
 export * from "./ServicesEcosystem";
 export * from "./ServicesProcess";
 export * from "./ServicesShowcase";
+export * from "./ServicesMiningStory";

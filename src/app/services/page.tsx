@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import {
   ServicesCapabilities,
-  ServicesEcosystem,
   ServicesHero,
-  ServicesProcess,
+  ServicesMiningStory,
   ServicesShowcase,
 } from "@/components/services";
 
@@ -23,9 +22,13 @@ export const metadata: Metadata = {
  * A server component, like /about: it owns the metadata and the section order, and the hero
  * carries its own "use client" boundary because it drives a GSAP timeline.
  *
- * Built section by section. Hero, OUR CAPABILITIES, the ecosystem, HOW WE WORK and the
- * OUR EXPERTISE showcase are in;
- * proof, trusted brands, FAQ and the closing CTA come in later steps, below ServicesShowcase.
+ * Built section by section. Hero, OUR CAPABILITIES, THE MINING STORY and the OUR EXPERTISE
+ * showcase are in; trusted brands, FAQ and the closing CTA come in later steps.
+ *
+ * ServicesEcosystem and ServicesProcess are deliberately NOT rendered. THE MINING STORY
+ * replaced the ecosystem/diagram/process concepts, and running both would put two marketing-
+ * system diagrams on one page. Their files are left in src/components/services/ rather than
+ * deleted, so restoring either is a one-line change here.
  *
  * #capabilities moved from the placeholder onto the real section rather than being
  * re-declared — the hero's CTA targets that id, and it keeps working because the id went
@@ -47,8 +50,7 @@ export default function ServicesPage() {
 
       <ServicesHero />
       <ServicesCapabilities />
-      <ServicesEcosystem />
-      <ServicesProcess />
+      <ServicesMiningStory />
       <ServicesShowcase />
     </div>
   );

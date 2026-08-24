@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
@@ -55,6 +56,15 @@ interface ServiceGroup {
   /** The reverse: what the group is for, then the full service lines. */
   description: string;
   back: string[];
+  /**
+   * The card's photograph. `src` is a file in /public; `alt` describes what is actually in
+   * the frame, not what the card is about — those differ on the three cards still waiting
+   * for their real photography, and a screen reader should hear the picture, not the pitch.
+   *
+   * `interim: true` marks a photograph that is standing in. Swapping one is a single line:
+   * drop the new file into /public/services/ and change `src`.
+   */
+  image: { src: string; alt: string; interim?: boolean };
   /** Where the card comes in from, as fractions of the viewport. */
   from: { x: number; y: number; rotate: number };
   /** A degree or two off-square at rest, so a stack of five reads as paper, not as a UI. */
@@ -70,6 +80,10 @@ const GROUPS: ServiceGroup[] = [
     front: ["Digital Branding", "Visual Design"],
     description: "Build a recognizable identity for your mining company.",
     back: ["Digital Branding", "Logo & Visual Design"],
+    image: {
+      src: "/services/04-pit.jpg",
+      alt: "Aerial view of a large open-pit mine, haul trucks working the benches and a processing plant on the rim.",
+    },
     from: { x: -0.8, y: 0, rotate: -8 },
     restRotate: -2,
     exit: { x: -0.7, y: -0.2, rotate: -12 },
@@ -80,6 +94,10 @@ const GROUPS: ServiceGroup[] = [
     front: ["Website Development", "App Development"],
     description: "Create digital experiences that communicate your story.",
     back: ["Website Development", "App Development"],
+    image: {
+      src: "/services/03-assay.jpg",
+      alt: "A geologist logging drill core in a core shack, recording measurements on a handheld data unit.",
+    },
     from: { x: 0.6, y: -0.5, rotate: 7 },
     restRotate: 1.5,
     exit: { x: 0.55, y: -0.5, rotate: 12 },
@@ -95,6 +113,13 @@ const GROUPS: ServiceGroup[] = [
     front: ["Public Relations", "Industry Storytelling"],
     description: "Give your story the visibility and context it deserves.",
     back: ["Public Relations", "Industry Storytelling"],
+    // INTERIM. The brief asks for media/interview/conference photography; the project owns
+    // none. This is a mining landscape standing in until that photograph exists.
+    image: {
+      src: "/about/open-pit-golden-hour.png",
+      alt: "An open-pit mine at sunset, haul trucks descending the access ramp.",
+      interim: true,
+    },
     from: { x: 0, y: 0.6, rotate: -5 },
     restRotate: -1.2,
     exit: { x: -0.25, y: 0.7, rotate: -10 },
@@ -105,6 +130,13 @@ const GROUPS: ServiceGroup[] = [
     front: ["Social Media", "Google Ads", "LinkedIn & Meta Ads"],
     description: "Put your message in front of the right audience.",
     back: ["Social Media Marketing", "Google Ads", "LinkedIn & Meta Ads"],
+    // INTERIM. Needs a conference / industry-audience photograph; this crew shot is the
+    // closest the project owns and does not communicate reach.
+    image: {
+      src: "/services/02-drill.jpg",
+      alt: "A drill crew working a rig at a mountain exploration site at golden hour.",
+      interim: true,
+    },
     from: { x: 0.9, y: 0, rotate: 8 },
     restRotate: 2,
     exit: { x: 0.8, y: 0.2, rotate: 14 },
@@ -115,11 +147,54 @@ const GROUPS: ServiceGroup[] = [
     front: ["Webinars", "Events"],
     description: "Turn attention into meaningful industry relationships.",
     back: ["Webinars & Events"],
+    // INTERIM. Needs an event / stage / panel photograph; none exists in the project.
+    image: {
+      src: "/services/01-survey.jpg",
+      alt: "A drill rig and its operator at a remote exploration site in arid hill country.",
+      interim: true,
+    },
     from: { x: -0.6, y: 0.5, rotate: -7 },
     restRotate: -1.6,
     exit: { x: -0.5, y: 0.6, rotate: -14 },
   },
 ];
+
+/**
+ * A card's photograph, filling the width of the face it sits in.
+ *
+ * next/image with `fill`: these are 1024x1024 files in /public, and the optimiser is what
+ * stops a 1MB square being shipped whole for a 416px-wide band. `sizes` states the real
+ * rendered width at each breakpoint so it picks the right variant rather than the largest.
+ * No `priority` — the section is a long way down the page, and lazy is correct here. The
+ * front face is display:none below lg, so a phone never fetches it at all.
+ *
+ * Two treatments, both restrained, both there to make five separate photographs read as one
+ * collection and belong to this palette:
+ *  - a navy wash, which pulls every frame toward the site's own colour
+ *  - a short gradient into the face's ground colour, so the photograph resolves into the card
+ *    instead of ending on a hard horizontal edge
+ */
+const CardPhoto: React.FC<{
+  image: ServiceGroup["image"];
+  className: string;
+  blendTo: string;
+}> = ({ image, className, blendTo }) => (
+  <div className={`relative w-full shrink-0 overflow-hidden ${className}`}>
+    <Image
+      src={image.src}
+      alt={image.alt}
+      fill
+      sizes="(min-width: 1024px) 26rem, (min-width: 640px) 28rem, 100vw"
+      className="object-cover object-center"
+    />
+    <span aria-hidden="true" className="absolute inset-0 bg-[#0B1F3A]/15" />
+    <span
+      aria-hidden="true"
+      className="absolute inset-x-0 bottom-0 h-14"
+      style={{ backgroundImage: `linear-gradient(to bottom, ${blendTo}00, ${blendTo})` }}
+    />
+  </div>
+);
 
 const HEADING_LINES = ["Every story", "needs the right", "amplifier."];
 const FINALE_LINES = ["One strategy.", "Many ways", "to be seen."];
@@ -443,44 +518,60 @@ export const ServicesShowcase: React.FC = () => {
                     className={
                       reduced
                         ? "hidden"
-                        : "hidden lg:absolute lg:inset-0 lg:flex lg:flex-col lg:justify-between lg:border lg:border-[#D4AF37]/30 lg:bg-[#F7F5EF] lg:p-10 lg:[backface-visibility:hidden]"
+                        : // p-10 moved off the face and onto the text block below it, so the
+                          // photograph can reach the card's edges. overflow-hidden keeps it
+                          // inside the border. The card's own size, position and animation are
+                          // untouched — this only reorganises what is inside the face.
+                          "hidden lg:absolute lg:inset-0 lg:flex lg:flex-col lg:overflow-hidden lg:border lg:border-[#D4AF37]/30 lg:bg-[#F7F5EF] lg:[backface-visibility:hidden]"
                     }
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-xs tabular-nums text-[#B8860B]">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <span className="h-px w-12 bg-[#B8860B]/50" />
+                    <CardPhoto image={group.image} className="h-[46%]" blendTo="#F7F5EF" />
+
+                    <div className="flex flex-1 flex-col justify-between px-10 py-7">
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs tabular-nums text-[#B8860B]">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <span className="h-px w-12 bg-[#B8860B]/50" />
+                      </div>
+
+                      <h3 className="font-geist text-[3.25rem] font-black uppercase leading-[0.92] tracking-[-0.035em] text-[#0B1F3A]">
+                        {group.name}
+                      </h3>
+
+                      <ul>
+                        {group.front.map((item) => (
+                          <li
+                            key={item}
+                            className="border-t border-[#0B1F3A]/12 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#3A3D42]"
+                          >
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-
-                    <h3 className="font-geist text-[3.25rem] font-black uppercase leading-[0.92] tracking-[-0.035em] text-[#0B1F3A]">
-                      {group.name}
-                    </h3>
-
-                    <ul>
-                      {group.front.map((item) => (
-                        <li
-                          key={item}
-                          className="border-t border-[#0B1F3A]/12 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#3A3D42]"
-                        >
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
                   </div>
 
                   {/* BACK — the reverse. It is also the only face below lg and under reduced
                       motion, because it carries the fuller content: what the group is for,
                       then the complete service lines. */}
                   <div
-                    className={`flex flex-col justify-between border border-[#D4AF37]/30 bg-white p-8 sm:p-10 ${
+                    className={`flex flex-col overflow-hidden border border-[#D4AF37]/30 bg-white ${
                       reduced
                         ? ""
                         : "lg:absolute lg:inset-0 lg:[backface-visibility:hidden] lg:[transform:rotateY(180deg)]"
                     }`}
                   >
-                    <div>
-                      <div className="flex items-center justify-between">
+                    {/*
+                      A shallower band than the front's. This face is the reading — the
+                      description and the full service lines need the room — and below lg it is
+                      the ONLY face, so it is also what gives a phone its photography.
+                    */}
+                    <CardPhoto image={group.image} className="h-40 lg:h-36" blendTo="#FFFFFF" />
+
+                    <div className="flex flex-1 flex-col justify-between p-8 sm:p-10 lg:px-10 lg:py-7">
+                      <div>
+                        <div className="flex items-center justify-between">
                         <span
                           className={`font-mono text-xs tabular-nums text-[#B8860B] ${
                             reduced ? "" : "lg:hidden"
@@ -504,16 +595,17 @@ export const ServicesShowcase: React.FC = () => {
                       </p>
                     </div>
 
-                    <ul className="mt-8">
-                      {group.back.map((item) => (
-                        <li
-                          key={item}
-                          className="border-t border-[#0B1F3A]/12 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#3A3D42]"
-                        >
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
+                      <ul className="mt-8">
+                        {group.back.map((item) => (
+                          <li
+                            key={item}
+                            className="border-t border-[#0B1F3A]/12 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#3A3D42]"
+                          >
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </article>

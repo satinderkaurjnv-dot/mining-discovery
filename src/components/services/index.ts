@@ -14,3 +14,6 @@ export * from "./ServicesEcosystem";
 export * from "./ServicesProcess";
 export * from "./ServicesShowcase";
 export * from "./ServicesMiningStory";
+export * from "./ServicesTrustedBrands";
+export * from "./ServicesFinalCTA";
+

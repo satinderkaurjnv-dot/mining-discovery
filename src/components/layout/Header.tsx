@@ -7,13 +7,16 @@ import { Menu, X, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 
 /*
- * ABOUT is a real route now, not an in-page anchor. The other four stay anchors but are
- * root-relative ("/#services", not "#services") — a bare hash on /about would only set
- * the fragment on a page that has no such section, and nothing would happen.
+ * ABOUT and SERVICES are real routes now, not in-page anchors. The other three stay
+ * anchors but are root-relative ("/#contact", not "#contact") — a bare hash on /about
+ * would only set the fragment on a page that has no such section, and nothing would happen.
+ *
+ * Pointing SERVICES at /services does not touch the homepage's own services section: it
+ * keeps its id and its place, and the footer still links to it.
  */
 const navLinks = [
   { name: "About", href: "/about" },
-  { name: "Services", href: "/#services" },
+  { name: "Services", href: "/services" },
   { name: "Companies", href: "/#trusted-by" },
   { name: "Submit News", href: "/#submit-news" },
   { name: "Contact", href: "/#contact" },

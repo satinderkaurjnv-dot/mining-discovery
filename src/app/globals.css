@@ -1,0 +1,322 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #FAFAF9;
+  --color-foreground: #1A1D21;
+  
+  --color-navy: #0B1F3A;
+  --color-navy-dark: #061224;
+  --color-navy-light: #162E50;
+  --color-navy-subtle: #F0F4F8;
+  
+  --color-gold: #B8860B;
+  --color-gold-hover: #9E7208;
+  --color-gold-light: #FAF5E8;
+  --color-gold-muted: #D4AF37;
+  
+  --color-border-subtle: #E5E5E3;
+  --color-surface: #F4F4F2;
+  --color-surface-white: #FFFFFF;
+  --color-muted-text: #57595E;
+
+  --font-serif: var(--font-serif-custom), "DM Serif Display", Georgia, serif;
+  --font-geist: var(--font-geist-custom), "Geist", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: var(--font-sans-custom), "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: var(--font-mono-custom), "IBM Plex Mono", monospace;
+
+  --max-width-editorial: 1200px;
+}
+
+:root {
+  --bg-color: #FAFAF9;
+  --text-color: #1A1D21;
+}
+
+/* Lenis Smooth Scroll Required CSS */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hide Next.js dev indicator badge in dev mode */
+nextjs-portal,
+[data-nextjs-toast],
+[data-nextjs-dialog-overlay] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Editorial Container Utility */
+.container-editorial {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .container-editorial {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+/* Keyframe animations for clean fade-in on load */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/*
+ * Hero entrance. Driven by CSS rather than a JS motion library so that
+ * prefers-reduced-motion is honoured on the very first paint — a hook cannot,
+ * because the initial client render has to match the server HTML.
+ * `both` fill keeps the from-state applied through any animation-delay.
+ */
+.hero-rise {
+  opacity: 0;
+  animation: fadeInUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/*
+ * Mining-site pins on the hero globe. Restrained on purpose: a slow breathing dot and
+ * one soft expanding ring, staggered per marker from the component.
+ */
+@keyframes globePinDot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.14);
+    opacity: 1;
+  }
+}
+
+@keyframes globePinRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 0.55;
+  }
+  70%,
+  100% {
+    transform: scale(2.3);
+    opacity: 0;
+  }
+}
+
+@keyframes globePinRingOuter {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.35;
+  }
+  80%,
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+.globe-pin-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: #b8860b;
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.95),
+    0 0 10px 2px rgba(184, 134, 11, 0.5);
+  animation: globePinDot 3.2s ease-in-out infinite;
+  transition: box-shadow 200ms ease, background-color 200ms ease, transform 200ms ease;
+}
+
+.globe-pin-dot--active {
+  background: #d4af37;
+  transform: scale(1.2);
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 1),
+    0 0 16px 4px rgba(212, 175, 55, 0.85);
+}
+
+.globe-pin-ring {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(184, 134, 11, 0.65);
+  animation: globePinRing 3.2s ease-out infinite;
+}
+
+.globe-pin-ring-outer {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  animation: globePinRingOuter 3.2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .globe-pin-dot,
+  .globe-pin-ring,
+  .globe-pin-ring-outer {
+    animation: none;
+  }
+  .globe-pin-ring {
+    opacity: 0.3;
+    transform: scale(1.5);
+  }
+  .globe-pin-ring-outer {
+    opacity: 0;
+  }
+}
+
+/* Custom Scrollbar for sleek editorial feel */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FAFAF9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D1D1CE;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0B1F3A;
+}
+
+
+/*
+ * Hero backdrop motion. Four movements, all slow and all plain CSS keyframes: nothing
+ * here is scroll-linked, so none of it can touch the globe's scroll timeline or cost
+ * main-thread work while the user scrolls.
+ *
+ * The drift is 4px over 18s - enough that the field is not frozen, far too slow to
+ * catch in the act.
+ */
+@keyframes heroBackdropDrift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-4px, 3px, 0);
+  }
+}
+
+@keyframes heroBackdropBreathe {
+  0%,
+  100% {
+    opacity: 0.78;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* One route draws itself in, holds, then resets while its own layer is at its faintest. */
+@keyframes heroBackdropDraw {
+  0% {
+    stroke-dashoffset: 620;
+  }
+  55%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes heroBackdropPulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.hero-backdrop-drift {
+  animation: heroBackdropDrift 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+.hero-backdrop-breathe {
+  animation: heroBackdropBreathe 12s ease-in-out infinite;
+}
+
+.hero-backdrop-draw {
+  stroke-dasharray: 620;
+  animation: heroBackdropDraw 16s ease-in-out infinite;
+}
+
+.hero-backdrop-pulse {
+  animation: heroBackdropPulse 9s ease-in-out infinite;
+}
+
+.hero-backdrop-pulse:nth-of-type(2) {
+  animation-delay: -3s;
+}
+
+.hero-backdrop-pulse:nth-of-type(3) {
+  animation-delay: -6s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-backdrop-drift,
+  .hero-backdrop-breathe,
+  .hero-backdrop-draw,
+  .hero-backdrop-pulse {
+    animation: none;
+  }
+  .hero-backdrop-draw {
+    stroke-dasharray: none;
+  }
+}

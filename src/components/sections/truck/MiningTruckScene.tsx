@@ -223,13 +223,10 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
         }
       }
 
-      // Gold particles disabled as requested
-      oreParticles.updateOreTrail(delta, pathTransform.position, false);
-      if (sp >= 0.70) {
-        oreParticles.group.visible = false;
-      } else {
-        oreParticles.group.visible = true;
-      }
+      // Dynamic gold sparkles sprinkling from loader as it moves
+      const isLoaderMoving = prevPosition.distanceTo(pathTransform.position) > 0.0001;
+      oreParticles.updateLoaderGoldSparkles(delta, pathTransform.position, pathTransform.tangent, sp >= 0.70 && isLoaderMoving);
+      oreParticles.group.visible = true;
 
       // 2. Camera Director Update - loader is always visible and perfectly centered
       if (sp >= 0.84) {

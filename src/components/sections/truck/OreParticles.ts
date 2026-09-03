@@ -4,6 +4,7 @@ export function createOreParticleSystem(): {
   group: THREE.Group;
   updateOreTrail: (delta: number, dumpBedPos: THREE.Vector3, isFalling: boolean) => void;
   updateAircraftDust: (delta: number, aircraftPos: THREE.Vector3, isReleasing: boolean) => void;
+  updateLoaderGoldSparkles: (delta: number, loaderPos: THREE.Vector3, tangent: THREE.Vector3, isMoving: boolean) => void;
   dispose: () => void;
 } {
   const group = new THREE.Group();
@@ -168,12 +169,86 @@ export function createOreParticleSystem(): {
     posAttr.needsUpdate = true;
   };
 
+  // 3. Loader Glowing Gold Sparkle Sprinkle System
+  const SPARKLE_COUNT = 150;
+  const sparkleGeom = new THREE.BufferGeometry();
+  const sparklePositions = new Float32Array(SPARKLE_COUNT * 3);
+
+  for (let i = 0; i < SPARKLE_COUNT; i++) {
+    sparklePositions[i * 3 + 1] = -100;
+  }
+
+  sparkleGeom.setAttribute("position", new THREE.BufferAttribute(sparklePositions, 3));
+
+  const sparkleMat = new THREE.PointsMaterial({
+    color: "#FFD700",
+    size: 0.85,
+    transparent: true,
+    opacity: 0.90,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+
+  const sparklePoints = new THREE.Points(sparkleGeom, sparkleMat);
+  group.add(sparklePoints);
+
+  const sparkleData = Array.from({ length: SPARKLE_COUNT }, () => ({
+    pos: new THREE.Vector3(0, -100, 0),
+    vel: new THREE.Vector3(0, 0, 0),
+    life: 0,
+  }));
+
+  const updateLoaderGoldSparkles = (
+    delta: number,
+    loaderPos: THREE.Vector3,
+    tangent: THREE.Vector3,
+    isMoving: boolean
+  ) => {
+    const posAttr = sparkleGeom.attributes.position as THREE.BufferAttribute;
+
+    sparkleData.forEach((p, idx) => {
+      if (p.life <= 0 && isMoving && Math.random() < 0.45) {
+        // Spawn from loader scoop bucket & chassis
+        const lateralSpread = (Math.random() - 0.5) * 3.5;
+        p.pos.set(
+          loaderPos.x + lateralSpread,
+          loaderPos.y + 0.3 + Math.random() * 0.8,
+          loaderPos.z + (Math.random() - 0.5) * 2.0
+        );
+        // Sprinkle backwards against motion vector with gentle upward pop
+        p.vel.set(
+          (Math.random() - 0.5) * 1.5 - tangent.x * 2.5,
+          Math.random() * 1.5 + 0.4,
+          (Math.random() - 0.5) * 1.5 - tangent.z * 2.5
+        );
+        p.life = 1.0;
+      }
+
+      if (p.life > 0) {
+        p.life -= delta * 0.9;
+        p.vel.y -= 4.0 * delta; // gentle gravity
+
+        p.pos.x += p.vel.x * delta;
+        p.pos.y = Math.max(0.05, p.pos.y + p.vel.y * delta);
+        p.pos.z += p.vel.z * delta;
+
+        posAttr.setXYZ(idx, p.pos.x, p.pos.y, p.pos.z);
+      } else {
+        posAttr.setXYZ(idx, 0, -100, 0);
+      }
+    });
+
+    posAttr.needsUpdate = true;
+  };
+
   const dispose = () => {
     oreGeom.dispose();
     oreMatGold.dispose();
     dustGeom.dispose();
     dustMat.dispose();
+    sparkleGeom.dispose();
+    sparkleMat.dispose();
   };
 
-  return { group, updateOreTrail, updateAircraftDust, dispose };
+  return { group, updateOreTrail, updateAircraftDust, updateLoaderGoldSparkles, dispose };
 }

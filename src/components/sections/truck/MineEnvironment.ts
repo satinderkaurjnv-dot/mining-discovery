@@ -89,14 +89,14 @@ export function createMineEnvironment(): MineEnvironmentSystem {
     pointCount++;
   }
 
-  // Segment 3: Vertical straight highway down the screen (x: 185, z: 45 -> 380)
-  const vertSteps = 120;
+  // Segment 3: Long vertical straight highway down the screen (x: 185, z: 45 -> 580)
+  const vertSteps = 160;
   for (let i = 1; i <= vertSteps; i++) {
     const t = i / vertSteps;
-    const z = 45.0 + t * 335.0;
+    const z = 45.0 + t * 535.0;
     const pos = new THREE.Vector3(185.0, 0, z);
     const tangent = new THREE.Vector3(0, 0, 1);
-    addRibbonPoint(pos, tangent, 20 + t * 25);
+    addRibbonPoint(pos, tangent, 20 + t * 40);
     pointCount++;
   }
 
@@ -122,7 +122,7 @@ export function createMineEnvironment(): MineEnvironmentSystem {
   group.add(roadMesh);
 
   // =========================================================================
-  // 2. ROADSIDE MINING TYPOGRAPHY (Matching unitedcarriers.com reference)
+  // 2. 3 ROADSIDE MINING TYPOGRAPHY MILESTONES (Passing by sequentially)
   // =========================================================================
   const roadsideTextures: THREE.CanvasTexture[] = [];
   const roadsideMaterials: THREE.MeshBasicMaterial[] = [];
@@ -175,9 +175,12 @@ export function createMineEnvironment(): MineEnvironmentSystem {
     group.add(signMesh);
   };
 
-  createRoadsideSign("EXTRACTION", "AT EVERY SEAM", "PHASE 08 // ORE TRAMMING", 95);
-  createRoadsideSign("AUTONOMOUS", "FLEET DISPATCH", "PHASE 09 // SMART HAULAGE", 185);
-  createRoadsideSign("SUSTAINABLE", "MINE OF FUTURE", "PHASE 10 // ZERO EMISSIONS", 275);
+  // Milestone 1 (sp ~ 0.86)
+  createRoadsideSign("EXTRACTION", "AT EVERY SEAM", "MILESTONE 01 // PRECISION TRAMMING", 120);
+  // Milestone 2 (sp ~ 0.92)
+  createRoadsideSign("AUTONOMOUS", "FLEET DISPATCH", "MILESTONE 02 // HAULAGE LOGISTICS", 280);
+  // Milestone 3 (sp ~ 0.97)
+  createRoadsideSign("SUSTAINABLE", "MINE OF FUTURE", "MILESTONE 03 // ZERO EMISSIONS", 440);
 
   const updateRoadWidth = (_sp: number) => {};
   const updateDust = () => {};

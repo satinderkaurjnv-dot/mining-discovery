@@ -135,11 +135,11 @@ export const MiningTruckStory: React.FC = () => {
           </p>
         </div>
 
-        {/* --- Side-of-Road Vertical Journey Typography (sp >= 0.88) --- */}
+        {/* --- Side-of-Road Vertical Journey Typography (sp >= 0.84) --- */}
         <AnimatePresence mode="wait">
-          {sp >= 0.88 && (
+          {sp >= 0.84 && (
             <motion.div
-              key={sp < 0.92 ? "milestone-1" : sp < 0.96 ? "milestone-2" : "milestone-3"}
+              key={sp < 0.895 ? "milestone-1" : sp < 0.95 ? "milestone-2" : "milestone-3"}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -147,20 +147,20 @@ export const MiningTruckStory: React.FC = () => {
               className="pointer-events-none absolute bottom-12 left-6 z-20 max-w-[460px] sm:bottom-16 sm:left-12"
             >
               <div className="font-mono text-[11px] font-bold uppercase tracking-[0.22em] text-[#9E7208]">
-                {sp < 0.92
-                  ? "MILESTONE 01 // ORE TRAMMING"
-                  : sp < 0.96
+                {sp < 0.895
+                  ? "MILESTONE 01 // PRECISION TRAMMING"
+                  : sp < 0.95
                   ? "MILESTONE 02 // AUTONOMOUS HAULAGE"
                   : "MILESTONE 03 // SUSTAINABLE MINING"}
               </div>
               <h1 className="mt-1 font-geist text-4xl font-extrabold uppercase leading-[0.95] tracking-tight text-[#0B1F3A] sm:text-5xl lg:text-6xl">
-                {sp < 0.92 ? (
+                {sp < 0.895 ? (
                   <>
                     RELIABILITY <br />
                     <span className="text-[#64748B]">AT EVERY</span> <br />
                     SEAM
                   </>
-                ) : sp < 0.96 ? (
+                ) : sp < 0.95 ? (
                   <>
                     AUTONOMOUS <br />
                     <span className="text-[#64748B]">FLEET</span> <br />

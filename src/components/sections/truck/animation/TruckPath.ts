@@ -27,15 +27,15 @@ export class TruckPath {
       posX = -48.0 + (clampedSp / 0.70) * 118.0;
       posZ = 0.0;
       tangent.set(1, 0, 0);
-    } else if (clampedSp < 0.80) {
-      // 2. Horizontal Straight Road in Top-Down View (x = 70 -> 140, z = 0)
-      const t = (clampedSp - 0.70) / 0.10;
+    } else if (clampedSp < 0.78) {
+      // 2. Horizontal Straight Road in Side-Profile View (x = 70 -> 140, z = 0)
+      const t = (clampedSp - 0.70) / 0.08;
       posX = 70.0 + t * 70.0;
       posZ = 0.0;
       tangent.set(1, 0, 0);
-    } else if (clampedSp < 0.88) {
+    } else if (clampedSp < 0.84) {
       // 3. Smooth 90-Degree Road Turn (Radius R = 45, Center at x=140, z=45)
-      const t = (clampedSp - 0.80) / 0.08;
+      const t = (clampedSp - 0.78) / 0.06;
       const angle = (t * Math.PI) / 2; // 0 to 90 deg
       const radius = 45.0;
       
@@ -44,10 +44,10 @@ export class TruckPath {
       
       tangent.set(Math.cos(angle), 0, Math.sin(angle)).normalize();
     } else {
-      // 4. Extended Long Vertical Road Travel down the screen (x = 185, z = 45 -> 325)
-      const t = (clampedSp - 0.88) / 0.12;
+      // 4. Long Vertical Highway Journey Across 3 Mining Milestones (x = 185, z = 45 -> 525)
+      const t = (clampedSp - 0.84) / 0.16;
       posX = 185.0;
-      posZ = 45.0 + t * 280.0;
+      posZ = 45.0 + t * 480.0;
       tangent.set(0, 0, 1);
     }
 

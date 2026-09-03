@@ -223,14 +223,12 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
         }
       }
 
-      // Sprinkle glowing gold ore particles directly from loader bucket scoop
+      // Gold particles disabled as requested
+      oreParticles.updateOreTrail(delta, pathTransform.position, false);
       if (sp >= 0.70) {
-        bucketScoopPos.copy(pathTransform.position)
-          .add(pathTransform.tangent.clone().multiplyScalar(3.0))
-          .add(new THREE.Vector3(0, 0.55, 0));
-        oreParticles.updateOreTrail(delta, bucketScoopPos, true);
+        oreParticles.group.visible = false;
       } else {
-        oreParticles.updateOreTrail(delta, pathTransform.position, false);
+        oreParticles.group.visible = true;
       }
 
       // 2. Camera Director Update - loader is always visible and perfectly centered

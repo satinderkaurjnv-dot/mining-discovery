@@ -164,36 +164,6 @@ export function loadMiningLoaderAsset(
         }
       });
 
-      // --- GLOWING GOLD ORE PAYLOAD IN BUCKET BED ---------------------------
-      const goldMat = new THREE.MeshStandardMaterial({
-        color: "#FFD700",
-        emissive: "#D48806",
-        emissiveIntensity: 0.8,
-        metalness: 0.9,
-        roughness: 0.2,
-      });
-
-      const goldPayloadGroup = new THREE.Group();
-      goldPayloadGroup.name = "GoldPayloadGroup";
-      const goldGeom = new THREE.DodecahedronGeometry(0.25, 1);
-
-      for (let i = 0; i < 28; i++) {
-        const lump = new THREE.Mesh(goldGeom, goldMat);
-        lump.position.set(
-          (Math.random() - 0.5) * 1.8,
-          0.8 + Math.random() * 0.4,
-          1.6 + (Math.random() - 0.5) * 1.0
-        );
-        lump.rotation.set(
-          Math.random() * Math.PI,
-          Math.random() * Math.PI,
-          0
-        );
-        lump.scale.setScalar(0.7 + Math.random() * 0.6);
-        goldPayloadGroup.add(lump);
-      }
-      model.add(goldPayloadGroup);
-
       const updateWheelRotation = (distance: number) => {
         if (!distance || !loaderTireTex) return;
         // Move tyre tread surface texture rapidly on scroll for vivid rolling motion

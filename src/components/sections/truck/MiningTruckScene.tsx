@@ -208,6 +208,10 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
         if (loaderGroup) {
           loaderGroup.visible = true;
           loaderGroup.position.copy(pathTransform.position);
+          if (sp >= 0.84) {
+            // Subtle machine vibration for authentic heavy industrial feel
+            loaderGroup.position.y += Math.sin(timestamp * 0.02) * 0.03;
+          }
           
           // Continuous, smooth steering: front bowl faces right along straight road and steers smoothly through turn
           const yaw = Math.atan2(pathTransform.tangent.z, pathTransform.tangent.x);

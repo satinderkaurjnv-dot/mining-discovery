@@ -122,6 +122,44 @@ export function createMineEnvironment(): MineEnvironmentSystem {
   group.add(roadMesh);
 
   // =========================================================================
+  // 1b. DASHED ROAD STRIPES & ROADSIDE POSTS (Giving clear visual speed)
+  // =========================================================================
+  const stripeMat = new THREE.MeshBasicMaterial({
+    color: 0xf8fafc,
+    transparent: true,
+    opacity: 0.90,
+    depthWrite: false,
+  });
+
+  const stripeGeom = new THREE.PlaneGeometry(0.5, 4.2);
+  stripeGeom.rotateX(-Math.PI / 2);
+
+  // Dashed centerline stripes along vertical highway (z = 45 -> 580)
+  for (let z = 45; z <= 580; z += 9) {
+    const stripe = new THREE.Mesh(stripeGeom, stripeMat);
+    stripe.position.set(185.0, 0.02, z);
+    group.add(stripe);
+  }
+
+  // Roadside industrial mileposts along the edges
+  const postGeom = new THREE.BoxGeometry(0.35, 1.6, 0.35);
+  const postMat = new THREE.MeshStandardMaterial({
+    color: 0xd97706, // Amber/Gold industrial reflector post
+    metalness: 0.4,
+    roughness: 0.3,
+  });
+
+  for (let z = 50; z <= 580; z += 22) {
+    const leftPost = new THREE.Mesh(postGeom, postMat);
+    leftPost.position.set(175.2, 0.8, z);
+    group.add(leftPost);
+
+    const rightPost = new THREE.Mesh(postGeom, postMat);
+    rightPost.position.set(194.8, 0.8, z);
+    group.add(rightPost);
+  }
+
+  // =========================================================================
   // 2. 3 ROADSIDE MINING TYPOGRAPHY MILESTONES (Passing by sequentially)
   // =========================================================================
   const roadsideTextures: THREE.CanvasTexture[] = [];

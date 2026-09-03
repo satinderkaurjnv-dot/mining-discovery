@@ -196,8 +196,8 @@ export function loadMiningLoaderAsset(
 
       const updateWheelRotation = (distance: number) => {
         if (!distance || !loaderTireTex) return;
-        // Move strictly the tyre surface colour/texture (zero body motion)
-        loaderTireTex.offset.y += distance * 0.12;
+        // Move tyre tread surface texture rapidly on scroll for vivid rolling motion
+        loaderTireTex.offset.y += distance * 0.85;
       };
 
       console.log("[Mining Loader] GLB loaded with front bucket (face) pointing RIGHT (+X)!");

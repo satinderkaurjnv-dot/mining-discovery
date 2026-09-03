@@ -322,24 +322,118 @@ export function UnitedCarriersGlobe({
 
     // Master Globe Group
     const globeGroup = new THREE.Group();
+    // Tilt to show Atlantic, North America, South America, Africa, India, and Australia
+    globeGroup.rotation.x = 0.20;
+    globeGroup.rotation.y = 3.90;
+    globeGroup.rotation.z = 0.03;
     scene.add(globeGroup);
 
-    // 1. Photorealistic 3D Digital Earth Texture with Multi-Tone Terrain & Night Lights
-    const earthTex = new THREE.TextureLoader().load("/globe/digital-earth.jpg");
-    earthTex.colorSpace = THREE.SRGBColorSpace;
-    earthTex.minFilter = THREE.LinearMipmapLinearFilter;
-    earthTex.magFilter = THREE.LinearFilter;
-    earthTex.generateMipmaps = true;
+    // 1. Deep Royal Sapphire Ocean Sphere Base with Horizon Rim Light
+    const oceanGeom = new THREE.SphereGeometry(0.995, 64, 64);
+    const oceanMat = new THREE.ShaderMaterial({
+      uniforms: {
+        uCamPos: { value: camera.position },
+      },
+      vertexShader: `
+        varying vec3 vWorldPos;
+        varying vec3 vNorm;
+        void main() {
+          vNorm = normalize(normalMatrix * normal);
+          vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uCamPos;
+        varying vec3 vWorldPos;
+        varying vec3 vNorm;
+        void main() {
+          vec3 norm = normalize(vWorldPos);
+          vec3 viewDir = normalize(uCamPos - vWorldPos);
+          float nd = max(0.0, dot(viewDir, norm));
+          float fresnel = 1.0 - nd;
 
-    const oceanGeom = new THREE.SphereGeometry(0.998, 64, 64);
-    const oceanMat = new THREE.MeshBasicMaterial({
-      map: earthTex,
+          // Directional solar illumination
+          vec3 sunDir = normalize(vec3(0.60, 0.55, 0.45));
+          float sunDot = max(0.0, dot(norm, sunDir));
+
+          // Deep Royal Sapphire Ocean
+          vec3 deepOcean = vec3(0.024, 0.085, 0.20);
+          vec3 shallowOcean = vec3(0.05, 0.18, 0.38);
+          vec3 oceanCol = mix(deepOcean, shallowOcean, pow(sunDot, 1.8));
+
+          // Atmospheric Horizon Glow
+          vec3 crescentDir = normalize(vec3(-0.45, 0.75, 0.45));
+          float crescentDot = max(0.0, dot(norm, crescentDir));
+          float crescentBloom = pow(fresnel, 2.8) * (0.30 + 2.2 * pow(crescentDot, 2.0));
+          vec3 crescentCol = mix(vec3(0.12, 0.55, 1.0), vec3(0.75, 0.92, 1.0), crescentDot);
+          oceanCol += crescentCol * crescentBloom * 0.75;
+
+          float edgeAlpha = smoothstep(0.0, 0.08, nd);
+          gl_FragColor = vec4(oceanCol, edgeAlpha * 0.98);
+        }
+      `,
+      transparent: true,
+      depthWrite: true,
     });
     const oceanMesh = new THREE.Mesh(oceanGeom, oceanMat);
     oceanMesh.renderOrder = 0;
     globeGroup.add(oceanMesh);
 
-    // 2. Highlighted Mining Hub Jurisdictions with mineral metadata & interactive tooltips
+    // 2. Continents: Dense Multi-Tone Dot Matrix with Two-Tone Green & Golden-Yellow Lighting
+    const dotTex = createDotTexture(64);
+    const edgeMat = createLitPointsMaterial(0.0072, dotTex);
+    const fillMat = createLitPointsMaterial(0.0058, dotTex);
+    const shaderMats = [edgeMat, fillMat];
+
+    fetch("/globe/globe-data.json")
+      .then((res) => res.json())
+      .then((data: GlobeData) => {
+        if (isDisposed) return;
+
+        const edgeGeom = new THREE.BufferGeometry();
+        edgeGeom.setAttribute(
+          "position",
+          new THREE.BufferAttribute(new Float32Array(data.edge), 3)
+        );
+        const edgePoints = new THREE.Points(edgeGeom, edgeMat);
+        edgePoints.renderOrder = 1;
+        globeGroup.add(edgePoints);
+
+        const fillGeom = new THREE.BufferGeometry();
+        fillGeom.setAttribute(
+          "position",
+          new THREE.BufferAttribute(new Float32Array(data.fill), 3)
+        );
+        const fillPoints = new THREE.Points(fillGeom, fillMat);
+        fillPoints.renderOrder = 1;
+        globeGroup.add(fillPoints);
+      })
+      .catch((err) => console.error("Globe data load error:", err));
+
+    // Golden Continent Outline Lines - crisp razor-sharp vector lines (NEVER blurry)
+    const coastlineMat = new THREE.LineBasicMaterial({
+      color: new THREE.Color("#FFAE00"),
+      transparent: false,
+      depthTest: true,
+    });
+
+    fetch("/globe/coastline-segments.json")
+      .then((res) => res.json())
+      .then((segments: number[]) => {
+        if (isDisposed) return;
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute(
+          "position",
+          new THREE.BufferAttribute(new Float32Array(segments), 3)
+        );
+        const lines = new THREE.LineSegments(geom, coastlineMat);
+        lines.renderOrder = 2;
+        globeGroup.add(lines);
+      })
+      .catch((err) => console.error("Coastline load error:", err));
+
+    // 3. Highlighted Mining Hub Jurisdictions with mineral metadata & interactive tooltips
     const HUB_NODES: (HubNode & { minerals: string; region: string })[] = [
       { id: "na", name: "USA & CANADA", region: "TIER-1 JURISDICTION", minerals: "GOLD • COPPER • CRITICAL MINERALS", lat: 41.5, lng: -116.2, size: 1.4 },
       { id: "sa", name: "CHILE & PERU", region: "GLOBAL COPPER BELT", minerals: "COPPER • LITHIUM • SILVER", lat: -24.3, lng: -69.1, size: 1.4 },
@@ -709,6 +803,14 @@ export function UnitedCarriersGlobe({
         (ring.material as THREE.MeshBasicMaterial).opacity = ringOpacity;
       });
 
+      // Update shader uniforms
+      oceanMat.uniforms.uCamPos.value.copy(camera.position);
+      shaderMats.forEach((mat) => {
+        if (mat.userData.shader) {
+          mat.userData.shader.uniforms.uCamPos.value.copy(camera.position);
+        }
+      });
+
       // Occlude labels when on the back side of the Earth
       labelObjects.forEach(({ obj, pos }) => {
         tempWorldPos.copy(pos).applyMatrix4(globeGroup.matrixWorld);
@@ -734,11 +836,14 @@ export function UnitedCarriersGlobe({
       container.removeEventListener("pointerup", onPointerUp);
       container.removeEventListener("pointercancel", onPointerUp);
       renderer.dispose();
-      earthTex.dispose();
+      dotTex.dispose();
       beaconTex.dispose();
       oceanGeom.dispose();
       oceanMat.dispose();
+      edgeMat.dispose();
+      fillMat.dispose();
       beaconMat.dispose();
+      coastlineMat.dispose();
       arcMat.dispose();
     };
   }, []);

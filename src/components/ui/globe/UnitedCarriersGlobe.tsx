@@ -249,14 +249,21 @@ export function UnitedCarriersGlobe({
           float nd = max(0.0, dot(viewDir, norm));
           float fresnel = 1.0 - nd;
 
-          // Sample land mask: rich deep digital sapphire ocean
+          // Sample land mask: rich deep digital midnight sapphire ocean
           vec4 mapCol = texture2D(uLandMap, vUv);
 
           // Subtle sunlit illumination with gold-sapphire tint
           vec3 sunDir = normalize(vec3(0.65, 0.55, 0.45));
           float sunDot = max(0.0, dot(norm, sunDir));
-          vec3 deepOcean = vec3(0.04, 0.10, 0.20);
+          vec3 deepOcean = vec3(0.035, 0.08, 0.16);
           vec3 surfaceCol = mix(deepOcean, mapCol.rgb, 0.65) * (0.85 + 0.35 * sunDot);
+
+          // Top-left electric atmospheric horizon crescent glow matching reference image
+          vec3 crescentDir = normalize(vec3(-0.45, 0.75, 0.48));
+          float crescentDot = max(0.0, dot(norm, crescentDir));
+          float crescentBloom = pow(fresnel, 2.8) * (0.35 + 2.4 * pow(crescentDot, 1.8));
+          vec3 crescentCol = mix(vec3(1.0, 0.78, 0.18), vec3(0.72, 0.92, 1.0), pow(crescentDot, 1.5));
+          surfaceCol += crescentCol * crescentBloom * 0.95;
 
           // Digital gold rim glow at horizon
           vec3 goldRim = vec3(1.0, 0.75, 0.15);
@@ -601,6 +608,60 @@ export function UnitedCarriersGlobe({
       mesh.renderOrder = 2;
       globeGroup.add(mesh);
     });
+
+    // 5. Floating Concentric Digital Orbital Rings (Matching Reference Image)
+    const orbitGroup = new THREE.Group();
+    orbitGroup.name = "DigitalOrbitalRings";
+
+    // Primary Equatorial Dashed Data Ring (R = 1.12)
+    const orbitRing1Geom = new THREE.BufferGeometry();
+    const orbitRing1Pts: number[] = [];
+    const orbitSegs = 144;
+    for (let i = 0; i < orbitSegs; i++) {
+      if (i % 3 === 0) continue; // Dashed digital tick spacing
+      const t1 = (i / orbitSegs) * Math.PI * 2;
+      const t2 = ((i + 0.65) / orbitSegs) * Math.PI * 2;
+      orbitRing1Pts.push(Math.cos(t1) * 1.14, 0, Math.sin(t1) * 1.14);
+      orbitRing1Pts.push(Math.cos(t2) * 1.14, 0, Math.sin(t2) * 1.14);
+    }
+    orbitRing1Geom.setAttribute("position", new THREE.Float32BufferAttribute(orbitRing1Pts, 3));
+    const orbitRing1Mat = new THREE.LineBasicMaterial({
+      color: new THREE.Color("#FFAE00"),
+      transparent: true,
+      opacity: 0.35,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const orbitRing1 = new THREE.LineSegments(orbitRing1Geom, orbitRing1Mat);
+    orbitRing1.rotation.x = 0.26;
+    orbitRing1.rotation.z = -0.12;
+    orbitGroup.add(orbitRing1);
+
+    // Secondary Outer Dotted Coordinate Ring (R = 1.24)
+    const orbitPointsCount = 96;
+    const orbitRing2Geom = new THREE.BufferGeometry();
+    const orbitRing2Pos = new Float32Array(orbitPointsCount * 3);
+    for (let i = 0; i < orbitPointsCount; i++) {
+      const angle = (i / orbitPointsCount) * Math.PI * 2;
+      orbitRing2Pos[i * 3] = Math.cos(angle) * 1.24;
+      orbitRing2Pos[i * 3 + 1] = Math.sin(angle * 3) * 0.035;
+      orbitRing2Pos[i * 3 + 2] = Math.sin(angle) * 1.24;
+    }
+    orbitRing2Geom.setAttribute("position", new THREE.BufferAttribute(orbitRing2Pos, 3));
+    const orbitPointsMat = new THREE.PointsMaterial({
+      color: new THREE.Color("#FFC000"),
+      size: 0.016,
+      transparent: true,
+      opacity: 0.60,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const orbitPoints = new THREE.Points(orbitRing2Geom, orbitPointsMat);
+    orbitPoints.rotation.x = -0.20;
+    orbitPoints.rotation.y = 0.35;
+    orbitGroup.add(orbitPoints);
+
+    globeGroup.add(orbitGroup);
 
     // Resize Handler with ResizeObserver
     const handleResize = () => {

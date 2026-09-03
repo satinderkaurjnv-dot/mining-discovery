@@ -95,16 +95,19 @@ export function UnitedCarriersGlobe({
     const width = container.clientWidth || 700;
     const height = container.clientHeight || 700;
 
-    // WebGL Renderer
+    // WebGL Renderer with High-DPI Retina Crispness
     const renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
       antialias: true,
       powerPreference: "high-performance",
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
     renderer.setSize(width, height, false);
     renderer.setClearColor(0x000000, 0);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.08;
 
     // CSS2D Label Renderer
     const labelRenderer = new CSS2DRenderer({ element: labelContainer });
@@ -122,21 +125,23 @@ export function UnitedCarriersGlobe({
 
     // Master Globe Group
     const globeGroup = new THREE.Group();
-    // Tilt matching the reference perspective showing Americas, Atlantic, Europe, and Africa
-    globeGroup.rotation.x = 0.22;
-    globeGroup.rotation.y = 3.95;
-    globeGroup.rotation.z = 0.02;
     scene.add(globeGroup);
 
-    // 1. Photorealistic 3D Earth Surface with Land Mask, Vegetation, Sahara Tones & Night Lights
-    const landTex = new THREE.TextureLoader().load("/globe/land-mask.png");
-    landTex.colorSpace = THREE.SRGBColorSpace;
+    // 1. Crystal-Clear Ultra-HD Texture Loading with Max Anisotropy
+    const earthTex = new THREE.TextureLoader().load("/globe/digital-earth.jpg", (tex) => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.minFilter = THREE.LinearMipmapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.generateMipmaps = true;
+      tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+      tex.needsUpdate = true;
+    });
 
-    const earthGeom = new THREE.SphereGeometry(0.995, 64, 64);
+    const earthGeom = new THREE.SphereGeometry(0.998, 64, 64);
     const earthMat = new THREE.ShaderMaterial({
       uniforms: {
         uCamPos: { value: camera.position },
-        uLandMap: { value: landTex },
+        uEarthMap: { value: earthTex },
         uTime: { value: 0 },
       },
       vertexShader: `
@@ -151,7 +156,7 @@ export function UnitedCarriersGlobe({
         }
       `,
       fragmentShader: `
-        uniform sampler2D uLandMap;
+        uniform sampler2D uEarthMap;
         uniform vec3 uCamPos;
         uniform float uTime;
         varying vec3 vWorldPos;
@@ -163,54 +168,24 @@ export function UnitedCarriersGlobe({
           float nd = max(0.0, dot(viewDir, norm));
           float fresnel = 1.0 - nd;
 
-          // Sample land mask
-          vec4 mapCol = texture2D(uLandMap, vUv);
-          float isLand = mapCol.r;
+          // Sample Ultra-HD Digital Earth Texture
+          vec4 earthCol = texture2D(uEarthMap, vUv);
 
-          // Directional solar lighting
-          vec3 sunDir = normalize(vec3(0.60, 0.55, 0.50));
+          // Subtle sun lighting enhancement
+          vec3 sunDir = normalize(vec3(0.55, 0.60, 0.50));
           float sunDot = max(0.0, dot(norm, sunDir));
+          vec3 surfaceCol = earthCol.rgb * (0.92 + 0.25 * sunDot);
 
-          // 1. Deep Royal Sapphire Ocean
-          vec3 deepOcean = vec3(0.035, 0.12, 0.28);
-          vec3 shallowOcean = vec3(0.07, 0.25, 0.48);
-          vec3 oceanCol = mix(deepOcean, shallowOcean, pow(sunDot, 1.8));
-
-          // 2. Realistic Continent Topography & Terrain
-          // Sahara / Desert Ochre Latitudes
-          float lat = vUv.y;
-          float isSahara = smoothstep(0.50, 0.65, lat) * (1.0 - smoothstep(0.70, 0.85, lat));
-          vec3 desertCol = vec3(0.76, 0.56, 0.32);
-          vec3 lushGreen = vec3(0.12, 0.32, 0.20);
-          vec3 mountainTones = vec3(0.42, 0.35, 0.25);
-          vec3 arcticIce = vec3(0.88, 0.94, 0.98);
-
-          vec3 landBase = mix(lushGreen, desertCol, isSahara * 0.85);
-          if (lat > 0.88 || lat < 0.12) {
-            landBase = mix(landBase, arcticIce, 0.90);
-          }
-
-          // 3. Golden Night-City Lights & Mineral Nodes
-          float cityCluster = sin(vUv.x * 340.0) * sin(vUv.y * 340.0);
-          cityCluster = smoothstep(0.45, 0.95, cityCluster);
-          float shimmer = sin(uTime * 2.5 + vUv.x * 120.0) * 0.5 + 0.5;
-          vec3 goldNightLights = vec3(1.0, 0.72, 0.15) * (0.85 + 0.35 * shimmer);
-
-          vec3 landSurface = landBase * (0.65 + 0.45 * sunDot) + goldNightLights * cityCluster * 0.85;
-
-          // Blend ocean and land
-          vec3 surfaceCol = mix(oceanCol, landSurface, isLand);
-
-          // 4. Electric Cyan / Blue Atmospheric Crescent Bloom
+          // Atmospheric Crescent Horizon Sheen
           vec3 crescentDir = normalize(vec3(-0.45, 0.75, 0.45));
           float crescentDot = max(0.0, dot(norm, crescentDir));
-          float crescentBloom = pow(fresnel, 2.6) * (0.35 + 2.6 * pow(crescentDot, 1.8));
-          vec3 crescentCol = mix(vec3(0.12, 0.55, 1.0), vec3(0.75, 0.92, 1.0), crescentDot);
-          surfaceCol += crescentCol * crescentBloom * 0.90;
+          float crescentBloom = pow(fresnel, 3.2) * (0.25 + 1.8 * pow(crescentDot, 2.0));
+          vec3 crescentCol = mix(vec3(0.15, 0.60, 1.0), vec3(0.85, 0.95, 1.0), crescentDot);
+          surfaceCol += crescentCol * crescentBloom * 0.45;
 
-          // Outer edge alpha feathering
-          float edgeAlpha = smoothstep(0.0, 0.08, nd);
-          gl_FragColor = vec4(surfaceCol, edgeAlpha * 0.98);
+          // Crisp outer edge anti-aliasing
+          float edgeAlpha = smoothstep(0.0, 0.05, nd);
+          gl_FragColor = vec4(surfaceCol, edgeAlpha * earthCol.a);
         }
       `,
       transparent: true,
@@ -590,7 +565,7 @@ export function UnitedCarriersGlobe({
       container.removeEventListener("pointerup", onPointerUp);
       container.removeEventListener("pointercancel", onPointerUp);
       renderer.dispose();
-      landTex.dispose();
+      earthTex.dispose();
       beaconTex.dispose();
       earthGeom.dispose();
       earthMat.dispose();

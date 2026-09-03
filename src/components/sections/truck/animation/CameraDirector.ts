@@ -98,7 +98,7 @@ export class CameraDirector {
         const smoothT = THREE.MathUtils.smoothstep(t, 0, 1);
 
         const startPos = new THREE.Vector3(truckPos.x + 1.0, 2.4, 34.0);
-        const endPos = new THREE.Vector3(truckPos.x, 38.0, truckPos.z);
+        const endPos = new THREE.Vector3(truckPos.x, 56.0, truckPos.z);
         this.tempPos.lerpVectors(startPos, endPos, smoothT);
 
         const startLook = new THREE.Vector3(truckPos.x + 1.0, 2.0, 0.0);
@@ -111,18 +111,18 @@ export class CameraDirector {
           position: this.tempPos,
           lookAt: this.tempLookAt,
           up: blendUp,
-          fov: 34,
+          fov: 36,
         };
       } else {
-        // PINNED CAMERA ANGLE: Rock-solid locked X-axis (x = 185.0, y = 38.0) tracking ONLY loader along Z
-        this.tempPos.set(185.0, 38.0, truckPos.z);
+        // PINNED CAMERA ANGLE: Rock-solid locked X-axis (x = 185.0, y = 56.0) tracking ONLY loader along Z
+        this.tempPos.set(185.0, 56.0, truckPos.z);
         this.tempLookAt.set(185.0, 0.0, truckPos.z);
 
         return {
           position: this.tempPos,
           lookAt: this.tempLookAt,
           up: topDownUp,
-          fov: 34,
+          fov: 36,
         };
       }
     }

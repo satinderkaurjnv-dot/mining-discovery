@@ -36,19 +36,19 @@ function latLngToVec3(lat: number, lng: number, r = 1): THREE.Vector3 {
   );
 }
 
-// Crisp luminous digital dot texture with radiant white-gold core
+// Luminous crystal white & cyan digital dot texture matching reference image
 function createDotTexture(size = 64): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext("2d")!;
   ctx.clearRect(0, 0, size, size);
   const r = size / 2;
-  // High-intensity radiant white-hot core to rich neon amber gold
+  // High-intensity radiant white-hot core to electric cyan halo
   const grad = ctx.createRadialGradient(r, r, 0, r, r, r);
   grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-  grad.addColorStop(0.30, "rgba(255, 225, 90, 1)");
-  grad.addColorStop(0.70, "rgba(255, 165, 10, 0.95)");
-  grad.addColorStop(1, "rgba(212, 130, 0, 0)");
+  grad.addColorStop(0.35, "rgba(240, 250, 255, 1)");
+  grad.addColorStop(0.70, "rgba(0, 215, 255, 0.90)");
+  grad.addColorStop(1, "rgba(0, 150, 255, 0)");
   ctx.fillStyle = grad;
   ctx.beginPath();
   ctx.arc(r, r, r - 0.5, 0, Math.PI * 2);
@@ -60,7 +60,7 @@ function createDotTexture(size = 64): THREE.CanvasTexture {
   return tex;
 }
 
-// Radiant starburst flare texture for beacon hubs matching reference image
+// Radiant starburst flare texture for beacon hubs matching crystal globe
 function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
@@ -68,18 +68,18 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   const c = size / 2;
   ctx.clearRect(0, 0, size, size);
 
-  // Soft spherical fiery-gold bloom with digital lens flare
+  // Soft spherical electric cyan-white bloom with digital lens flare
   const bloom = ctx.createRadialGradient(c, c, 0, c, c, c);
   bloom.addColorStop(0, "rgba(255, 255, 255, 1)");
-  bloom.addColorStop(0.18, "rgba(255, 240, 170, 0.98)");
-  bloom.addColorStop(0.42, "rgba(255, 175, 10, 0.90)");
-  bloom.addColorStop(0.72, "rgba(255, 110, 0, 0.40)");
-  bloom.addColorStop(1, "rgba(255, 140, 0, 0)");
+  bloom.addColorStop(0.20, "rgba(220, 248, 255, 0.98)");
+  bloom.addColorStop(0.45, "rgba(0, 210, 255, 0.88)");
+  bloom.addColorStop(0.75, "rgba(0, 140, 255, 0.35)");
+  bloom.addColorStop(1, "rgba(0, 100, 255, 0)");
   ctx.fillStyle = bloom;
   ctx.fillRect(0, 0, size, size);
 
   // Precision 4-point cross flares
-  ctx.strokeStyle = "rgba(255, 255, 245, 0.98)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.98)";
   ctx.lineWidth = 2.2;
   ctx.beginPath();
   ctx.moveTo(c, 0);
@@ -94,7 +94,7 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   return tex;
 }
 
-// Points material shader with pure digital glowing golden dots, specular glint, and digital shimmer
+// Points material shader with digital glowing crystal-white dots, specular glint, and digital shimmer
 function createLitPointsMaterial(
   size: number,
   mapTexture: THREE.CanvasTexture
@@ -104,7 +104,7 @@ function createLitPointsMaterial(
     sizeAttenuation: true,
     depthWrite: false,
     transparent: true,
-    color: new THREE.Color("#FFBE1A"),
+    color: new THREE.Color("#FFFFFF"),
     map: mapTexture,
     alphaTest: 0,
     opacity: 1,
@@ -141,14 +141,14 @@ function createLitPointsMaterial(
         float nd = dot(viewDir, vNorm);
         if (nd <= 0.0) discard;
 
-        // Radiant digital gold with specular highlight matching reference image
-        vec3 exactLineGold = vec3(1.0, 0.74, 0.10);
+        // Radiant crystal white with cyan specular highlight
+        vec3 exactWhite = vec3(0.95, 0.98, 1.0);
         float rimGlint = pow(1.0 - nd, 2.0);
-        diffuseColor.rgb = mix(exactLineGold, vec3(1.0, 0.95, 0.65), rimGlint * 0.45);
+        diffuseColor.rgb = mix(exactWhite, vec3(0.40, 0.90, 1.0), rimGlint * 0.45);
 
         // Digital quantum data shimmer
         float shimmer = sin(dot(vWorldPos.xyz, vec3(120.0, 45.0, 80.0)) + uTime * 3.0) * 0.5 + 0.5;
-        diffuseColor.rgb += vec3(0.30, 0.22, 0.06) * shimmer * 0.40;
+        diffuseColor.rgb += vec3(0.15, 0.30, 0.40) * shimmer * 0.40;
 
         diffuseColor.a *= smoothstep(0.0, 0.10, nd);
         `
@@ -286,9 +286,9 @@ export function UnitedCarriersGlobe({
 
     // Digital Latitude & Longitude Coordinate Grid Matrix
     const gridMat = new THREE.LineBasicMaterial({
-      color: new THREE.Color("#FFAE00"),
+      color: new THREE.Color("#00E5FF"),
       transparent: true,
-      opacity: 0.18,
+      opacity: 0.22,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -367,11 +367,11 @@ export function UnitedCarriersGlobe({
       })
       .catch((err) => console.error("Globe data load error:", err));
 
-    // Golden Continent Outline Lines - laser-sharp glowing vector lines
+    // Luminous Crystal Coastline Lines
     const coastlineMat = new THREE.LineBasicMaterial({
-      color: new THREE.Color("#FFC000"),
+      color: new THREE.Color("#E0F7FA"),
       transparent: true,
-      opacity: 0.95,
+      opacity: 0.90,
       blending: THREE.AdditiveBlending,
       depthTest: true,
     });
@@ -407,7 +407,7 @@ export function UnitedCarriersGlobe({
     const beaconTex = createBeaconStarburstTexture(128);
     const beaconMat = new THREE.SpriteMaterial({
       map: beaconTex,
-      color: new THREE.Color("#FFAE19"),
+      color: new THREE.Color("#00E5FF"),
       transparent: true,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
@@ -436,7 +436,7 @@ export function UnitedCarriersGlobe({
         const ring = new THREE.Mesh(
           new THREE.RingGeometry(0.90, 1, 32),
           new THREE.MeshBasicMaterial({
-            color: new THREE.Color("#FFB81C"),
+            color: new THREE.Color("#00E5FF"),
             transparent: true,
             opacity: 0.85,
             blending: THREE.AdditiveBlending,
@@ -449,11 +449,11 @@ export function UnitedCarriersGlobe({
         activeRipples.push({ ring, phaseOffset: offset });
       });
 
-      // Outer static concentric golden halo
+      // Outer static concentric cyan halo
       const outerRing = new THREE.Mesh(
         new THREE.RingGeometry(0.95, 1, 32),
         new THREE.MeshBasicMaterial({
-          color: new THREE.Color("#FF8C00"),
+          color: new THREE.Color("#00B0FF"),
           transparent: true,
           opacity: 0.40,
           blending: THREE.AdditiveBlending,
@@ -494,7 +494,7 @@ export function UnitedCarriersGlobe({
       globeGroup.add(pinGroup);
     });
 
-    // 4. Sleek, Radiant Golden Network Arcs
+    // 4. Sleek, Radiant Crystal Network Arcs
     const CORRIDORS: CorridorArc[] = [
       { from: [41.5, -116.2], to: [-24.3, -69.1], alt: 0.05 }, // USA/Canada -> Chile/Peru
       { from: [41.5, -116.2], to: [67.8, 20.2], alt: 0.06 }, // USA/Canada -> Sweden/Finland
@@ -508,7 +508,7 @@ export function UnitedCarriersGlobe({
     const timeUniform = { uTime: { value: 2.5 } };
 
     const arcMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("#FFA414"),
+      color: new THREE.Color("#00E5FF"),
       transparent: true,
       opacity: 0.85,
       blending: THREE.AdditiveBlending,
@@ -537,7 +537,7 @@ export function UnitedCarriersGlobe({
           `#include <color_fragment>
           float p = mod(uTime * 1.8 + vOffset * 3.0, 3.0);
           float pulse = smoothstep(0.0, 0.4, 0.4 - abs(vProgress * 3.0 - p));
-          diffuseColor.rgb += vec3(0.5, 0.35, 0.15) * pulse * 2.0;
+          diffuseColor.rgb += vec3(0.5, 0.8, 1.0) * pulse * 2.0;
           diffuseColor.a *= mix(0.35, 1.0, pulse);
           `
         );
@@ -559,7 +559,6 @@ export function UnitedCarriersGlobe({
       }
 
       const curve = new THREE.CatmullRomCurve3(pts);
-      // Delicate thin filament (0.0008)
       const geom = new THREE.TubeGeometry(curve, 36, 0.0008, 4, false);
       const count = geom.attributes.position.count;
       const offset = (idx * 0.6180339887) % 1;
@@ -590,7 +589,7 @@ export function UnitedCarriersGlobe({
     }
     orbitRing1Geom.setAttribute("position", new THREE.Float32BufferAttribute(orbitRing1Pts, 3));
     const orbitRing1Mat = new THREE.LineBasicMaterial({
-      color: new THREE.Color("#FFAE00"),
+      color: new THREE.Color("#00E5FF"),
       transparent: true,
       opacity: 0.35,
       blending: THREE.AdditiveBlending,
@@ -613,7 +612,7 @@ export function UnitedCarriersGlobe({
     }
     orbitRing2Geom.setAttribute("position", new THREE.BufferAttribute(orbitRing2Pos, 3));
     const orbitPointsMat = new THREE.PointsMaterial({
-      color: new THREE.Color("#FFC000"),
+      color: new THREE.Color("#00B0FF"),
       size: 0.016,
       transparent: true,
       opacity: 0.60,

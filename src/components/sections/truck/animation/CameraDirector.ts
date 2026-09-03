@@ -89,21 +89,21 @@ export class CameraDirector {
         fov: 34,
       };
     } else {
-      // Phase 3B & 3C: Top-Down Locked Vertical Road View (media_1788426569799.png)
+      // Phase 3B & 3C: Top-Down Vertical Road View (Camera angle pinned in top-down perspective, tracking loader)
       const topDownUp = new THREE.Vector3(0, 0, -1);
-      const lockedCameraPos = new THREE.Vector3(185.0, 38.0, 75.0);
-      const lockedLookAt = new THREE.Vector3(185.0, 0.0, 75.0);
 
       if (sp < 0.88) {
-        // Smooth cinematic transition into locked vertical road position
+        // Smooth cinematic transition into top-down pinned angle
         const t = (sp - 0.80) / 0.08;
         const smoothT = THREE.MathUtils.smoothstep(t, 0, 1);
 
         const startPos = new THREE.Vector3(truckPos.x + 1.0, 2.4, 34.0);
-        this.tempPos.lerpVectors(startPos, lockedCameraPos, smoothT);
+        const endPos = new THREE.Vector3(truckPos.x, 38.0, truckPos.z);
+        this.tempPos.lerpVectors(startPos, endPos, smoothT);
 
         const startLook = new THREE.Vector3(truckPos.x + 1.0, 2.0, 0.0);
-        this.tempLookAt.lerpVectors(startLook, lockedLookAt, smoothT);
+        const endLook = new THREE.Vector3(truckPos.x, 0.0, truckPos.z);
+        this.tempLookAt.lerpVectors(startLook, endLook, smoothT);
 
         const blendUp = new THREE.Vector3(0, 1, 0).lerp(topDownUp, smoothT).normalize();
 
@@ -114,10 +114,13 @@ export class CameraDirector {
           fov: 34,
         };
       } else {
-        // PERMANENTLY LOCKED VERTICAL ROAD: Road stays pinned on screen while loader travels down
+        // PINNED CAMERA ANGLE: Fixed overhead top-down orientation (up = 0, 0, -1, fov = 34) tracking loader
+        this.tempPos.set(truckPos.x, 38.0, truckPos.z);
+        this.tempLookAt.set(truckPos.x, 0.0, truckPos.z);
+
         return {
-          position: lockedCameraPos,
-          lookAt: lockedLookAt,
+          position: this.tempPos,
+          lookAt: this.tempLookAt,
           up: topDownUp,
           fov: 34,
         };

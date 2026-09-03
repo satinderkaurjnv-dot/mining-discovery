@@ -68,7 +68,7 @@ export class CameraDirector {
         up: this.standardUp,
         fov: 38,
       };
-    } else if (sp < 0.85) {
+    } else if (sp < 0.80) {
       // Phase 3A: Pinned Side Profile Level Highway Tracking (media_1788425794284.png)
       this.tempPos.set(
         truckPos.x + 1.0,
@@ -92,9 +92,9 @@ export class CameraDirector {
       // Phase 3B & 3C: Top-Down Vertical Road View (media_1788426569799.png)
       const topDownUp = new THREE.Vector3(0, 0, -1);
 
-      if (sp < 0.92) {
+      if (sp < 0.86) {
         // Smooth cinematic transition into overhead vertical road view
-        const t = (sp - 0.85) / 0.07;
+        const t = (sp - 0.80) / 0.06;
         const smoothT = THREE.MathUtils.smoothstep(t, 0, 1);
 
         const startPos = new THREE.Vector3(truckPos.x + 1.0, 2.4, 34.0);
@@ -114,7 +114,7 @@ export class CameraDirector {
           fov: 34,
         };
       } else {
-        // Pure top-down overhead view of the vertical road
+        // Pure top-down overhead view of the extended vertical road
         this.tempPos.set(truckPos.x, 38.0, truckPos.z);
         this.tempLookAt.set(truckPos.x, 0.0, truckPos.z);
 

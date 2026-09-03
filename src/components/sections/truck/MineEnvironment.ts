@@ -89,14 +89,14 @@ export function createMineEnvironment(): MineEnvironmentSystem {
     pointCount++;
   }
 
-  // Segment 3: Vertical straight highway down the screen (x: 185, z: 45 -> 260)
-  const vertSteps = 80;
+  // Segment 3: Vertical straight highway down the screen (x: 185, z: 45 -> 380)
+  const vertSteps = 120;
   for (let i = 1; i <= vertSteps; i++) {
     const t = i / vertSteps;
-    const z = 45.0 + t * 215.0;
+    const z = 45.0 + t * 335.0;
     const pos = new THREE.Vector3(185.0, 0, z);
     const tangent = new THREE.Vector3(0, 0, 1);
-    addRibbonPoint(pos, tangent, 20 + t * 15);
+    addRibbonPoint(pos, tangent, 20 + t * 25);
     pointCount++;
   }
 

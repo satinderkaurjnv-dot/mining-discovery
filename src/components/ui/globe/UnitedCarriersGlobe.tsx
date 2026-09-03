@@ -36,19 +36,19 @@ function latLngToVec3(lat: number, lng: number, r = 1): THREE.Vector3 {
   );
 }
 
-// Subtle, crisp digital dot texture with metallic champagne-gold core
+// Crisp luminous digital dot texture with radiant white-gold core
 function createDotTexture(size = 64): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext("2d")!;
   ctx.clearRect(0, 0, size, size);
   const r = size / 2;
-  // Refined champagne-to-metallic gold gradient
+  // High-intensity radiant white-hot core to rich neon amber gold
   const grad = ctx.createRadialGradient(r, r, 0, r, r, r);
-  grad.addColorStop(0, "rgba(250, 240, 220, 1)");
-  grad.addColorStop(0.35, "rgba(212, 175, 55, 0.95)");
-  grad.addColorStop(0.75, "rgba(184, 134, 11, 0.60)");
-  grad.addColorStop(1, "rgba(184, 134, 11, 0)");
+  grad.addColorStop(0, "rgba(255, 255, 255, 1)");
+  grad.addColorStop(0.30, "rgba(255, 225, 90, 1)");
+  grad.addColorStop(0.70, "rgba(255, 165, 10, 0.95)");
+  grad.addColorStop(1, "rgba(212, 130, 0, 0)");
   ctx.fillStyle = grad;
   ctx.beginPath();
   ctx.arc(r, r, r - 0.5, 0, Math.PI * 2);
@@ -60,22 +60,33 @@ function createDotTexture(size = 64): THREE.CanvasTexture {
   return tex;
 }
 
-// Clean institutional data beacon texture
-function createBeaconStarburstTexture(size = 64): THREE.CanvasTexture {
+// Radiant starburst flare texture for beacon hubs matching reference image
+function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
   const ctx = canvas.getContext("2d")!;
   const c = size / 2;
   ctx.clearRect(0, 0, size, size);
 
-  // Soft spherical metallic-gold glow
-  const bloom = ctx.createRadialGradient(c, c, 0, c, c, c * 0.85);
+  // Soft spherical fiery-gold bloom with digital lens flare
+  const bloom = ctx.createRadialGradient(c, c, 0, c, c, c);
   bloom.addColorStop(0, "rgba(255, 255, 255, 1)");
-  bloom.addColorStop(0.25, "rgba(245, 225, 160, 0.95)");
-  bloom.addColorStop(0.60, "rgba(212, 175, 55, 0.60)");
-  bloom.addColorStop(1, "rgba(184, 134, 11, 0)");
+  bloom.addColorStop(0.18, "rgba(255, 240, 170, 0.98)");
+  bloom.addColorStop(0.42, "rgba(255, 175, 10, 0.90)");
+  bloom.addColorStop(0.72, "rgba(255, 110, 0, 0.40)");
+  bloom.addColorStop(1, "rgba(255, 140, 0, 0)");
   ctx.fillStyle = bloom;
   ctx.fillRect(0, 0, size, size);
+
+  // Precision 4-point cross flares
+  ctx.strokeStyle = "rgba(255, 255, 245, 0.98)";
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.moveTo(c, 0);
+  ctx.lineTo(c, size);
+  ctx.moveTo(0, c);
+  ctx.lineTo(size, c);
+  ctx.stroke();
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.minFilter = THREE.LinearFilter;
@@ -83,7 +94,7 @@ function createBeaconStarburstTexture(size = 64): THREE.CanvasTexture {
   return tex;
 }
 
-// Points material shader with 3D dimensional surface lighting
+// Points material shader with digital glowing golden dots and specular glint
 function createLitPointsMaterial(
   size: number,
   mapTexture: THREE.CanvasTexture
@@ -93,10 +104,11 @@ function createLitPointsMaterial(
     sizeAttenuation: true,
     depthWrite: false,
     transparent: true,
-    color: new THREE.Color("#D4AF37"),
+    color: new THREE.Color("#FFBE1A"),
     map: mapTexture,
     alphaTest: 0,
-    opacity: 0.92,
+    opacity: 1,
+    blending: THREE.AdditiveBlending,
   });
 
   mat.onBeforeCompile = (shader) => {
@@ -113,7 +125,7 @@ function createLitPointsMaterial(
       )
       .replace(
         "#include <project_vertex>",
-        `#include <project_vertex>\nfloat ndv = dot(normalize(uCamPos - vWorldPos), vNorm);\ngl_PointSize *= mix(0.75, 1.05, smoothstep(0.0, 0.30, ndv));`
+        `#include <project_vertex>\nfloat ndv = dot(normalize(uCamPos - vWorldPos), vNorm);\ngl_PointSize *= mix(0.70, 1.15, smoothstep(0.0, 0.30, ndv));`
       );
 
     shader.fragmentShader = shader.fragmentShader
@@ -128,13 +140,11 @@ function createLitPointsMaterial(
         float nd = dot(viewDir, vNorm);
         if (nd <= 0.0) discard;
 
-        // Realistic 3D surface illumination giving continents genuine relief
-        vec3 sunDir = normalize(vec3(0.65, 0.55, 0.45));
-        float sunDot = max(0.0, dot(vNorm, sunDir));
-        vec3 litGold = vec3(0.88, 0.76, 0.46);
-        vec3 shadowGold = vec3(0.42, 0.34, 0.20);
-        diffuseColor.rgb = mix(shadowGold, litGold, 0.35 + 0.65 * sunDot);
-        diffuseColor.a *= smoothstep(0.0, 0.08, nd) * 0.90;
+        // Radiant digital gold with specular highlight matching reference image
+        vec3 exactLineGold = vec3(1.0, 0.74, 0.10);
+        float rimGlint = pow(1.0 - nd, 2.0);
+        diffuseColor.rgb = mix(exactLineGold, vec3(1.0, 0.95, 0.65), rimGlint * 0.45);
+        diffuseColor.a *= smoothstep(0.0, 0.10, nd);
         `
       );
 
@@ -239,23 +249,30 @@ export function UnitedCarriersGlobe({
           float nd = max(0.0, dot(viewDir, norm));
           float fresnel = 1.0 - nd;
 
-          // Sample land mask: sophisticated deep graphite-navy ocean
+          // Sample land mask: rich deep digital midnight sapphire ocean
           vec4 mapCol = texture2D(uLandMap, vUv);
 
-          // Subtle sunlit illumination with natural surface falloff
+          // Subtle sunlit illumination with gold-sapphire tint
           vec3 sunDir = normalize(vec3(0.65, 0.55, 0.45));
           float sunDot = max(0.0, dot(norm, sunDir));
-          vec3 deepOcean = vec3(0.045, 0.080, 0.140);
-          vec3 surfaceCol = mix(deepOcean, mapCol.rgb, 0.45) * (0.80 + 0.35 * sunDot);
+          vec3 deepOcean = vec3(0.025, 0.065, 0.135);
+          vec3 surfaceCol = mix(deepOcean, mapCol.rgb, 0.60) * (0.85 + 0.35 * sunDot);
 
-          // Restrained metallic rim sheen at horizon
-          vec3 goldRim = vec3(0.85, 0.72, 0.42);
-          surfaceCol += goldRim * pow(fresnel, 4.5) * 0.25;
+          // Top-left electric atmospheric horizon crescent glow matching reference image
+          vec3 crescentDir = normalize(vec3(-0.48, 0.72, 0.50));
+          float crescentDot = max(0.0, dot(norm, crescentDir));
+          float crescentBloom = pow(fresnel, 2.6) * (0.40 + 3.0 * pow(crescentDot, 1.8));
+          vec3 crescentCol = mix(vec3(1.0, 0.82, 0.30), vec3(0.70, 0.92, 1.0), pow(crescentDot, 1.4));
+          surfaceCol += crescentCol * crescentBloom * 0.95;
+
+          // Digital gold rim glow at horizon
+          vec3 goldRim = vec3(1.0, 0.75, 0.15);
+          surfaceCol += goldRim * pow(fresnel, 4.0) * 0.45;
 
           // Atmosphere rim blend into website background (#DFE7F3)
           vec3 skyBg = vec3(0.875, 0.906, 0.953);
-          float rimHaze = pow(fresnel, 3.2);
-          surfaceCol = mix(surfaceCol, skyBg, rimHaze * 0.90);
+          float rimHaze = pow(fresnel, 2.6);
+          surfaceCol = mix(surfaceCol, skyBg, rimHaze * 0.85);
 
           // Smooth edge alpha feathering
           float edgeAlpha = smoothstep(0.0, 0.12, nd);
@@ -269,11 +286,12 @@ export function UnitedCarriersGlobe({
     oceanMesh.renderOrder = 0;
     globeGroup.add(oceanMesh);
 
-    // Subtle Digital Latitude & Longitude Coordinate Grid Matrix
+    // Digital Latitude & Longitude Coordinate Grid Matrix
     const gridMat = new THREE.LineBasicMaterial({
-      color: new THREE.Color("#C5A059"),
+      color: new THREE.Color("#FFAE00"),
       transparent: true,
-      opacity: 0.07,
+      opacity: 0.18,
+      blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
 
@@ -355,8 +373,8 @@ export function UnitedCarriersGlobe({
 
     // 2. Continents: Dense Dot Matrix with two-tone lighting
     const dotTex = createDotTexture(64);
-    const edgeMat = createLitPointsMaterial(0.0036, dotTex);
-    const fillMat = createLitPointsMaterial(0.0028, dotTex);
+    const edgeMat = createLitPointsMaterial(0.0058, dotTex);
+    const fillMat = createLitPointsMaterial(0.0044, dotTex);
     const shaderMats = [edgeMat, fillMat];
 
     fetch("/globe/globe-data.json")
@@ -384,11 +402,12 @@ export function UnitedCarriersGlobe({
       })
       .catch((err) => console.error("Globe data load error:", err));
 
-    // Restrained Metallic Gold Continent Outline Lines
+    // Golden Continent Outline Lines - laser-sharp glowing vector lines
     const coastlineMat = new THREE.LineBasicMaterial({
-      color: new THREE.Color("#D4AF37"),
+      color: new THREE.Color("#FFC000"),
       transparent: true,
-      opacity: 0.60,
+      opacity: 0.95,
+      blending: THREE.AdditiveBlending,
       depthTest: true,
     });
 
@@ -420,12 +439,12 @@ export function UnitedCarriersGlobe({
     let targetFocusRotY: number | null = null;
     let targetFocusRotX: number | null = null;
 
-    const beaconTex = createBeaconStarburstTexture(64);
+    const beaconTex = createBeaconStarburstTexture(128);
     const beaconMat = new THREE.SpriteMaterial({
       map: beaconTex,
-      color: new THREE.Color("#D4AF37"),
+      color: new THREE.Color("#FFAE19"),
       transparent: true,
-      opacity: 0.95,
+      blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
 
@@ -441,39 +460,43 @@ export function UnitedCarriersGlobe({
         pos.clone().normalize()
       );
 
-      // Clean institutional data beacon sprite
+      // Starburst glowing sprite
       const sprite = new THREE.Sprite(beaconMat);
-      const s = (node.size || 1) * 0.038;
+      const s = (node.size || 1) * 0.065;
       sprite.scale.set(s, s, 1);
       pinGroup.add(sprite);
 
-      // Single soft breathing radar ripple ring
-      const innerRing = new THREE.Mesh(
-        new THREE.RingGeometry(0.92, 1, 32),
-        new THREE.MeshBasicMaterial({
-          color: new THREE.Color("#D4AF37"),
-          transparent: true,
-          opacity: 0.45,
-          side: THREE.DoubleSide,
-          depthWrite: false,
-        })
-      );
-      innerRing.scale.set(0.016, 0.016, 1);
-      pinGroup.add(innerRing);
-      activeRipples.push({ ring: innerRing, phaseOffset: 0 });
+      // 3 Multi-phase animated radar ripple rings
+      [0, 0.33, 0.66].forEach((offset) => {
+        const ring = new THREE.Mesh(
+          new THREE.RingGeometry(0.90, 1, 32),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color("#FFB81C"),
+            transparent: true,
+            opacity: 0.85,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+          })
+        );
+        ring.scale.set(0.015, 0.015, 1);
+        pinGroup.add(ring);
+        activeRipples.push({ ring, phaseOffset: offset });
+      });
 
-      // Outer static concentric gold halo
+      // Outer static concentric golden halo
       const outerRing = new THREE.Mesh(
-        new THREE.RingGeometry(0.96, 1, 32),
+        new THREE.RingGeometry(0.95, 1, 32),
         new THREE.MeshBasicMaterial({
-          color: new THREE.Color("#C5A059"),
+          color: new THREE.Color("#FF8C00"),
           transparent: true,
-          opacity: 0.20,
+          opacity: 0.40,
+          blending: THREE.AdditiveBlending,
           side: THREE.DoubleSide,
           depthWrite: false,
         })
       );
-      outerRing.scale.set(0.026, 0.026, 1);
+      outerRing.scale.set(0.035, 0.035, 1);
       pinGroup.add(outerRing);
 
       // Interactive CSS2D Label badge with rich mineral tooltip and click-to-center
@@ -506,7 +529,7 @@ export function UnitedCarriersGlobe({
       globeGroup.add(pinGroup);
     });
 
-    // 4. Elegant Metallic Gold Network Filaments
+    // 4. Sleek, Radiant Golden Network Arcs
     const CORRIDORS: CorridorArc[] = [
       { from: [41.5, -116.2], to: [-24.3, -69.1], alt: 0.05 }, // USA/Canada -> Chile/Peru
       { from: [41.5, -116.2], to: [67.8, 20.2], alt: 0.06 }, // USA/Canada -> Sweden/Finland
@@ -520,9 +543,10 @@ export function UnitedCarriersGlobe({
     const timeUniform = { uTime: { value: 2.5 } };
 
     const arcMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("#D4AF37"),
+      color: new THREE.Color("#FFA414"),
       transparent: true,
-      opacity: 0.60,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
       side: THREE.DoubleSide,
       depthWrite: false,
     });
@@ -546,10 +570,10 @@ export function UnitedCarriersGlobe({
         .replace(
           "#include <color_fragment>",
           `#include <color_fragment>
-          float p = mod(uTime * 1.5 + vOffset * 3.0, 3.0);
+          float p = mod(uTime * 1.8 + vOffset * 3.0, 3.0);
           float pulse = smoothstep(0.0, 0.4, 0.4 - abs(vProgress * 3.0 - p));
-          diffuseColor.rgb += vec3(0.35, 0.28, 0.12) * pulse * 1.2;
-          diffuseColor.a *= mix(0.40, 0.90, pulse);
+          diffuseColor.rgb += vec3(0.5, 0.35, 0.15) * pulse * 2.0;
+          diffuseColor.a *= mix(0.35, 1.0, pulse);
           `
         );
     };
@@ -570,8 +594,8 @@ export function UnitedCarriersGlobe({
       }
 
       const curve = new THREE.CatmullRomCurve3(pts);
-      // Extremely thin elegant gold filament (0.00055)
-      const geom = new THREE.TubeGeometry(curve, 36, 0.00055, 4, false);
+      // Delicate thin filament (0.0008)
+      const geom = new THREE.TubeGeometry(curve, 36, 0.0008, 4, false);
       const count = geom.attributes.position.count;
       const offset = (idx * 0.6180339887) % 1;
       geom.setAttribute(
@@ -583,6 +607,60 @@ export function UnitedCarriersGlobe({
       mesh.renderOrder = 2;
       globeGroup.add(mesh);
     });
+
+    // 5. Floating Concentric Digital Orbital Rings (Matching Reference Image)
+    const orbitGroup = new THREE.Group();
+    orbitGroup.name = "DigitalOrbitalRings";
+
+    // Primary Equatorial Dashed Data Ring (R = 1.14)
+    const orbitRing1Geom = new THREE.BufferGeometry();
+    const orbitRing1Pts: number[] = [];
+    const orbitSegs = 144;
+    for (let i = 0; i < orbitSegs; i++) {
+      if (i % 3 === 0) continue; // Dashed digital tick spacing
+      const t1 = (i / orbitSegs) * Math.PI * 2;
+      const t2 = ((i + 0.65) / orbitSegs) * Math.PI * 2;
+      orbitRing1Pts.push(Math.cos(t1) * 1.14, 0, Math.sin(t1) * 1.14);
+      orbitRing1Pts.push(Math.cos(t2) * 1.14, 0, Math.sin(t2) * 1.14);
+    }
+    orbitRing1Geom.setAttribute("position", new THREE.Float32BufferAttribute(orbitRing1Pts, 3));
+    const orbitRing1Mat = new THREE.LineBasicMaterial({
+      color: new THREE.Color("#FFAE00"),
+      transparent: true,
+      opacity: 0.35,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const orbitRing1 = new THREE.LineSegments(orbitRing1Geom, orbitRing1Mat);
+    orbitRing1.rotation.x = 0.26;
+    orbitRing1.rotation.z = -0.12;
+    orbitGroup.add(orbitRing1);
+
+    // Secondary Outer Dotted Coordinate Ring (R = 1.24)
+    const orbitPointsCount = 96;
+    const orbitRing2Geom = new THREE.BufferGeometry();
+    const orbitRing2Pos = new Float32Array(orbitPointsCount * 3);
+    for (let i = 0; i < orbitPointsCount; i++) {
+      const angle = (i / orbitPointsCount) * Math.PI * 2;
+      orbitRing2Pos[i * 3] = Math.cos(angle) * 1.24;
+      orbitRing2Pos[i * 3 + 1] = Math.sin(angle * 3) * 0.035;
+      orbitRing2Pos[i * 3 + 2] = Math.sin(angle) * 1.24;
+    }
+    orbitRing2Geom.setAttribute("position", new THREE.BufferAttribute(orbitRing2Pos, 3));
+    const orbitPointsMat = new THREE.PointsMaterial({
+      color: new THREE.Color("#FFC000"),
+      size: 0.016,
+      transparent: true,
+      opacity: 0.60,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const orbitPoints = new THREE.Points(orbitRing2Geom, orbitPointsMat);
+    orbitPoints.rotation.x = -0.20;
+    orbitPoints.rotation.y = 0.35;
+    orbitGroup.add(orbitPoints);
+
+    globeGroup.add(orbitGroup);
 
     // Resize Handler with ResizeObserver
     const handleResize = () => {

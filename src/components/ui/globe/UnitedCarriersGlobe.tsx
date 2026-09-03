@@ -222,18 +222,15 @@ export function UnitedCarriersGlobe({
     globeGroup.rotation.z = 0.03;
     scene.add(globeGroup);
 
-    // 1. 3D Ocean Sphere with Continent Land Mask, Digital Texture & Holographic Scanlines
+    // 1. 3D Ocean Sphere with Deep Obsidian Cyber Base & Holographic Scanlines
     const landTex = new THREE.TextureLoader().load("/globe/land-mask.png");
     landTex.colorSpace = THREE.SRGBColorSpace;
-    const digitalGlobeTex = new THREE.TextureLoader().load("/images/digital_mining_globe.jpg");
-    digitalGlobeTex.colorSpace = THREE.SRGBColorSpace;
 
     const oceanGeom = new THREE.SphereGeometry(0.995, 64, 64);
     const oceanMat = new THREE.ShaderMaterial({
       uniforms: {
         uCamPos: { value: camera.position },
         uLandMap: { value: landTex },
-        uDigitalGlobe: { value: digitalGlobeTex },
         uTime: { value: 0 },
       },
       vertexShader: `
@@ -249,7 +246,6 @@ export function UnitedCarriersGlobe({
       `,
       fragmentShader: `
         uniform sampler2D uLandMap;
-        uniform sampler2D uDigitalGlobe;
         uniform vec3 uCamPos;
         uniform float uTime;
         varying vec3 vWorldPos;
@@ -261,43 +257,36 @@ export function UnitedCarriersGlobe({
           float nd = max(0.0, dot(viewDir, norm));
           float fresnel = 1.0 - nd;
 
-          // Sample land mask & digital globe texture
+          // Sample land mask: rich dark obsidian / cyber navy
           vec4 mapCol = texture2D(uLandMap, vUv);
-          vec4 digiCol = texture2D(uDigitalGlobe, vUv);
 
-          // Subtle sunlit illumination with gold-sapphire tint
+          // Deep contrasty cyber ocean (dark obsidian midnight)
+          vec3 deepOcean = vec3(0.015, 0.035, 0.075);
+          vec3 continentTint = vec3(0.035, 0.070, 0.130);
+          vec3 surfaceCol = mix(deepOcean, continentTint, mapCol.r);
+
+          // Subtle directional sun shading
           vec3 sunDir = normalize(vec3(0.65, 0.55, 0.45));
           float sunDot = max(0.0, dot(norm, sunDir));
-          vec3 deepOcean = vec3(0.025, 0.065, 0.135);
-          vec3 baseCol = mix(deepOcean, mapCol.rgb, 0.60);
-          vec3 surfaceCol = mix(baseCol, digiCol.rgb * 1.15, 0.45) * (0.85 + 0.35 * sunDot);
+          surfaceCol *= (0.75 + 0.35 * sunDot);
 
           // Digital holographic scanlines and telemetry coordinate pulse
           float scanline = sin(vUv.y * 220.0 + uTime * 1.5) * 0.5 + 0.5;
           float latGrid = smoothstep(0.96, 1.0, sin(vUv.y * 36.0 * 3.14159));
           float lngGrid = smoothstep(0.96, 1.0, sin(vUv.x * 72.0 * 3.14159));
           float digitalMesh = max(latGrid, lngGrid);
-          surfaceCol += vec3(0.06, 0.18, 0.35) * scanline * 0.08;
-          surfaceCol += vec3(0.95, 0.75, 0.20) * digitalMesh * 0.12;
+          surfaceCol += vec3(0.04, 0.12, 0.25) * scanline * 0.10;
+          surfaceCol += vec3(0.85, 0.65, 0.15) * digitalMesh * 0.08;
 
-          // Top-left electric atmospheric horizon crescent glow matching reference image
+          // Crisp crystalline electric cyan-gold horizon rim sheen
           vec3 crescentDir = normalize(vec3(-0.48, 0.72, 0.50));
           float crescentDot = max(0.0, dot(norm, crescentDir));
-          float crescentBloom = pow(fresnel, 2.6) * (0.40 + 3.0 * pow(crescentDot, 1.8));
-          vec3 crescentCol = mix(vec3(1.0, 0.82, 0.30), vec3(0.70, 0.92, 1.0), pow(crescentDot, 1.4));
-          surfaceCol += crescentCol * crescentBloom * 0.95;
+          float crescentBloom = pow(fresnel, 3.0) * (0.30 + 2.2 * pow(crescentDot, 2.0));
+          vec3 crescentCol = mix(vec3(0.95, 0.75, 0.18), vec3(0.55, 0.85, 1.0), pow(crescentDot, 1.6));
+          surfaceCol += crescentCol * crescentBloom * 0.85;
 
-          // Digital gold rim glow at horizon
-          vec3 goldRim = vec3(1.0, 0.75, 0.15);
-          surfaceCol += goldRim * pow(fresnel, 4.0) * 0.45;
-
-          // Atmosphere rim blend into website background (#DFE7F3)
-          vec3 skyBg = vec3(0.875, 0.906, 0.953);
-          float rimHaze = pow(fresnel, 2.6);
-          surfaceCol = mix(surfaceCol, skyBg, rimHaze * 0.85);
-
-          // Smooth edge alpha feathering
-          float edgeAlpha = smoothstep(0.0, 0.12, nd);
+          // Crystalline outer edge alpha
+          float edgeAlpha = smoothstep(0.0, 0.08, nd);
           gl_FragColor = vec4(surfaceCol, edgeAlpha * 0.98);
         }
       `,
@@ -359,39 +348,6 @@ export function UnitedCarriersGlobe({
     const gridLines = new THREE.LineSegments(gridGeom, gridMat);
     gridLines.renderOrder = 1;
     globeGroup.add(gridLines);
-
-    // Outer atmospheric glow halo feathering the globe rim directly into the website background
-    const haloGeom = new THREE.SphereGeometry(1.02, 64, 64);
-    const haloMat = new THREE.ShaderMaterial({
-      uniforms: {
-        uCamPos: { value: camera.position },
-      },
-      vertexShader: `
-        varying vec3 vWorldPos;
-        void main() {
-          vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 uCamPos;
-        varying vec3 vWorldPos;
-        void main() {
-          vec3 norm = normalize(vWorldPos);
-          vec3 viewDir = normalize(uCamPos - vWorldPos);
-          float nd = max(0.0, dot(viewDir, norm));
-          float alpha = pow(1.0 - nd, 3.5) * 0.48;
-          vec3 skyBg = vec3(0.875, 0.906, 0.953);
-          gl_FragColor = vec4(skyBg, alpha);
-        }
-      `,
-      side: THREE.BackSide,
-      transparent: true,
-      depthWrite: false,
-    });
-    const haloMesh = new THREE.Mesh(haloGeom, haloMat);
-    haloMesh.renderOrder = 0;
-    globeGroup.add(haloMesh);
 
     // 2. Continents: Dense Dot Matrix with two-tone lighting
     const dotTex = createDotTexture(64);
@@ -914,8 +870,6 @@ export function UnitedCarriersGlobe({
       beaconTex.dispose();
       oceanGeom.dispose();
       oceanMat.dispose();
-      haloGeom.dispose();
-      haloMat.dispose();
       edgeMat.dispose();
       fillMat.dispose();
       beaconMat.dispose();

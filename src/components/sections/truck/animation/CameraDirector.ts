@@ -49,16 +49,16 @@ export class CameraDirector {
         fov: 38,
       };
     } else if (sp < 0.70) {
-      // Phase 2: Centered level trailing view directly behind the truck in the cave
+      // Phase 2: Centered level trailing view behind the truck in the cave (pulled further back)
       this.tempPos.set(
-        truckPos.x - 32.0,
-        3.2,
+        truckPos.x - 44.0,
+        3.8,
         0.0
       );
 
       this.tempLookAt.set(
-        truckPos.x + 18.0,
-        2.8,
+        truckPos.x + 12.0,
+        2.6,
         0.0
       );
 

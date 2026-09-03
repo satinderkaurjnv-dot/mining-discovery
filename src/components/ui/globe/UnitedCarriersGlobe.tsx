@@ -43,11 +43,10 @@ function createDotTexture(size = 64): THREE.CanvasTexture {
   const ctx = canvas.getContext("2d")!;
   ctx.clearRect(0, 0, size, size);
   const r = size / 2;
-  // Exact #FFAE00 golden color matching the lines
-  const grad = ctx.createRadialGradient(r, r, r * 0.75, r, r, r);
-  grad.addColorStop(0, "rgba(255, 174, 0, 1)");
-  grad.addColorStop(0.85, "rgba(255, 174, 0, 1)");
-  grad.addColorStop(1, "rgba(255, 174, 0, 0)");
+  const grad = ctx.createRadialGradient(r, r, r * 0.60, r, r, r);
+  grad.addColorStop(0, "rgba(255, 255, 255, 1)");
+  grad.addColorStop(0.80, "rgba(255, 255, 255, 0.95)");
+  grad.addColorStop(1, "rgba(255, 255, 255, 0)");
   ctx.fillStyle = grad;
   ctx.beginPath();
   ctx.arc(r, r, r - 0.5, 0, Math.PI * 2);
@@ -349,8 +348,8 @@ export function UnitedCarriersGlobe({
 
     // 2. Continents: Dense Dot Matrix with two-tone lighting
     const dotTex = createDotTexture(64);
-    const edgeMat = createLitPointsMaterial(0.0055, dotTex);
-    const fillMat = createLitPointsMaterial(0.0042, dotTex);
+    const edgeMat = createLitPointsMaterial(0.0072, dotTex);
+    const fillMat = createLitPointsMaterial(0.0058, dotTex);
     const shaderMats = [edgeMat, fillMat];
 
     fetch("/globe/globe-data.json")

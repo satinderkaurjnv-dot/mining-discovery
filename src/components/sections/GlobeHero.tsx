@@ -162,6 +162,24 @@ export const GlobeHero: React.FC = () => {
             <ArrowRight className="relative z-10 h-4 w-4 text-[#0B1F3A] transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[#B8860B]" />
           </Link>
         </div>
+
+        {/* Subtle Executive Trust Proof Micro-Bar */}
+        <div className="hero-rise [animation-delay:460ms] mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[11px] sm:text-[12px] font-medium tracking-wide text-[#64748B]">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#B8860B]" />
+            150K+ Monthly Mining Decision-Makers
+          </span>
+          <span className="hidden sm:inline text-[#CBD5E1]">•</span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#B8860B]" />
+            Tier-1 Institutional Investor Reach
+          </span>
+          <span className="hidden sm:inline text-[#CBD5E1]">•</span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#B8860B]" />
+            Global Mineral Discovery Coverage
+          </span>
+        </div>
       </div>
 
       {/* Globe range — exactly as in https://mining-discovery-rho.vercel.app/ */}

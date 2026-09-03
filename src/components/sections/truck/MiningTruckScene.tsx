@@ -75,15 +75,22 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
       1000
     );
 
-    // --- Lighting Rig Setup --------------------------------------------------
-    const ambientLight = new THREE.AmbientLight(0xFFFFFF, 1.2);
+    // --- Cinematic Photorealistic Mining Lighting Rig -----------------------
+    const ambientLight = new THREE.AmbientLight(0xE2E8F0, 0.75);
     scene.add(ambientLight);
 
-    const sunLight = new THREE.DirectionalLight(0xFFFAED, 2.2);
-    sunLight.position.set(40, 60, 30);
+    // Primary High-Angle Mining Sunlight (Natural Daylight 5400K)
+    const sunLight = new THREE.DirectionalLight(0xFFFAF0, 2.4);
+    sunLight.position.set(45, 65, 35);
     scene.add(sunLight);
 
-    const hemiLight = new THREE.HemisphereLight(0xFFFFFF, 0x444444, 0.6);
+    // Subtle Secondary Rim Light to define heavy steel chassis contours
+    const rimLight = new THREE.DirectionalLight(0xCBD5E1, 0.9);
+    rimLight.position.set(-35, 25, -25);
+    scene.add(rimLight);
+
+    // Natural Sky/Ground Atmospheric Bounce Fill
+    const hemiLight = new THREE.HemisphereLight(0xF8FAFC, 0x64748B, 0.85);
     scene.add(hemiLight);
 
     // --- Instantiate Mine Environment & Ore Particle Systems ----------------

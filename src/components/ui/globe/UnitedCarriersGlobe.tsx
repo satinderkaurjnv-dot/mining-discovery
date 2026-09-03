@@ -220,61 +220,7 @@ export function UnitedCarriersGlobe({
     earthMesh.renderOrder = 0;
     globeGroup.add(earthMesh);
 
-    // 2. 3D Golden Orbital Rings with Real 3D Metallic Spheres/Beads (Matching Image)
-    const orbitGroup = new THREE.Group();
-    orbitGroup.name = "GoldenOrbitalRings";
-
-    const ringMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("#FFBE1A"),
-      transparent: true,
-      opacity: 0.65,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-
-    const beadMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color("#FFF2B2"),
-      transparent: true,
-      opacity: 0.95,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-
-    const beadGeom = new THREE.SphereGeometry(0.016, 16, 16);
-    const movingBeads: { mesh: THREE.Mesh; ringRadius: number; speed: number; angle: number; rotX: number; rotY: number; rotZ: number }[] = [];
-
-    // Ring Configurations
-    const RINGS_CONFIG = [
-      { r: 1.13, rotX: 0.35, rotY: 0.15, rotZ: -0.20, beadCount: 8, speed: 0.22 },
-      { r: 1.18, rotX: -0.45, rotY: 0.30, rotZ: 0.25, beadCount: 7, speed: -0.18 },
-      { r: 1.24, rotX: 0.75, rotY: -0.25, rotZ: 0.40, beadCount: 9, speed: 0.15 },
-    ];
-
-    RINGS_CONFIG.forEach((cfg) => {
-      const ringGeom = new THREE.TorusGeometry(cfg.r, 0.0016, 8, 80);
-      const ringMesh = new THREE.Mesh(ringGeom, ringMat);
-      ringMesh.rotation.set(cfg.rotX, cfg.rotY, cfg.rotZ);
-      orbitGroup.add(ringMesh);
-
-      for (let i = 0; i < cfg.beadCount; i++) {
-        const angle = (i / cfg.beadCount) * Math.PI * 2;
-        const bead = new THREE.Mesh(beadGeom, beadMat);
-        orbitGroup.add(bead);
-        movingBeads.push({
-          mesh: bead,
-          ringRadius: cfg.r,
-          speed: cfg.speed,
-          angle,
-          rotX: cfg.rotX,
-          rotY: cfg.rotY,
-          rotZ: cfg.rotZ,
-        });
-      }
-    });
-
-    globeGroup.add(orbitGroup);
-
-    // 3. Highlighted Global Mining Hub Jurisdictions
+    // 2. Highlighted Global Mining Hub Jurisdictions
     const HUB_NODES: HubNode[] = [
       { id: "na", name: "USA & CANADA", region: "TIER-1 JURISDICTION", minerals: "GOLD • COPPER • CRITICAL MINERALS", lat: 41.5, lng: -116.2, size: 1.4 },
       { id: "sa", name: "CHILE & PERU", region: "GLOBAL COPPER BELT", minerals: "COPPER • LITHIUM • SILVER", lat: -24.3, lng: -69.1, size: 1.4 },
@@ -541,18 +487,6 @@ export function UnitedCarriersGlobe({
       const now = performance.now();
       const delta = (now - lastTime) / 1000;
       lastTime = now;
-
-      // 3D Moving Metallic Beads along orbital rings
-      movingBeads.forEach((b) => {
-        b.angle += b.speed * delta;
-        const x = Math.cos(b.angle) * b.ringRadius;
-        const y = Math.sin(b.angle) * b.ringRadius;
-        const localPos = new THREE.Vector3(x, y, 0);
-        tempEuler.set(b.rotX, b.rotY, b.rotZ);
-        tempMat.makeRotationFromEuler(tempEuler);
-        localPos.applyMatrix4(tempMat);
-        b.mesh.position.copy(localPos);
-      });
 
       // Rotation / Interaction Physics
       if (isDragging) {

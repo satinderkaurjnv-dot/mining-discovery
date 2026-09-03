@@ -229,18 +229,26 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
         oreParticles.updateOreTrail(delta, pathTransform.position, false);
       }
 
-      // 2. Camera Director Update - zero out mouse wobble on highway to keep road 100% straight and stable
-      const dummyVec = new THREE.Vector3();
-      const activeMouseX = sp >= 0.70 ? 0 : mouseX;
-      const activeMouseY = sp >= 0.70 ? 0 : mouseY;
-      const camFrame = cameraDirector.getFrame(sp, pathTransform.position, dummyVec, activeMouseX, activeMouseY);
-      
-      const lerpSpeed = Math.min(delta * 6, 1);
-      camera.position.lerp(camFrame.position, lerpSpeed);
-      camera.up.copy(camFrame.up || new THREE.Vector3(0, 1, 0));
-      camera.lookAt(camFrame.lookAt);
-      camera.fov = THREE.MathUtils.lerp(camera.fov, camFrame.fov, lerpSpeed);
-      camera.updateProjectionMatrix();
+      // 2. Camera Director Update - rock-solid vertical road alignment matching Pic 2
+      if (sp >= 0.84) {
+        camera.position.set(185.0, 38.0, pathTransform.position.z);
+        camera.up.set(0, 0, -1);
+        camera.lookAt(185.0, 0.0, pathTransform.position.z);
+        camera.fov = 34;
+        camera.updateProjectionMatrix();
+      } else {
+        const dummyVec = new THREE.Vector3();
+        const activeMouseX = sp >= 0.70 ? 0 : mouseX;
+        const activeMouseY = sp >= 0.70 ? 0 : mouseY;
+        const camFrame = cameraDirector.getFrame(sp, pathTransform.position, dummyVec, activeMouseX, activeMouseY);
+        
+        const lerpSpeed = Math.min(delta * 6, 1);
+        camera.position.lerp(camFrame.position, lerpSpeed);
+        camera.up.copy(camFrame.up || new THREE.Vector3(0, 1, 0));
+        camera.lookAt(camFrame.lookAt);
+        camera.fov = THREE.MathUtils.lerp(camera.fov, camFrame.fov, lerpSpeed);
+        camera.updateProjectionMatrix();
+      }
 
       // 3. Timeline Phase Sync & Telemetry
       const phase = MiningTimeline.getPhase(sp);

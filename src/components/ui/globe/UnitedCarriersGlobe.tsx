@@ -10,8 +10,6 @@ import {
 interface HubNode {
   id: string;
   name: string;
-  region: string;
-  minerals: string;
   lat: number;
   lng: number;
   size?: number;
@@ -21,6 +19,11 @@ interface CorridorArc {
   from: [number, number];
   to: [number, number];
   alt: number;
+}
+
+interface GlobeData {
+  edge: number[];
+  fill: number[];
 }
 
 function latLngToVec3(lat: number, lng: number, r = 1): THREE.Vector3 {
@@ -33,7 +36,30 @@ function latLngToVec3(lat: number, lng: number, r = 1): THREE.Vector3 {
   );
 }
 
-// Radiant golden starburst flare texture for beacon hubs
+// Crisp circular dot texture for point cloud
+function createDotTexture(size = 64): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  ctx.clearRect(0, 0, size, size);
+  const r = size / 2;
+  // Exact #FFAE00 golden color matching the lines
+  const grad = ctx.createRadialGradient(r, r, r * 0.75, r, r, r);
+  grad.addColorStop(0, "rgba(255, 174, 0, 1)");
+  grad.addColorStop(0.85, "rgba(255, 174, 0, 1)");
+  grad.addColorStop(1, "rgba(255, 174, 0, 0)");
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(r, r, r - 0.5, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.fill();
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  return tex;
+}
+
+// Radiant starburst flare texture for beacon hubs
 function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
@@ -41,19 +67,19 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   const c = size / 2;
   ctx.clearRect(0, 0, size, size);
 
-  // Soft spherical golden bloom with digital lens flare
+  // Soft spherical fiery-gold bloom matching media_1788173039083.png
   const bloom = ctx.createRadialGradient(c, c, 0, c, c, c);
   bloom.addColorStop(0, "rgba(255, 255, 255, 1)");
-  bloom.addColorStop(0.20, "rgba(255, 235, 150, 0.98)");
-  bloom.addColorStop(0.45, "rgba(255, 165, 0, 0.90)");
-  bloom.addColorStop(0.75, "rgba(255, 100, 0, 0.40)");
-  bloom.addColorStop(1, "rgba(255, 100, 0, 0)");
+  bloom.addColorStop(0.16, "rgba(255, 235, 150, 0.98)");
+  bloom.addColorStop(0.38, "rgba(255, 165, 0, 0.88)");
+  bloom.addColorStop(0.70, "rgba(255, 95, 0, 0.35)");
+  bloom.addColorStop(1, "rgba(255, 140, 0, 0)");
   ctx.fillStyle = bloom;
   ctx.fillRect(0, 0, size, size);
 
-  // Precision 4-point cross flares
-  ctx.strokeStyle = "rgba(255, 255, 245, 0.98)";
-  ctx.lineWidth = 2.2;
+  // Cross flares
+  ctx.strokeStyle = "rgba(255, 255, 240, 0.96)";
+  ctx.lineWidth = 2.0;
   ctx.beginPath();
   ctx.moveTo(c, 0);
   ctx.lineTo(c, size);
@@ -65,6 +91,64 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   tex.minFilter = THREE.LinearFilter;
   tex.magFilter = THREE.LinearFilter;
   return tex;
+}
+
+// Points material shader with pure golden dots
+function createLitPointsMaterial(
+  size: number,
+  mapTexture: THREE.CanvasTexture
+): THREE.PointsMaterial {
+  const mat = new THREE.PointsMaterial({
+    size,
+    sizeAttenuation: true,
+    depthWrite: false,
+    transparent: true,
+    color: new THREE.Color("#FFAE00"),
+    map: mapTexture,
+    alphaTest: 0,
+    opacity: 1,
+  });
+
+  mat.onBeforeCompile = (shader) => {
+    shader.uniforms.uCamPos = { value: new THREE.Vector3() };
+
+    shader.vertexShader = shader.vertexShader
+      .replace(
+        "#include <common>",
+        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nuniform vec3 uCamPos;`
+      )
+      .replace(
+        "#include <begin_vertex>",
+        `#include <begin_vertex>\nvWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvNorm = normalize(vWorldPos);`
+      )
+      .replace(
+        "#include <project_vertex>",
+        `#include <project_vertex>\nfloat ndv = dot(normalize(uCamPos - vWorldPos), vNorm);\ngl_PointSize *= mix(0.6, 1.0, smoothstep(0.0, 0.25, ndv));`
+      );
+
+    shader.fragmentShader = shader.fragmentShader
+      .replace(
+        "#include <common>",
+        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nuniform vec3 uCamPos;`
+      )
+      .replace(
+        "#include <color_fragment>",
+        `#include <color_fragment>
+        vec3 viewDir = normalize(uCamPos - vWorldPos);
+        float nd = dot(viewDir, vNorm);
+        if (nd <= 0.0) discard;
+
+        // Exact golden color matching the lines (#FFAE00)
+        vec3 exactLineGold = vec3(1.0, 0.682, 0.0);
+        diffuseColor.rgb = exactLineGold;
+        diffuseColor.a *= smoothstep(0.0, 0.12, nd);
+        `
+      );
+
+    mat.userData.shader = shader;
+  };
+
+  return mat;
 }
 
 export function UnitedCarriersGlobe({
@@ -95,24 +179,22 @@ export function UnitedCarriersGlobe({
     const width = container.clientWidth || 700;
     const height = container.clientHeight || 700;
 
-    // WebGL Renderer with High-DPI Retina Crispness
+    // WebGL Renderer
     const renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
       antialias: true,
       powerPreference: "high-performance",
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(width, height, false);
     renderer.setClearColor(0x000000, 0);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.08;
 
     // CSS2D Label Renderer
     const labelRenderer = new CSS2DRenderer({ element: labelContainer });
     labelRenderer.setSize(width, height);
 
+    // Scene & Camera matching https://mining-discovery-rho.vercel.app/ math
     const FOV = 34;
     const FIT = 0.9;
     const halfFov = THREE.MathUtils.degToRad(FOV) / 2;
@@ -125,24 +207,21 @@ export function UnitedCarriersGlobe({
 
     // Master Globe Group
     const globeGroup = new THREE.Group();
+    // Tilt to show Atlantic, North America, South America, Africa, India, and Australia
+    globeGroup.rotation.x = 0.20;
+    globeGroup.rotation.y = 3.90;
+    globeGroup.rotation.z = 0.03;
     scene.add(globeGroup);
 
-    // 1. Crystal-Clear Ultra-HD Texture Loading with Max Anisotropy
-    const earthTex = new THREE.TextureLoader().load("/globe/digital-earth.jpg", (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.minFilter = THREE.LinearMipmapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      tex.generateMipmaps = true;
-      tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
-      tex.needsUpdate = true;
-    });
+    // 1. 3D Ocean Sphere with Continent Land Mask (Dark Ocean, Lighter Continents)
+    const landTex = new THREE.TextureLoader().load("/globe/land-mask.png");
+    landTex.colorSpace = THREE.SRGBColorSpace;
 
-    const earthGeom = new THREE.SphereGeometry(0.998, 64, 64);
-    const earthMat = new THREE.ShaderMaterial({
+    const oceanGeom = new THREE.SphereGeometry(0.995, 64, 64);
+    const oceanMat = new THREE.ShaderMaterial({
       uniforms: {
         uCamPos: { value: camera.position },
-        uEarthMap: { value: earthTex },
-        uTime: { value: 0 },
+        uLandMap: { value: landTex },
       },
       vertexShader: `
         varying vec3 vWorldPos;
@@ -156,9 +235,8 @@ export function UnitedCarriersGlobe({
         }
       `,
       fragmentShader: `
-        uniform sampler2D uEarthMap;
+        uniform sampler2D uLandMap;
         uniform vec3 uCamPos;
-        uniform float uTime;
         varying vec3 vWorldPos;
         varying vec3 vNorm;
         varying vec2 vUv;
@@ -168,47 +246,129 @@ export function UnitedCarriersGlobe({
           float nd = max(0.0, dot(viewDir, norm));
           float fresnel = 1.0 - nd;
 
-          // Sample Ultra-HD Digital Earth Texture
-          vec4 earthCol = texture2D(uEarthMap, vUv);
+          // Sample land mask: dark ocean where there are no continents, lighter sapphire where continents are
+          vec4 mapCol = texture2D(uLandMap, vUv);
 
-          // Subtle sun lighting enhancement
-          vec3 sunDir = normalize(vec3(0.55, 0.60, 0.50));
+          // Subtle sunlit illumination
+          vec3 sunDir = normalize(vec3(0.65, 0.55, 0.45));
           float sunDot = max(0.0, dot(norm, sunDir));
-          vec3 surfaceCol = earthCol.rgb * (0.92 + 0.25 * sunDot);
+          vec3 surfaceCol = mapCol.rgb * (0.85 + 0.35 * sunDot);
 
-          // Atmospheric Crescent Horizon Sheen
-          vec3 crescentDir = normalize(vec3(-0.45, 0.75, 0.45));
-          float crescentDot = max(0.0, dot(norm, crescentDir));
-          float crescentBloom = pow(fresnel, 3.2) * (0.25 + 1.8 * pow(crescentDot, 2.0));
-          vec3 crescentCol = mix(vec3(0.15, 0.60, 1.0), vec3(0.85, 0.95, 1.0), crescentDot);
-          surfaceCol += crescentCol * crescentBloom * 0.45;
+          // Atmosphere rim blend into website background (#DFE7F3)
+          vec3 skyBg = vec3(0.875, 0.906, 0.953);
+          float rimHaze = pow(fresnel, 2.6);
+          surfaceCol = mix(surfaceCol, skyBg, rimHaze * 0.85);
 
-          // Crisp outer edge anti-aliasing
-          float edgeAlpha = smoothstep(0.0, 0.05, nd);
-          gl_FragColor = vec4(surfaceCol, edgeAlpha * earthCol.a);
+          // Smooth edge alpha feathering so the globe dissolves seamlessly into the website canvas
+          float edgeAlpha = smoothstep(0.0, 0.12, nd);
+          gl_FragColor = vec4(surfaceCol, edgeAlpha * 0.98);
         }
       `,
       transparent: true,
       depthWrite: true,
     });
-    const earthMesh = new THREE.Mesh(earthGeom, earthMat);
-    earthMesh.renderOrder = 0;
-    globeGroup.add(earthMesh);
+    const oceanMesh = new THREE.Mesh(oceanGeom, oceanMat);
+    oceanMesh.renderOrder = 0;
+    globeGroup.add(oceanMesh);
 
-    // 2. Highlighted Global Mining Hub Jurisdictions
-    const HUB_NODES: HubNode[] = [
+    // Outer atmospheric glow halo feathering the globe rim directly into the website background
+    const haloGeom = new THREE.SphereGeometry(1.02, 64, 64);
+    const haloMat = new THREE.ShaderMaterial({
+      uniforms: {
+        uCamPos: { value: camera.position },
+      },
+      vertexShader: `
+        varying vec3 vWorldPos;
+        void main() {
+          vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 uCamPos;
+        varying vec3 vWorldPos;
+        void main() {
+          vec3 norm = normalize(vWorldPos);
+          vec3 viewDir = normalize(uCamPos - vWorldPos);
+          float nd = max(0.0, dot(viewDir, norm));
+          float alpha = pow(1.0 - nd, 3.5) * 0.48;
+          vec3 skyBg = vec3(0.875, 0.906, 0.953);
+          gl_FragColor = vec4(skyBg, alpha);
+        }
+      `,
+      side: THREE.BackSide,
+      transparent: true,
+      depthWrite: false,
+    });
+    const haloMesh = new THREE.Mesh(haloGeom, haloMat);
+    haloMesh.renderOrder = 0;
+    globeGroup.add(haloMesh);
+
+    // 2. Continents: Dense Dot Matrix with two-tone lighting
+    const dotTex = createDotTexture(64);
+    const edgeMat = createLitPointsMaterial(0.0055, dotTex);
+    const fillMat = createLitPointsMaterial(0.0042, dotTex);
+    const shaderMats = [edgeMat, fillMat];
+
+    fetch("/globe/globe-data.json")
+      .then((res) => res.json())
+      .then((data: GlobeData) => {
+        if (isDisposed) return;
+
+        const edgeGeom = new THREE.BufferGeometry();
+        edgeGeom.setAttribute(
+          "position",
+          new THREE.BufferAttribute(new Float32Array(data.edge), 3)
+        );
+        const edgePoints = new THREE.Points(edgeGeom, edgeMat);
+        edgePoints.renderOrder = 1;
+        globeGroup.add(edgePoints);
+
+        const fillGeom = new THREE.BufferGeometry();
+        fillGeom.setAttribute(
+          "position",
+          new THREE.BufferAttribute(new Float32Array(data.fill), 3)
+        );
+        const fillPoints = new THREE.Points(fillGeom, fillMat);
+        fillPoints.renderOrder = 1;
+        globeGroup.add(fillPoints);
+      })
+      .catch((err) => console.error("Globe data load error:", err));
+
+    // Golden Continent Outline Lines - crisp razor-sharp vector lines
+    const coastlineMat = new THREE.LineBasicMaterial({
+      color: new THREE.Color("#FFAE00"),
+      transparent: false,
+      depthTest: true,
+    });
+
+    fetch("/globe/coastline-segments.json")
+      .then((res) => res.json())
+      .then((segments: number[]) => {
+        if (isDisposed) return;
+        const geom = new THREE.BufferGeometry();
+        geom.setAttribute(
+          "position",
+          new THREE.BufferAttribute(new Float32Array(segments), 3)
+        );
+        const lines = new THREE.LineSegments(geom, coastlineMat);
+        lines.renderOrder = 2;
+        globeGroup.add(lines);
+      })
+      .catch((err) => console.error("Coastline load error:", err));
+
+    // 3. Highlighted Mining Hub Jurisdictions with mineral metadata & interactive tooltips
+    const HUB_NODES: (HubNode & { minerals: string; region: string })[] = [
       { id: "na", name: "USA & CANADA", region: "TIER-1 JURISDICTION", minerals: "GOLD • COPPER • CRITICAL MINERALS", lat: 41.5, lng: -116.2, size: 1.4 },
       { id: "sa", name: "CHILE & PERU", region: "GLOBAL COPPER BELT", minerals: "COPPER • LITHIUM • SILVER", lat: -24.3, lng: -69.1, size: 1.4 },
       { id: "eu", name: "SWEDEN & FINLAND", region: "NORDIC BATTERY METALS", minerals: "IRON ORE • NICKEL • RARE EARTHS", lat: 67.8, lng: 20.2, size: 1.35 },
       { id: "afr", name: "SOUTH AFRICA", region: "STRATEGIC MINERAL BASIN", minerals: "PGM • MANGANESE • GOLD", lat: -26.4, lng: 27.4, size: 1.35 },
-      { id: "me", name: "SAUDI & MIDDLE EAST", region: "CRITICAL MINERALS CORRIDOR", minerals: "PHOSPHATE • GOLD • COPPER", lat: 24.7, lng: 46.7, size: 1.35 },
-      { id: "asia", name: "CENTRAL ASIA & MONGOLIA", region: "OREBELT BASIN", minerals: "COPPER • GOLD • URANIUM", lat: 43.0, lng: 106.8, size: 1.4 },
+      { id: "asia", name: "MONGOLIA & CENTRAL ASIA", region: "OREBELT CORRIDOR", minerals: "COPPER • GOLD • URANIUM", lat: 43.0, lng: 106.8, size: 1.4 },
       { id: "aus", name: "WESTERN AUSTRALIA", region: "PREMIER RESOURCE HUB", minerals: "IRON ORE • GOLD • LITHIUM", lat: -30.7, lng: 121.5, size: 1.4 },
     ];
 
     let targetFocusRotY: number | null = null;
     let targetFocusRotX: number | null = null;
-    let lastInteractionTime = performance.now();
 
     const beaconTex = createBeaconStarburstTexture(128);
     const beaconMat = new THREE.SpriteMaterial({
@@ -233,7 +393,7 @@ export function UnitedCarriersGlobe({
 
       // Starburst glowing sprite
       const sprite = new THREE.Sprite(beaconMat);
-      const s = (node.size || 1) * 0.068;
+      const s = (node.size || 1) * 0.062;
       sprite.scale.set(s, s, 1);
       pinGroup.add(sprite);
 
@@ -255,6 +415,21 @@ export function UnitedCarriersGlobe({
         activeRipples.push({ ring, phaseOffset: offset });
       });
 
+      // Outer static concentric golden halo
+      const outerRing = new THREE.Mesh(
+        new THREE.RingGeometry(0.95, 1, 32),
+        new THREE.MeshBasicMaterial({
+          color: new THREE.Color("#FF8C00"),
+          transparent: true,
+          opacity: 0.40,
+          blending: THREE.AdditiveBlending,
+          side: THREE.DoubleSide,
+          depthWrite: false,
+        })
+      );
+      outerRing.scale.set(0.035, 0.035, 1);
+      pinGroup.add(outerRing);
+
       // Interactive CSS2D Label badge with rich mineral tooltip and click-to-center
       const labelDiv = document.createElement("button");
       labelDiv.className = "globe-country-badge group";
@@ -270,6 +445,7 @@ export function UnitedCarriersGlobe({
         </span>
       `;
 
+      // Click to focus and center on this mining capital
       labelDiv.addEventListener("click", (e) => {
         e.stopPropagation();
         targetFocusRotY = -(node.lng + 90) * (Math.PI / 180);
@@ -284,16 +460,16 @@ export function UnitedCarriersGlobe({
       globeGroup.add(pinGroup);
     });
 
-    // 4. 3D Glowing Golden Trade Corridors
+    // 4. Golden Network Arcs & Filaments (#F5A900)
+    // 4. Sleek, Elegant Golden Network Arcs (#FFA414)
     const CORRIDORS: CorridorArc[] = [
-      { from: [41.5, -116.2], to: [-24.3, -69.1], alt: 0.06 }, // USA/Canada -> Chile/Peru
-      { from: [41.5, -116.2], to: [67.8, 20.2], alt: 0.07 }, // USA/Canada -> Sweden/Finland
-      { from: [67.8, 20.2], to: [24.7, 46.7], alt: 0.06 }, // Sweden/Finland -> Middle East
-      { from: [24.7, 46.7], to: [-26.4, 27.4], alt: 0.06 }, // Middle East -> South Africa
-      { from: [67.8, 20.2], to: [43.0, 106.8], alt: 0.06 }, // Sweden/Finland -> Mongolia
-      { from: [43.0, 106.8], to: [-30.7, 121.5], alt: 0.07 }, // Mongolia -> Western Australia
-      { from: [-26.4, 27.4], to: [-30.7, 121.5], alt: 0.07 }, // South Africa -> Western Australia
-      { from: [-24.3, -69.1], to: [-26.4, 27.4], alt: 0.07 }, // Chile/Peru -> South Africa
+      { from: [41.5, -116.2], to: [-24.3, -69.1], alt: 0.05 }, // USA/Canada -> Chile/Peru
+      { from: [41.5, -116.2], to: [67.8, 20.2], alt: 0.06 }, // USA/Canada -> Sweden/Finland
+      { from: [67.8, 20.2], to: [-26.4, 27.4], alt: 0.06 }, // Sweden/Finland -> South Africa
+      { from: [67.8, 20.2], to: [43.0, 106.8], alt: 0.05 }, // Sweden/Finland -> Mongolia
+      { from: [43.0, 106.8], to: [-30.7, 121.5], alt: 0.06 }, // Mongolia -> Western Australia
+      { from: [-26.4, 27.4], to: [-30.7, 121.5], alt: 0.06 }, // South Africa -> Western Australia
+      { from: [-24.3, -69.1], to: [-26.4, 27.4], alt: 0.06 }, // Chile/Peru -> South Africa
     ];
 
     const timeUniform = { uTime: { value: 2.5 } };
@@ -328,7 +504,7 @@ export function UnitedCarriersGlobe({
           `#include <color_fragment>
           float p = mod(uTime * 1.8 + vOffset * 3.0, 3.0);
           float pulse = smoothstep(0.0, 0.4, 0.4 - abs(vProgress * 3.0 - p));
-          diffuseColor.rgb += vec3(0.6, 0.45, 0.20) * pulse * 2.2;
+          diffuseColor.rgb += vec3(0.5, 0.35, 0.15) * pulse * 2.0;
           diffuseColor.a *= mix(0.35, 1.0, pulse);
           `
         );
@@ -350,7 +526,8 @@ export function UnitedCarriersGlobe({
       }
 
       const curve = new THREE.CatmullRomCurve3(pts);
-      const geom = new THREE.TubeGeometry(curve, 36, 0.0010, 4, false);
+      // Delicate thin filament (0.0008) instead of thick bulging tube (0.0018)
+      const geom = new THREE.TubeGeometry(curve, 36, 0.0008, 4, false);
       const count = geom.attributes.position.count;
       const offset = (idx * 0.6180339887) % 1;
       geom.setAttribute(
@@ -363,7 +540,7 @@ export function UnitedCarriersGlobe({
       globeGroup.add(mesh);
     });
 
-    // Resize Handler
+    // Resize Handler with ResizeObserver
     const handleResize = () => {
       if (!container || !canvas || !labelContainer) return;
       const w = container.clientWidth;
@@ -378,12 +555,13 @@ export function UnitedCarriersGlobe({
     const resizeObserver = new ResizeObserver(() => handleResize());
     resizeObserver.observe(container);
 
-    // Interactive Hand Drag Controls
+    // Hand Drag & Rotate Controls (Smooth interactive spinning with hand/mouse/touch)
     let isDragging = false;
     let previousPointerX = 0;
     let previousPointerY = 0;
     let velocityX = 0;
     let velocityY = 0;
+    let lastInteractionTime = 0;
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0 && e.pointerType === "mouse") return;
@@ -406,6 +584,7 @@ export function UnitedCarriersGlobe({
       previousPointerX = e.clientX;
       previousPointerY = e.clientY;
 
+      // On touch, allow native vertical scroll if vertical motion dominates
       if (e.pointerType === "touch" && Math.abs(deltaY) > Math.abs(deltaX) * 1.5) {
         return;
       }
@@ -413,8 +592,11 @@ export function UnitedCarriersGlobe({
       const sensitivity = 0.0055;
       globeGroup.rotation.y += deltaX * sensitivity;
       globeGroup.rotation.x += deltaY * sensitivity;
+
+      // Clamp vertical pitch so the globe doesn't invert
       globeGroup.rotation.x = Math.max(-0.80, Math.min(0.80, globeGroup.rotation.x));
 
+      // Momentum velocity for smooth gliding
       velocityX = deltaX * sensitivity;
       velocityY = deltaY * sensitivity;
       lastInteractionTime = performance.now();
@@ -436,15 +618,16 @@ export function UnitedCarriersGlobe({
     container.addEventListener("pointerup", onPointerUp);
     container.addEventListener("pointercancel", onPointerUp);
 
-    // Magnetic Cursor Tilt
+    // Magnetic Cursor Tilt Tracking
+    let mouseTiltX = 0;
+    let mouseTiltY = 0;
     const onContainerPointerMove = (e: PointerEvent) => {
       if (!isDragging) {
         const rect = container.getBoundingClientRect();
         const mx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
         const my = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
-        camera.position.x = THREE.MathUtils.lerp(camera.position.x, mx * 0.35, 0.05);
-        camera.position.y = THREE.MathUtils.lerp(camera.position.y, -my * 0.35, 0.05);
-        camera.lookAt(0, 0, 0);
+        mouseTiltX = mx * 0.08;
+        mouseTiltY = my * 0.06;
       }
     };
     container.addEventListener("pointermove", onContainerPointerMove, { passive: true });
@@ -452,8 +635,6 @@ export function UnitedCarriersGlobe({
     // Render Animation Loop
     let lastTime = performance.now();
     const tempWorldPos = new THREE.Vector3();
-    const tempEuler = new THREE.Euler();
-    const tempMat = new THREE.Matrix4();
 
     const animate = () => {
       if (isDisposed) return;
@@ -463,10 +644,11 @@ export function UnitedCarriersGlobe({
       const delta = (now - lastTime) / 1000;
       lastTime = now;
 
-      // Rotation / Interaction Physics
+      // Hand Dragging, Target Focus Navigation, Scroll Tour, or Ambient Kinetic Glide
       if (isDragging) {
-        // Direct dragging
+        // Direct hand dragging
       } else if (targetFocusRotY !== null && targetFocusRotX !== null) {
+        // Smooth cinematic ease directly to clicked mining jurisdiction
         let diffY = targetFocusRotY - globeGroup.rotation.y;
         while (diffY > Math.PI) diffY -= Math.PI * 2;
         while (diffY < -Math.PI) diffY += Math.PI * 2;
@@ -474,7 +656,7 @@ export function UnitedCarriersGlobe({
         globeGroup.rotation.y += diffY * 0.09;
         globeGroup.rotation.x = THREE.MathUtils.lerp(globeGroup.rotation.x, targetFocusRotX, 0.09);
 
-        const targetScale = 1.25;
+        const targetScale = 1.28;
         globeGroup.scale.setScalar(THREE.MathUtils.lerp(globeGroup.scale.x, targetScale, 0.08));
 
         if (Math.abs(diffY) < 0.005 && Math.abs(targetFocusRotX - globeGroup.rotation.x) < 0.005) {
@@ -482,7 +664,7 @@ export function UnitedCarriersGlobe({
           targetFocusRotX = null;
         }
       } else if (scrollRef.current > 0.003) {
-        // Scroll tour transition
+        // Scroll-driven tour: smoothly rotate and zoom into each highlighted country one by one
         const p = scrollRef.current;
         const totalSegments = HUB_NODES.length - 1;
         const s = Math.min(Math.max(p * totalSegments, 0), totalSegments);
@@ -497,8 +679,12 @@ export function UnitedCarriersGlobe({
         while (dLng < -180) dLng += 360;
         const targetLng = HUB_NODES[idx].lng + dLng * easeT;
 
+        // Desired rotation bringing the target country to front center
         const desiredRotY = -(targetLng + 90) * (Math.PI / 180);
         const desiredRotX = (targetLat - 10) * (Math.PI / 180);
+
+        // Zoom scale: zooms in deep on each country (1.38x), slight pullback during transit (1.15x)
+        const targetZoom = 1.38 - 0.23 * Math.sin(localT * Math.PI);
 
         let diffY = desiredRotY - globeGroup.rotation.y;
         while (diffY > Math.PI) diffY -= Math.PI * 2;
@@ -507,15 +693,20 @@ export function UnitedCarriersGlobe({
         globeGroup.rotation.y += diffY * 0.08;
         globeGroup.rotation.x = THREE.MathUtils.lerp(globeGroup.rotation.x, desiredRotX, 0.08);
 
+        const curScale = globeGroup.scale.x;
+        const nextScale = THREE.MathUtils.lerp(curScale, targetZoom, 0.08);
+        globeGroup.scale.set(nextScale, nextScale, nextScale);
+
         timeUniform.uTime.value += 0.002;
       } else {
-        // Ambient smooth inertia gliding
+        // At rest / top: smooth inertia friction + subtle auto-rotation + magnetic cursor tilt
         globeGroup.rotation.y += velocityX;
         globeGroup.rotation.x += velocityY;
         globeGroup.rotation.x = Math.max(-0.80, Math.min(0.80, globeGroup.rotation.x));
         velocityX *= 0.92;
         velocityY *= 0.92;
 
+        // Auto-rotation resumes gently when not interacting
         if (now - lastInteractionTime > 1200) {
           const turn = 0.0014 * (delta / 0.0166);
           globeGroup.rotation.y += turn;
@@ -537,8 +728,12 @@ export function UnitedCarriersGlobe({
       });
 
       // Update shader uniforms
-      earthMat.uniforms.uCamPos.value.copy(camera.position);
-      earthMat.uniforms.uTime.value = now * 0.001;
+      oceanMat.uniforms.uCamPos.value.copy(camera.position);
+      shaderMats.forEach((mat) => {
+        if (mat.userData.shader) {
+          mat.userData.shader.uniforms.uCamPos.value.copy(camera.position);
+        }
+      });
 
       // Occlude labels when on the back side of the Earth
       labelObjects.forEach(({ obj, pos }) => {
@@ -565,11 +760,17 @@ export function UnitedCarriersGlobe({
       container.removeEventListener("pointerup", onPointerUp);
       container.removeEventListener("pointercancel", onPointerUp);
       renderer.dispose();
-      earthTex.dispose();
+      dotTex.dispose();
+      landTex.dispose();
       beaconTex.dispose();
-      earthGeom.dispose();
-      earthMat.dispose();
+      oceanGeom.dispose();
+      oceanMat.dispose();
+      haloGeom.dispose();
+      haloMat.dispose();
+      edgeMat.dispose();
+      fillMat.dispose();
       beaconMat.dispose();
+      coastlineMat.dispose();
       arcMat.dispose();
     };
   }, []);
@@ -602,30 +803,30 @@ export function UnitedCarriersGlobe({
           pointer-events: auto;
           cursor: pointer;
           font-family: var(--font-geist-mono, monospace), monospace;
-          background: rgba(11, 27, 48, 0.90);
+          background: rgba(11, 31, 58, 0.88);
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(255, 174, 0, 0.45);
+          border: 1px solid rgba(184, 134, 11, 0.55);
           border-radius: 4px;
           padding: 2.5px 7px;
           transform: translate(-50%, -145%);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55), 0 0 10px rgba(255, 174, 0, 0.15);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55), 0 0 10px rgba(184, 134, 11, 0.25);
           transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           user-select: none;
         }
 
         .globe-country-badge:hover {
-          background: rgba(11, 27, 48, 0.98);
-          border-color: rgba(255, 174, 0, 0.90);
-          transform: translate(-50%, -152%) scale(1.08);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.75), 0 0 16px rgba(255, 174, 0, 0.35);
+          background: rgba(11, 31, 58, 0.96);
+          border-color: #FFAE00;
+          transform: translate(-50%, -155%) scale(1.12);
+          box-shadow: 0 6px 22px rgba(0, 0, 0, 0.75), 0 0 16px rgba(255, 174, 0, 0.5);
           z-index: 50;
         }
 
         .badge-header {
           display: flex;
           align-items: center;
-          gap: 5px;
+          gap: 4.5px;
         }
 
         .badge-dot {
@@ -656,7 +857,7 @@ export function UnitedCarriersGlobe({
         }
 
         .globe-country-badge:hover .badge-tooltip {
-          max-height: 38px;
+          max-height: 40px;
           opacity: 1;
           margin-top: 3px;
         }
@@ -672,7 +873,7 @@ export function UnitedCarriersGlobe({
           font-size: 6.5px;
           font-weight: 500;
           letter-spacing: 0.04em;
-          color: #CBD5E1;
+          color: #94A3B8;
         }
 
         @media (min-width: 640px) {
@@ -693,5 +894,3 @@ export function UnitedCarriersGlobe({
     </div>
   );
 }
-
-export default UnitedCarriersGlobe;

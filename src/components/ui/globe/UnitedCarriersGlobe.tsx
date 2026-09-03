@@ -94,7 +94,7 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   return tex;
 }
 
-// Points material shader with digital glowing golden dots and specular glint
+// Points material shader with pure digital glowing golden dots, specular glint, and digital shimmer
 function createLitPointsMaterial(
   size: number,
   mapTexture: THREE.CanvasTexture
@@ -113,11 +113,12 @@ function createLitPointsMaterial(
 
   mat.onBeforeCompile = (shader) => {
     shader.uniforms.uCamPos = { value: new THREE.Vector3() };
+    shader.uniforms.uTime = { value: 0 };
 
     shader.vertexShader = shader.vertexShader
       .replace(
         "#include <common>",
-        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nuniform vec3 uCamPos;`
+        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nuniform vec3 uCamPos;\nuniform float uTime;`
       )
       .replace(
         "#include <begin_vertex>",
@@ -131,7 +132,7 @@ function createLitPointsMaterial(
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "#include <common>",
-        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nuniform vec3 uCamPos;`
+        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nuniform vec3 uCamPos;\nuniform float uTime;`
       )
       .replace(
         "#include <color_fragment>",
@@ -144,6 +145,11 @@ function createLitPointsMaterial(
         vec3 exactLineGold = vec3(1.0, 0.74, 0.10);
         float rimGlint = pow(1.0 - nd, 2.0);
         diffuseColor.rgb = mix(exactLineGold, vec3(1.0, 0.95, 0.65), rimGlint * 0.45);
+
+        // Digital quantum data shimmer
+        float shimmer = sin(dot(vWorldPos.xyz, vec3(120.0, 45.0, 80.0)) + uTime * 3.0) * 0.5 + 0.5;
+        diffuseColor.rgb += vec3(0.30, 0.22, 0.06) * shimmer * 0.40;
+
         diffuseColor.a *= smoothstep(0.0, 0.10, nd);
         `
       );
@@ -216,7 +222,7 @@ export function UnitedCarriersGlobe({
     globeGroup.rotation.z = 0.03;
     scene.add(globeGroup);
 
-    // 1. 3D Ocean Sphere with Continent Land Mask (Dark Ocean, Lighter Continents)
+    // 1. 3D Ocean Sphere with Continent Land Mask & Holographic Scanlines
     const landTex = new THREE.TextureLoader().load("/globe/land-mask.png");
     landTex.colorSpace = THREE.SRGBColorSpace;
 
@@ -225,6 +231,7 @@ export function UnitedCarriersGlobe({
       uniforms: {
         uCamPos: { value: camera.position },
         uLandMap: { value: landTex },
+        uTime: { value: 0 },
       },
       vertexShader: `
         varying vec3 vWorldPos;
@@ -240,6 +247,7 @@ export function UnitedCarriersGlobe({
       fragmentShader: `
         uniform sampler2D uLandMap;
         uniform vec3 uCamPos;
+        uniform float uTime;
         varying vec3 vWorldPos;
         varying vec3 vNorm;
         varying vec2 vUv;
@@ -257,6 +265,14 @@ export function UnitedCarriersGlobe({
           float sunDot = max(0.0, dot(norm, sunDir));
           vec3 deepOcean = vec3(0.025, 0.065, 0.135);
           vec3 surfaceCol = mix(deepOcean, mapCol.rgb, 0.60) * (0.85 + 0.35 * sunDot);
+
+          // Digital holographic scanlines and telemetry coordinate pulse
+          float scanline = sin(vUv.y * 220.0 + uTime * 1.5) * 0.5 + 0.5;
+          float latGrid = smoothstep(0.96, 1.0, sin(vUv.y * 36.0 * 3.14159));
+          float lngGrid = smoothstep(0.96, 1.0, sin(vUv.x * 72.0 * 3.14159));
+          float digitalMesh = max(latGrid, lngGrid);
+          surfaceCol += vec3(0.06, 0.18, 0.35) * scanline * 0.08;
+          surfaceCol += vec3(0.95, 0.75, 0.20) * digitalMesh * 0.12;
 
           // Top-left electric atmospheric horizon crescent glow matching reference image
           vec3 crescentDir = normalize(vec3(-0.48, 0.72, 0.50));
@@ -850,10 +866,15 @@ export function UnitedCarriersGlobe({
       });
 
       // Update shader uniforms
+      const elapsedSec = now * 0.001;
       oceanMat.uniforms.uCamPos.value.copy(camera.position);
+      oceanMat.uniforms.uTime.value = elapsedSec;
       shaderMats.forEach((mat) => {
         if (mat.userData.shader) {
           mat.userData.shader.uniforms.uCamPos.value.copy(camera.position);
+          if (mat.userData.shader.uniforms.uTime) {
+            mat.userData.shader.uniforms.uTime.value = elapsedSec;
+          }
         }
       });
 

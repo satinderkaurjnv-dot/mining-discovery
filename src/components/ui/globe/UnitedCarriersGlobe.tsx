@@ -138,9 +138,32 @@ function createLitPointsMaterial(
         float nd = dot(viewDir, vNorm);
         if (nd <= 0.0) discard;
 
-        // Exact golden color matching the lines (#FFAE00)
-        vec3 exactLineGold = vec3(1.0, 0.682, 0.0);
-        diffuseColor.rgb = exactLineGold;
+        // Latitude on sphere Y-axis (-1 to 1)
+        float y = vNorm.y;
+
+        // Sahara desert & Middle East latitudes (y ≈ 0.15 to 0.55)
+        float isSahara = smoothstep(0.12, 0.25, y) * (1.0 - smoothstep(0.48, 0.65, y));
+        // Southern arid belts (Australia & Kalahari: y ≈ -0.55 to -0.20)
+        float isSouthDesert = smoothstep(-0.55, -0.42, y) * (1.0 - smoothstep(-0.25, -0.15, y));
+        float desertWeight = max(isSahara, isSouthDesert * 0.85);
+
+        vec3 lushGreen = vec3(0.14, 0.72, 0.36);    // Rich Vibrant Emerald Green
+        vec3 desertYellow = vec3(0.98, 0.78, 0.20); // Warm Golden-Yellow Sands
+        vec3 goldSparkle = vec3(1.0, 0.88, 0.35);   // Luminous Gold City/Node Lights
+        vec3 arcticWhite = vec3(0.92, 0.96, 1.0);   // Arctic White
+
+        vec3 pointCol = mix(lushGreen, desertYellow, desertWeight);
+        if (y > 0.78 || y < -0.78) {
+          pointCol = mix(pointCol, arcticWhite, 0.90);
+        }
+
+        // Golden night-light sparkles on mining capitals & coastlines
+        float sparkle = sin(vWorldPos.x * 45.0) * sin(vWorldPos.z * 45.0);
+        if (sparkle > 0.40) {
+          pointCol = mix(pointCol, goldSparkle, 0.85);
+        }
+
+        diffuseColor.rgb = pointCol;
         diffuseColor.a *= smoothstep(0.0, 0.12, nd);
         `
       );
@@ -303,39 +326,6 @@ export function UnitedCarriersGlobe({
     const oceanMesh = new THREE.Mesh(oceanGeom, oceanMat);
     oceanMesh.renderOrder = 0;
     globeGroup.add(oceanMesh);
-
-    // Outer atmospheric glow halo feathering the globe rim directly into the website background
-    const haloGeom = new THREE.SphereGeometry(1.02, 64, 64);
-    const haloMat = new THREE.ShaderMaterial({
-      uniforms: {
-        uCamPos: { value: camera.position },
-      },
-      vertexShader: `
-        varying vec3 vWorldPos;
-        void main() {
-          vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 uCamPos;
-        varying vec3 vWorldPos;
-        void main() {
-          vec3 norm = normalize(vWorldPos);
-          vec3 viewDir = normalize(uCamPos - vWorldPos);
-          float nd = max(0.0, dot(viewDir, norm));
-          float alpha = pow(1.0 - nd, 3.5) * 0.48;
-          vec3 skyBg = vec3(0.875, 0.906, 0.953);
-          gl_FragColor = vec4(skyBg, alpha);
-        }
-      `,
-      side: THREE.BackSide,
-      transparent: true,
-      depthWrite: false,
-    });
-    const haloMesh = new THREE.Mesh(haloGeom, haloMat);
-    haloMesh.renderOrder = 0;
-    globeGroup.add(haloMesh);
 
     // 2. Continents: Dense Dot Matrix with two-tone lighting
     const dotTex = createDotTexture(64);
@@ -798,8 +788,6 @@ export function UnitedCarriersGlobe({
       beaconTex.dispose();
       oceanGeom.dispose();
       oceanMat.dispose();
-      haloGeom.dispose();
-      haloMat.dispose();
       edgeMat.dispose();
       fillMat.dispose();
       beaconMat.dispose();

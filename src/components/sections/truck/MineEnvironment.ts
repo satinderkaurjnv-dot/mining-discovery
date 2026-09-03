@@ -121,12 +121,73 @@ export function createMineEnvironment(): MineEnvironmentSystem {
   roadMesh.receiveShadow = false;
   group.add(roadMesh);
 
+  // =========================================================================
+  // 2. ROADSIDE MINING TYPOGRAPHY (Matching unitedcarriers.com reference)
+  // =========================================================================
+  const roadsideTextures: THREE.CanvasTexture[] = [];
+  const roadsideMaterials: THREE.MeshBasicMaterial[] = [];
+  const roadsideGeoms: THREE.PlaneGeometry[] = [];
+
+  const createRoadsideSign = (line1: string, line2: string, subtitle: string, posZ: number) => {
+    if (typeof document === "undefined") return;
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 512;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, 1024, 512);
+    
+    // Subtitle badge
+    ctx.fillStyle = "#B8860B";
+    ctx.font = "bold 28px sans-serif";
+    ctx.fillText(subtitle.toUpperCase(), 40, 100);
+
+    // Main giant industrial headlines
+    ctx.fillStyle = "#0F172A";
+    ctx.font = "900 76px sans-serif";
+    ctx.fillText(line1.toUpperCase(), 40, 200);
+    ctx.fillText(line2.toUpperCase(), 40, 290);
+
+    // Subtle accent line
+    ctx.fillStyle = "#CBD5E1";
+    ctx.fillRect(40, 330, 360, 6);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    roadsideTextures.push(texture);
+
+    const signMat = new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      opacity: 0.95,
+      depthWrite: false,
+    });
+    roadsideMaterials.push(signMat);
+
+    const signGeom = new THREE.PlaneGeometry(28, 14);
+    roadsideGeoms.push(signGeom);
+
+    const signMesh = new THREE.Mesh(signGeom, signMat);
+    signMesh.rotation.x = -Math.PI / 2;
+    signMesh.position.set(146, 0.03, posZ);
+    group.add(signMesh);
+  };
+
+  createRoadsideSign("EXTRACTION", "AT EVERY SEAM", "PHASE 08 // ORE TRAMMING", 95);
+  createRoadsideSign("AUTONOMOUS", "FLEET DISPATCH", "PHASE 09 // SMART HAULAGE", 185);
+  createRoadsideSign("SUSTAINABLE", "MINE OF FUTURE", "PHASE 10 // ZERO EMISSIONS", 275);
+
   const updateRoadWidth = (_sp: number) => {};
   const updateDust = () => {};
 
   const dispose = () => {
     roadMat.dispose();
     roadGeom.dispose();
+    roadsideTextures.forEach((t) => t.dispose());
+    roadsideMaterials.forEach((m) => m.dispose());
+    roadsideGeoms.forEach((g) => g.dispose());
   };
 
   return { group, updateRoadWidth, updateDust, dispose };

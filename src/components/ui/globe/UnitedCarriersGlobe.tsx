@@ -103,7 +103,7 @@ function createLitPointsMaterial(
     sizeAttenuation: true,
     depthWrite: false,
     transparent: true,
-    color: new THREE.Color("#FFAE00"),
+    color: new THREE.Color("#FFFFFF"),
     map: mapTexture,
     alphaTest: 0,
     opacity: 1,
@@ -115,21 +115,21 @@ function createLitPointsMaterial(
     shader.vertexShader = shader.vertexShader
       .replace(
         "#include <common>",
-        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nuniform vec3 uCamPos;`
+        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nvarying vec3 vGeoPos;\nuniform vec3 uCamPos;`
       )
       .replace(
         "#include <begin_vertex>",
-        `#include <begin_vertex>\nvWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvNorm = normalize(vWorldPos);`
+        `#include <begin_vertex>\nvGeoPos = normalize(transformed);\nvWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvNorm = normalize(vWorldPos);`
       )
       .replace(
         "#include <project_vertex>",
-        `#include <project_vertex>\nfloat ndv = dot(normalize(uCamPos - vWorldPos), vNorm);\ngl_PointSize *= mix(0.6, 1.0, smoothstep(0.0, 0.25, ndv));`
+        `#include <project_vertex>\nfloat ndv = dot(normalize(uCamPos - vWorldPos), vNorm);\ngl_PointSize *= mix(0.65, 1.0, smoothstep(0.0, 0.25, ndv));`
       );
 
     shader.fragmentShader = shader.fragmentShader
       .replace(
         "#include <common>",
-        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nuniform vec3 uCamPos;`
+        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nvarying vec3 vGeoPos;\nuniform vec3 uCamPos;`
       )
       .replace(
         "#include <color_fragment>",
@@ -138,28 +138,36 @@ function createLitPointsMaterial(
         float nd = dot(viewDir, vNorm);
         if (nd <= 0.0) discard;
 
-        // Latitude on sphere Y-axis (-1 to 1)
-        float y = vNorm.y;
+        // Geographical UV coordinate from unrotated local model position
+        float lat = asin(clamp(vGeoPos.y, -1.0, 1.0));
+        float lng = atan(-vGeoPos.z, vGeoPos.x);
+        float u = lng / 6.28318530718 + 0.5;
+        float v = lat / 3.14159265359 + 0.5;
 
-        // Sahara desert & Middle East latitudes (y ≈ 0.15 to 0.55)
-        float isSahara = smoothstep(0.12, 0.25, y) * (1.0 - smoothstep(0.48, 0.65, y));
-        // Southern arid belts (Australia & Kalahari: y ≈ -0.55 to -0.20)
-        float isSouthDesert = smoothstep(-0.55, -0.42, y) * (1.0 - smoothstep(-0.25, -0.15, y));
-        float desertWeight = max(isSahara, isSouthDesert * 0.85);
+        // Sahara desert & Middle East (u ≈ 0.44 to 0.66, v ≈ 0.54 to 0.72)
+        float inSaharaU = smoothstep(0.42, 0.48, u) * (1.0 - smoothstep(0.62, 0.68, u));
+        float inSaharaV = smoothstep(0.50, 0.56, v) * (1.0 - smoothstep(0.68, 0.74, v));
+        float isSahara = inSaharaU * inSaharaV;
 
-        vec3 lushGreen = vec3(0.14, 0.72, 0.36);    // Rich Vibrant Emerald Green
-        vec3 desertYellow = vec3(0.98, 0.78, 0.20); // Warm Golden-Yellow Sands
-        vec3 goldSparkle = vec3(1.0, 0.88, 0.35);   // Luminous Gold City/Node Lights
+        // Australia & Kalahari desert (u ≈ 0.72 to 0.92, v ≈ 0.32 to 0.46)
+        float inAusU = smoothstep(0.70, 0.76, u) * (1.0 - smoothstep(0.88, 0.94, u));
+        float inAusV = smoothstep(0.30, 0.36, v) * (1.0 - smoothstep(0.44, 0.50, v));
+        float isAus = inAusU * inAusV;
+        float desertWeight = max(isSahara, isAus);
+
+        vec3 lushGreen = vec3(0.14, 0.76, 0.36);    // Rich Vibrant Emerald Green
+        vec3 desertYellow = vec3(1.0, 0.80, 0.22);  // Warm Golden-Yellow Sands
+        vec3 goldSparkle = vec3(1.0, 0.90, 0.40);   // Luminous Gold City Nodes
         vec3 arcticWhite = vec3(0.92, 0.96, 1.0);   // Arctic White
 
         vec3 pointCol = mix(lushGreen, desertYellow, desertWeight);
-        if (y > 0.78 || y < -0.78) {
+        if (v > 0.85 || v < 0.15) {
           pointCol = mix(pointCol, arcticWhite, 0.90);
         }
 
-        // Golden night-light sparkles on mining capitals & coastlines
-        float sparkle = sin(vWorldPos.x * 45.0) * sin(vWorldPos.z * 45.0);
-        if (sparkle > 0.40) {
+        // Golden night-light sparkles on mining hubs & coastlines
+        float sparkle = sin(vGeoPos.x * 55.0) * sin(vGeoPos.z * 55.0);
+        if (sparkle > 0.35) {
           pointCol = mix(pointCol, goldSparkle, 0.85);
         }
 
@@ -236,7 +244,7 @@ export function UnitedCarriersGlobe({
     globeGroup.rotation.z = 0.03;
     scene.add(globeGroup);
 
-    // 1. 3D Ocean Sphere with Continent Land Mask (Dark Ocean, Lighter Continents)
+    // 1. 3D Ocean Sphere with Continent Land Mask (Dark Ocean, Green & Yellow Continents)
     const landTex = new THREE.TextureLoader().load("/globe/land-mask.png");
     landTex.colorSpace = THREE.SRGBColorSpace;
 
@@ -249,9 +257,9 @@ export function UnitedCarriersGlobe({
       vertexShader: `
         varying vec3 vWorldPos;
         varying vec3 vNorm;
-        varying vec2 vUv;
+        varying vec3 vGeoPos;
         void main() {
-          vUv = uv;
+          vGeoPos = normalize(position);
           vNorm = normalize(normalMatrix * normal);
           vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -262,48 +270,60 @@ export function UnitedCarriersGlobe({
         uniform vec3 uCamPos;
         varying vec3 vWorldPos;
         varying vec3 vNorm;
-        varying vec2 vUv;
+        varying vec3 vGeoPos;
         void main() {
           vec3 norm = normalize(vWorldPos);
           vec3 viewDir = normalize(uCamPos - vWorldPos);
           float nd = max(0.0, dot(viewDir, norm));
           float fresnel = 1.0 - nd;
 
+          // Exact Geographical UV matching latLngToVec3 and coastline data
+          float lat = asin(clamp(vGeoPos.y, -1.0, 1.0));
+          float lng = atan(-vGeoPos.z, vGeoPos.x);
+          vec2 geoUv = vec2(lng / 6.28318530718 + 0.5, lat / 3.14159265359 + 0.5);
+
           // Sample land mask
-          vec4 mapCol = texture2D(uLandMap, vUv);
-          float isLand = mapCol.r;
+          vec4 mapCol = texture2D(uLandMap, geoUv);
+          float isLand = smoothstep(0.20, 0.60, mapCol.r);
 
           // Directional solar illumination
           vec3 sunDir = normalize(vec3(0.60, 0.55, 0.45));
           float sunDot = max(0.0, dot(norm, sunDir));
 
           // 1. Deep Royal Sapphire Ocean
-          vec3 deepOcean = vec3(0.028, 0.10, 0.24);
-          vec3 shallowOcean = vec3(0.06, 0.22, 0.44);
+          vec3 deepOcean = vec3(0.024, 0.09, 0.22);
+          vec3 shallowOcean = vec3(0.05, 0.20, 0.42);
           vec3 oceanCol = mix(deepOcean, shallowOcean, pow(sunDot, 1.8));
 
           // 2. Continent Land Finishing (Lush Green & Golden-Yellow Desert)
-          float lat = vUv.y;
-          // Sahara & Middle East desert latitudes (~15° to 35° North)
-          float isSahara = smoothstep(0.48, 0.62, lat) * (1.0 - smoothstep(0.68, 0.82, lat));
-          // Australia & Kalahari desert latitudes (~15° to 35° South)
-          float isSouthDesert = smoothstep(0.20, 0.35, lat) * (1.0 - smoothstep(0.38, 0.50, lat));
-          float desertMask = max(isSahara, isSouthDesert * 0.85);
+          float u = geoUv.x;
+          float v = geoUv.y;
 
-          vec3 desertYellow = vec3(0.86, 0.66, 0.32); // Warm Golden-Yellow Sands
-          vec3 lushGreen = vec3(0.12, 0.38, 0.22);    // Rich Emerald Vegetation
+          // Sahara desert & Middle East (u ≈ 0.44 to 0.66, v ≈ 0.54 to 0.72)
+          float inSaharaU = smoothstep(0.42, 0.48, u) * (1.0 - smoothstep(0.62, 0.68, u));
+          float inSaharaV = smoothstep(0.50, 0.56, v) * (1.0 - smoothstep(0.68, 0.74, v));
+          float isSahara = inSaharaU * inSaharaV;
+
+          // Australia & Kalahari desert (u ≈ 0.72 to 0.92, v ≈ 0.32 to 0.46)
+          float inAusU = smoothstep(0.70, 0.76, u) * (1.0 - smoothstep(0.88, 0.94, u));
+          float inAusV = smoothstep(0.30, 0.36, v) * (1.0 - smoothstep(0.44, 0.50, v));
+          float isAus = inAusU * inAusV;
+          float desertMask = max(isSahara, isAus);
+
+          vec3 desertYellow = vec3(0.88, 0.68, 0.28); // Warm Golden-Yellow Sands
+          vec3 lushGreen = vec3(0.10, 0.42, 0.22);    // Rich Emerald Vegetation
           vec3 arcticWhite = vec3(0.92, 0.96, 1.0);    // Arctic Ice Cap
 
           vec3 landBase = mix(lushGreen, desertYellow, desertMask);
-          if (lat > 0.86 || lat < 0.14) {
+          if (v > 0.85 || v < 0.15) {
             landBase = mix(landBase, arcticWhite, 0.92);
           }
 
           // Golden City Lights & Shimmering Mineral Nodes
-          float cityCluster = sin(vUv.x * 280.0) * sin(vUv.y * 280.0);
+          float cityCluster = sin(geoUv.x * 280.0) * sin(geoUv.y * 280.0);
           cityCluster = smoothstep(0.55, 0.95, cityCluster);
-          vec3 goldNightLights = vec3(1.0, 0.76, 0.18);
-          vec3 landSurface = landBase * (0.75 + 0.42 * sunDot) + goldNightLights * cityCluster * 0.70;
+          vec3 goldNightLights = vec3(1.0, 0.78, 0.20);
+          vec3 landSurface = landBase * (0.80 + 0.45 * sunDot) + goldNightLights * cityCluster * 0.65;
 
           // Blend ocean and land
           vec3 surfaceCol = mix(oceanCol, landSurface, isLand);

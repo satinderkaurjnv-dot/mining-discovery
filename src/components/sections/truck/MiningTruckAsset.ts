@@ -63,12 +63,61 @@ function createTireTreadTexture(): THREE.CanvasTexture | null {
   return tex;
 }
 
+function createDumpBedBlackGoldTexture(): THREE.CanvasTexture | null {
+  if (typeof document === "undefined") return null;
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+
+  // 1. Heavy Industrial Charcoal Carbon Black Base
+  ctx.fillStyle = "#121418";
+  ctx.fillRect(0, 0, 1024, 1024);
+
+  // 2. Bold Caterpillar Gold Side Panels & Structural Ribs
+  ctx.fillStyle = "#F2A900";
+  // Golden top canopy band
+  ctx.fillRect(0, 0, 1024, 220);
+
+  // Golden side body panels
+  ctx.fillRect(60, 260, 904, 380);
+
+  // Deep black inner contrast panel
+  ctx.fillStyle = "#161920";
+  ctx.fillRect(100, 300, 824, 300);
+
+  // Golden diagonal hazard accent bars
+  ctx.strokeStyle = "#F2A900";
+  ctx.lineWidth = 18;
+  for (let x = 120; x < 900; x += 120) {
+    ctx.beginPath();
+    ctx.moveTo(x, 300);
+    ctx.lineTo(x + 60, 600);
+    ctx.stroke();
+  }
+
+  // Golden lower structural beam
+  ctx.fillStyle = "#E5A108";
+  ctx.fillRect(40, 720, 944, 140);
+
+  // Black reinforcement bolt plates
+  ctx.fillStyle = "#0A0B0E";
+  ctx.fillRect(80, 750, 864, 80);
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.wrapS = THREE.RepeatWrapping;
+  tex.wrapT = THREE.RepeatWrapping;
+  return tex;
+}
+
 export class MiningTruckAssetManager {
   private truckGroup: THREE.Group = new THREE.Group();
   private wheels: THREE.Object3D[] = [];
   private headlights: THREE.Light[];
   private dumpBed?: THREE.Object3D;
   private tireTexture: THREE.CanvasTexture | null = null;
+  private dumpBedTexture: THREE.CanvasTexture | null = null;
   public isLoaded: boolean = false;
 
   constructor() {
@@ -114,6 +163,9 @@ export class MiningTruckAssetManager {
           if (!this.tireTexture) {
             this.tireTexture = createTireTreadTexture();
           }
+          if (!this.dumpBedTexture) {
+            this.dumpBedTexture = createDumpBedBlackGoldTexture();
+          }
 
           const blackTireMat = new THREE.MeshStandardMaterial({
             color: new THREE.Color("#050506"), // Deep Pure Black Rubber for All 4 Wheel Hubs & Tires
@@ -150,10 +202,14 @@ export class MiningTruckAssetManager {
             roughness: 0.38,
           });
 
+          // Two-Tone Black and Golden Dump Bed Bowl Material
           const dumpBedMat = new THREE.MeshStandardMaterial({
-            color: new THREE.Color("#C47D13"),
-            metalness: 0.58,
-            roughness: 0.42,
+            color: new THREE.Color("#FFFFFF"),
+            map: this.dumpBedTexture,
+            bumpMap: this.dumpBedTexture,
+            bumpScale: 0.05,
+            metalness: 0.65,
+            roughness: 0.35,
           });
 
           const goldBodyMat = new THREE.MeshStandardMaterial({

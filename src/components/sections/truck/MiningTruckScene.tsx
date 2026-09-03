@@ -209,14 +209,9 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
           loaderGroup.visible = true;
           loaderGroup.position.copy(pathTransform.position);
           
-          if (sp < 0.85) {
-            // Phase 3A: Pinned side-profile view - bowl/bucket on the RIGHT side
-            loaderGroup.rotation.set(0, Math.PI, 0);
-          } else {
-            // Phase 3B & 3C: Turn into top-down vertical road
-            const yaw = Math.atan2(pathTransform.tangent.z, pathTransform.tangent.x);
-            loaderGroup.rotation.set(0, -yaw - Math.PI / 2, 0);
-          }
+          // Continuous, smooth steering: front bowl faces right along straight road and steers smoothly through turn
+          const yaw = Math.atan2(pathTransform.tangent.z, pathTransform.tangent.x);
+          loaderGroup.rotation.set(0, Math.PI - yaw, 0);
 
           const moveDist = pathTransform.position.distanceTo(prevPosition);
           prevPosition.copy(pathTransform.position);

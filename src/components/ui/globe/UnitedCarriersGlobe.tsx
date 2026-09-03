@@ -36,30 +36,6 @@ function latLngToVec3(lat: number, lng: number, r = 1): THREE.Vector3 {
   );
 }
 
-// Golden night-lights digital dot texture matching reference image
-function createDotTexture(size = 64): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = size;
-  const ctx = canvas.getContext("2d")!;
-  ctx.clearRect(0, 0, size, size);
-  const r = size / 2;
-  // High-intensity radiant white-hot core to golden night-lights halo
-  const grad = ctx.createRadialGradient(r, r, 0, r, r, r);
-  grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-  grad.addColorStop(0.30, "rgba(255, 220, 80, 1)");
-  grad.addColorStop(0.70, "rgba(255, 155, 0, 0.95)");
-  grad.addColorStop(1, "rgba(200, 100, 0, 0)");
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.arc(r, r, r - 0.5, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.fill();
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  return tex;
-}
-
 // Radiant golden starburst flare texture for beacon hubs
 function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
@@ -92,72 +68,6 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   tex.minFilter = THREE.LinearFilter;
   tex.magFilter = THREE.LinearFilter;
   return tex;
-}
-
-// Points material shader with digital glowing golden dots, specular glint, and digital shimmer
-function createLitPointsMaterial(
-  size: number,
-  mapTexture: THREE.CanvasTexture
-): THREE.PointsMaterial {
-  const mat = new THREE.PointsMaterial({
-    size,
-    sizeAttenuation: true,
-    depthWrite: false,
-    transparent: true,
-    color: new THREE.Color("#FFBE1A"),
-    map: mapTexture,
-    alphaTest: 0,
-    opacity: 1,
-    blending: THREE.AdditiveBlending,
-  });
-
-  mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uCamPos = { value: new THREE.Vector3() };
-    shader.uniforms.uTime = { value: 0 };
-
-    shader.vertexShader = shader.vertexShader
-      .replace(
-        "#include <common>",
-        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nuniform vec3 uCamPos;\nuniform float uTime;`
-      )
-      .replace(
-        "#include <begin_vertex>",
-        `#include <begin_vertex>\nvWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvNorm = normalize(vWorldPos);`
-      )
-      .replace(
-        "#include <project_vertex>",
-        `#include <project_vertex>\nfloat ndv = dot(normalize(uCamPos - vWorldPos), vNorm);\ngl_PointSize *= mix(0.70, 1.15, smoothstep(0.0, 0.30, ndv));`
-      );
-
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        "#include <common>",
-        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nuniform vec3 uCamPos;\nuniform float uTime;`
-      )
-      .replace(
-        "#include <color_fragment>",
-        `#include <color_fragment>
-        vec3 viewDir = normalize(uCamPos - vWorldPos);
-        float nd = dot(viewDir, vNorm);
-        if (nd <= 0.0) discard;
-
-        // Radiant digital gold with specular highlight
-        vec3 exactLineGold = vec3(1.0, 0.74, 0.10);
-        float rimGlint = pow(1.0 - nd, 2.0);
-        diffuseColor.rgb = mix(exactLineGold, vec3(1.0, 0.95, 0.65), rimGlint * 0.45);
-
-        // Digital quantum data shimmer
-        float shimmer = sin(dot(vWorldPos.xyz, vec3(120.0, 45.0, 80.0)) + uTime * 3.0) * 0.5 + 0.5;
-        diffuseColor.rgb += vec3(0.30, 0.22, 0.06) * shimmer * 0.40;
-
-        diffuseColor.a *= smoothstep(0.0, 0.10, nd);
-        `
-      );
-
-    mat.userData.shader = shader;
-  };
-
-  return mat;
 }
 
 export function UnitedCarriersGlobe({
@@ -336,42 +246,11 @@ export function UnitedCarriersGlobe({
     gridLines.renderOrder = 1;
     globeGroup.add(gridLines);
 
-    // 2. Continents: Dense Dot Matrix with two-tone lighting
-    const dotTex = createDotTexture(64);
-    const edgeMat = createLitPointsMaterial(0.0058, dotTex);
-    const fillMat = createLitPointsMaterial(0.0044, dotTex);
-    const shaderMats = [edgeMat, fillMat];
-
-    fetch("/globe/globe-data.json")
-      .then((res) => res.json())
-      .then((data: GlobeData) => {
-        if (isDisposed) return;
-
-        const edgeGeom = new THREE.BufferGeometry();
-        edgeGeom.setAttribute(
-          "position",
-          new THREE.BufferAttribute(new Float32Array(data.edge), 3)
-        );
-        const edgePoints = new THREE.Points(edgeGeom, edgeMat);
-        edgePoints.renderOrder = 1;
-        globeGroup.add(edgePoints);
-
-        const fillGeom = new THREE.BufferGeometry();
-        fillGeom.setAttribute(
-          "position",
-          new THREE.BufferAttribute(new Float32Array(data.fill), 3)
-        );
-        const fillPoints = new THREE.Points(fillGeom, fillMat);
-        fillPoints.renderOrder = 1;
-        globeGroup.add(fillPoints);
-      })
-      .catch((err) => console.error("Globe data load error:", err));
-
-    // Golden Continent Outline Lines
+    // Luminous Golden Continent Outlines
     const coastlineMat = new THREE.LineBasicMaterial({
       color: new THREE.Color("#FFC000"),
       transparent: true,
-      opacity: 0.90,
+      opacity: 0.80,
       blending: THREE.AdditiveBlending,
       depthTest: true,
     });
@@ -817,14 +696,6 @@ export function UnitedCarriersGlobe({
       const elapsedSec = now * 0.001;
       oceanMat.uniforms.uCamPos.value.copy(camera.position);
       oceanMat.uniforms.uTime.value = elapsedSec;
-      shaderMats.forEach((mat) => {
-        if (mat.userData.shader) {
-          mat.userData.shader.uniforms.uCamPos.value.copy(camera.position);
-          if (mat.userData.shader.uniforms.uTime) {
-            mat.userData.shader.uniforms.uTime.value = elapsedSec;
-          }
-        }
-      });
 
       // Occlude labels when on the back side of the Earth
       labelObjects.forEach(({ obj, pos }) => {
@@ -851,13 +722,10 @@ export function UnitedCarriersGlobe({
       container.removeEventListener("pointerup", onPointerUp);
       container.removeEventListener("pointercancel", onPointerUp);
       renderer.dispose();
-      dotTex.dispose();
       earthTex.dispose();
       beaconTex.dispose();
       oceanGeom.dispose();
       oceanMat.dispose();
-      edgeMat.dispose();
-      fillMat.dispose();
       beaconMat.dispose();
       coastlineMat.dispose();
       arcMat.dispose();

@@ -357,15 +357,18 @@ export function UnitedCarriersGlobe({
       })
       .catch((err) => console.error("Coastline load error:", err));
 
-    // 3. Highlighted Mining Countries matching https://mining-discovery-rho.vercel.app/
-    const HUB_NODES: HubNode[] = [
-      { id: "na", name: "USA & CANADA", lat: 41.5, lng: -116.2, size: 1.4 },
-      { id: "sa", name: "CHILE & PERU", lat: -24.3, lng: -69.1, size: 1.4 },
-      { id: "eu", name: "SWEDEN & FINLAND", lat: 67.8, lng: 20.2, size: 1.35 },
-      { id: "afr", name: "SOUTH AFRICA", lat: -26.4, lng: 27.4, size: 1.35 },
-      { id: "asia", name: "MONGOLIA & CENTRAL ASIA", lat: 43.0, lng: 106.8, size: 1.4 },
-      { id: "aus", name: "WESTERN AUSTRALIA", lat: -30.7, lng: 121.5, size: 1.4 },
+    // 3. Highlighted Mining Hub Jurisdictions with mineral metadata & interactive tooltips
+    const HUB_NODES: (HubNode & { minerals: string; region: string })[] = [
+      { id: "na", name: "USA & CANADA", region: "TIER-1 JURISDICTION", minerals: "GOLD • COPPER • CRITICAL MINERALS", lat: 41.5, lng: -116.2, size: 1.4 },
+      { id: "sa", name: "CHILE & PERU", region: "GLOBAL COPPER BELT", minerals: "COPPER • LITHIUM • SILVER", lat: -24.3, lng: -69.1, size: 1.4 },
+      { id: "eu", name: "SWEDEN & FINLAND", region: "NORDIC BATTERY METALS", minerals: "IRON ORE • NICKEL • RARE EARTHS", lat: 67.8, lng: 20.2, size: 1.35 },
+      { id: "afr", name: "SOUTH AFRICA", region: "STRATEGIC MINERAL BASIN", minerals: "PGM • MANGANESE • GOLD", lat: -26.4, lng: 27.4, size: 1.35 },
+      { id: "asia", name: "MONGOLIA & CENTRAL ASIA", region: "OREBELT CORRIDOR", minerals: "COPPER • GOLD • URANIUM", lat: 43.0, lng: 106.8, size: 1.4 },
+      { id: "aus", name: "WESTERN AUSTRALIA", region: "PREMIER RESOURCE HUB", minerals: "IRON ORE • GOLD • LITHIUM", lat: -30.7, lng: 121.5, size: 1.4 },
     ];
+
+    let targetFocusRotY: number | null = null;
+    let targetFocusRotX: number | null = null;
 
     const beaconTex = createBeaconStarburstTexture(128);
     const beaconMat = new THREE.SpriteMaterial({
@@ -376,7 +379,7 @@ export function UnitedCarriersGlobe({
       depthWrite: false,
     });
 
-    const activeRipples: THREE.Mesh[] = [];
+    const activeRipples: { ring: THREE.Mesh; phaseOffset: number }[] = [];
     const labelObjects: Array<{ obj: CSS2DObject; pos: THREE.Vector3 }> = [];
 
     HUB_NODES.forEach((node) => {
@@ -388,47 +391,68 @@ export function UnitedCarriersGlobe({
         pos.clone().normalize()
       );
 
-      // Starburst sprite
+      // Starburst glowing sprite
       const sprite = new THREE.Sprite(beaconMat);
-      const s = (node.size || 1) * 0.058;
+      const s = (node.size || 1) * 0.062;
       sprite.scale.set(s, s, 1);
       pinGroup.add(sprite);
 
-      // Inner animated ripple ring
-      const innerRing = new THREE.Mesh(
-        new THREE.RingGeometry(0.92, 1, 32),
-        new THREE.MeshBasicMaterial({
-          color: new THREE.Color("#FFB81C"),
-          transparent: true,
-          opacity: 0.90,
-          blending: THREE.AdditiveBlending,
-          side: THREE.DoubleSide,
-          depthWrite: false,
-        })
-      );
-      innerRing.scale.set(0.017, 0.017, 1);
-      pinGroup.add(innerRing);
-      activeRipples.push(innerRing);
+      // 3 Multi-phase animated radar ripple rings
+      [0, 0.33, 0.66].forEach((offset) => {
+        const ring = new THREE.Mesh(
+          new THREE.RingGeometry(0.90, 1, 32),
+          new THREE.MeshBasicMaterial({
+            color: new THREE.Color("#FFB81C"),
+            transparent: true,
+            opacity: 0.85,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+          })
+        );
+        ring.scale.set(0.015, 0.015, 1);
+        pinGroup.add(ring);
+        activeRipples.push({ ring, phaseOffset: offset });
+      });
 
-      // Outer static concentric halo ring
+      // Outer static concentric golden halo
       const outerRing = new THREE.Mesh(
         new THREE.RingGeometry(0.95, 1, 32),
         new THREE.MeshBasicMaterial({
           color: new THREE.Color("#FF8C00"),
           transparent: true,
-          opacity: 0.50,
+          opacity: 0.40,
           blending: THREE.AdditiveBlending,
           side: THREE.DoubleSide,
           depthWrite: false,
         })
       );
-      outerRing.scale.set(0.034, 0.034, 1);
+      outerRing.scale.set(0.035, 0.035, 1);
       pinGroup.add(outerRing);
 
-      // CSS2D Label badge [ NAME ]
-      const labelDiv = document.createElement("div");
-      labelDiv.className = "globe-country-badge";
-      labelDiv.textContent = node.name;
+      // Interactive CSS2D Label badge with rich mineral tooltip and click-to-center
+      const labelDiv = document.createElement("button");
+      labelDiv.className = "globe-country-badge group";
+      labelDiv.setAttribute("aria-label", `${node.name} mining hub`);
+      labelDiv.innerHTML = `
+        <span class="badge-header">
+          <span class="badge-dot"></span>
+          <span class="badge-title">${node.name}</span>
+        </span>
+        <span class="badge-tooltip">
+          <span class="tooltip-region">${node.region}</span>
+          <span class="tooltip-minerals">${node.minerals}</span>
+        </span>
+      `;
+
+      // Click to focus and center on this mining capital
+      labelDiv.addEventListener("click", (e) => {
+        e.stopPropagation();
+        targetFocusRotY = -(node.lng + 90) * (Math.PI / 180);
+        targetFocusRotX = (node.lat - 10) * (Math.PI / 180);
+        lastInteractionTime = performance.now();
+      });
+
       const labelObj = new CSS2DObject(labelDiv);
       pinGroup.add(labelObj);
       labelObjects.push({ obj: labelObj, pos });
@@ -594,6 +618,20 @@ export function UnitedCarriersGlobe({
     container.addEventListener("pointerup", onPointerUp);
     container.addEventListener("pointercancel", onPointerUp);
 
+    // Magnetic Cursor Tilt Tracking
+    let mouseTiltX = 0;
+    let mouseTiltY = 0;
+    const onContainerPointerMove = (e: PointerEvent) => {
+      if (!isDragging) {
+        const rect = container.getBoundingClientRect();
+        const mx = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+        const my = ((e.clientY - rect.top) / rect.height - 0.5) * 2;
+        mouseTiltX = mx * 0.08;
+        mouseTiltY = my * 0.06;
+      }
+    };
+    container.addEventListener("pointermove", onContainerPointerMove, { passive: true });
+
     // Render Animation Loop
     let lastTime = performance.now();
     const tempWorldPos = new THREE.Vector3();
@@ -606,9 +644,25 @@ export function UnitedCarriersGlobe({
       const delta = (now - lastTime) / 1000;
       lastTime = now;
 
-      // Hand Dragging, Scroll-Driven Country Zoom Tour, or Gentle Idle Spin
+      // Hand Dragging, Target Focus Navigation, Scroll Tour, or Ambient Kinetic Glide
       if (isDragging) {
-        // Direct hand tracking
+        // Direct hand dragging
+      } else if (targetFocusRotY !== null && targetFocusRotX !== null) {
+        // Smooth cinematic ease directly to clicked mining jurisdiction
+        let diffY = targetFocusRotY - globeGroup.rotation.y;
+        while (diffY > Math.PI) diffY -= Math.PI * 2;
+        while (diffY < -Math.PI) diffY += Math.PI * 2;
+
+        globeGroup.rotation.y += diffY * 0.09;
+        globeGroup.rotation.x = THREE.MathUtils.lerp(globeGroup.rotation.x, targetFocusRotX, 0.09);
+
+        const targetScale = 1.28;
+        globeGroup.scale.setScalar(THREE.MathUtils.lerp(globeGroup.scale.x, targetScale, 0.08));
+
+        if (Math.abs(diffY) < 0.005 && Math.abs(targetFocusRotX - globeGroup.rotation.x) < 0.005) {
+          targetFocusRotY = null;
+          targetFocusRotX = null;
+        }
       } else if (scrollRef.current > 0.003) {
         // Scroll-driven tour: smoothly rotate and zoom into each highlighted country one by one
         const p = scrollRef.current;
@@ -645,18 +699,18 @@ export function UnitedCarriersGlobe({
 
         timeUniform.uTime.value += 0.002;
       } else {
-        // At rest / top: smooth inertia friction + subtle auto-rotation
+        // At rest / top: smooth inertia friction + subtle auto-rotation + magnetic cursor tilt
         globeGroup.rotation.y += velocityX;
         globeGroup.rotation.x += velocityY;
         globeGroup.rotation.x = Math.max(-0.80, Math.min(0.80, globeGroup.rotation.x));
         velocityX *= 0.92;
         velocityY *= 0.92;
 
-        // Auto-rotation resumes gently when hand is not rotating it
+        // Auto-rotation resumes gently when not interacting
         if (now - lastInteractionTime > 1200) {
-          const turn = 0.0012 * (delta / 0.0166);
+          const turn = 0.0014 * (delta / 0.0166);
           globeGroup.rotation.y += turn;
-          timeUniform.uTime.value += turn * 2.0;
+          timeUniform.uTime.value += turn * 2.2;
         }
 
         const curScale = globeGroup.scale.x;
@@ -664,11 +718,11 @@ export function UnitedCarriersGlobe({
         globeGroup.scale.set(nextScale, nextScale, nextScale);
       }
 
-      // Pulse ripple rings
-      const pulseCycle = (now * 0.002) % 1;
-      const ringScale = 0.015 + pulseCycle * 0.025;
-      const ringOpacity = (1 - pulseCycle) * 0.75;
-      activeRipples.forEach((ring) => {
+      // Multi-phase pulse radar ripple rings
+      activeRipples.forEach(({ ring, phaseOffset }) => {
+        const pulseCycle = (now * 0.0016 + phaseOffset) % 1;
+        const ringScale = 0.012 + pulseCycle * 0.038;
+        const ringOpacity = (1 - pulseCycle) * 0.85;
         ring.scale.set(ringScale, ringScale, 1);
         (ring.material as THREE.MeshBasicMaterial).opacity = ringOpacity;
       });
@@ -685,8 +739,8 @@ export function UnitedCarriersGlobe({
       labelObjects.forEach(({ obj, pos }) => {
         tempWorldPos.copy(pos).applyMatrix4(globeGroup.matrixWorld);
         const dot = tempWorldPos.dot(camera.position);
-        obj.element.style.opacity = dot > 0.1 ? "1" : "0";
-        obj.element.style.pointerEvents = dot > 0.1 ? "auto" : "none";
+        obj.element.style.opacity = dot > 0.12 ? "1" : "0";
+        obj.element.style.pointerEvents = dot > 0.12 ? "auto" : "none";
       });
 
       renderer.render(scene, camera);
@@ -702,6 +756,7 @@ export function UnitedCarriersGlobe({
       resizeObserver.disconnect();
       container.removeEventListener("pointerdown", onPointerDown);
       container.removeEventListener("pointermove", onPointerMove);
+      container.removeEventListener("pointermove", onContainerPointerMove);
       container.removeEventListener("pointerup", onPointerUp);
       container.removeEventListener("pointercancel", onPointerUp);
       renderer.dispose();
@@ -741,26 +796,98 @@ export function UnitedCarriersGlobe({
       <style jsx global>{`
         .globe-country-badge {
           position: absolute;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
           white-space: nowrap !important;
-          pointer-events: none;
+          pointer-events: auto;
+          cursor: pointer;
           font-family: var(--font-geist-mono, monospace), monospace;
-          font-size: 8px;
+          background: rgba(11, 31, 58, 0.88);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          border: 1px solid rgba(184, 134, 11, 0.55);
+          border-radius: 4px;
+          padding: 2.5px 7px;
+          transform: translate(-50%, -145%);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55), 0 0 10px rgba(184, 134, 11, 0.25);
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          user-select: none;
+        }
+
+        .globe-country-badge:hover {
+          background: rgba(11, 31, 58, 0.96);
+          border-color: #FFAE00;
+          transform: translate(-50%, -155%) scale(1.12);
+          box-shadow: 0 6px 22px rgba(0, 0, 0, 0.75), 0 0 16px rgba(255, 174, 0, 0.5);
+          z-index: 50;
+        }
+
+        .badge-header {
+          display: flex;
+          align-items: center;
+          gap: 4.5px;
+        }
+
+        .badge-dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: #FFAE00;
+          box-shadow: 0 0 6px #FFAE00;
+        }
+
+        .badge-title {
+          font-size: 8.5px;
           font-weight: 700;
-          letter-spacing: 0.06em;
+          letter-spacing: 0.08em;
           text-transform: uppercase;
           color: #ffffff;
-          background: rgba(2, 8, 23, 0.90);
-          border: 1px solid rgba(245, 169, 0, 0.45);
-          border-radius: 2px;
-          padding: 1.5px 5px;
-          transform: translate(-50%, -150%);
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.85);
-          transition: opacity 0.3s ease;
         }
+
+        .badge-tooltip {
+          max-height: 0;
+          opacity: 0;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 1.5px;
+          transition: max-height 0.25s ease, opacity 0.25s ease, margin-top 0.25s ease;
+        }
+
+        .globe-country-badge:hover .badge-tooltip {
+          max-height: 40px;
+          opacity: 1;
+          margin-top: 3px;
+        }
+
+        .tooltip-region {
+          font-size: 7px;
+          font-weight: 600;
+          letter-spacing: 0.06em;
+          color: #FFAE00;
+        }
+
+        .tooltip-minerals {
+          font-size: 6.5px;
+          font-weight: 500;
+          letter-spacing: 0.04em;
+          color: #94A3B8;
+        }
+
         @media (min-width: 640px) {
           .globe-country-badge {
-            font-size: 9px;
-            padding: 2px 7px;
+            padding: 3px 9px;
+          }
+          .badge-title {
+            font-size: 9.5px;
+          }
+          .tooltip-region {
+            font-size: 7.5px;
+          }
+          .tooltip-minerals {
+            font-size: 7px;
           }
         }
       `}</style>

@@ -115,7 +115,7 @@ export const GlobeHero: React.FC = () => {
       {/* Copy — normal flow with strong visual hierarchy */}
       <div
         ref={copyRef}
-        className="relative z-10 flex flex-col items-center px-4 pb-6 pt-28 sm:pt-36 lg:pt-40 text-center sm:px-10 sm:pb-8"
+        className="relative z-10 flex flex-col items-center px-4 pb-4 pt-20 sm:pt-24 lg:pt-28 text-center sm:px-10 sm:pb-6"
       >
         {/* Subtle Live Industrial Status Pill */}
         <div className="hero-rise inline-flex items-center gap-2 rounded-full border border-[#B8860B]/30 bg-white/75 px-4 py-1.5 backdrop-blur-md shadow-xs transition-all duration-300 hover:border-[#B8860B]/50 hover:bg-white/90">

@@ -170,10 +170,19 @@ export function loadMiningLoaderAsset(
         loaderTireTex.offset.y += distance * 0.85;
       };
 
-      console.log("[Mining Loader] GLB loaded with front bucket (face) pointing RIGHT (+X)!");
+      // Geometrically center the loader mesh so its origin is at the exact chassis centerline
+      const wrapper = new THREE.Group();
+      wrapper.name = "MiningLoaderWrapper";
 
-      scene.add(model);
-      onLoaded?.(model, updateWheelRotation);
+      model.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(model);
+      const center = box.getCenter(new THREE.Vector3());
+      
+      model.position.set(-center.x, -box.min.y, -center.z);
+      wrapper.add(model);
+
+      scene.add(wrapper);
+      onLoaded?.(wrapper, updateWheelRotation);
     },
     undefined,
     (error) => {

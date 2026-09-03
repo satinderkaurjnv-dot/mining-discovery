@@ -114,9 +114,9 @@ export class CameraDirector {
           fov: 34,
         };
       } else {
-        // PINNED CAMERA ANGLE: Fixed overhead top-down orientation (up = 0, 0, -1, fov = 34) tracking loader
-        this.tempPos.set(truckPos.x, 38.0, truckPos.z);
-        this.tempLookAt.set(truckPos.x, 0.0, truckPos.z);
+        // PINNED CAMERA ANGLE: Rock-solid locked X-axis (x = 185.0, y = 38.0) tracking ONLY loader along Z
+        this.tempPos.set(185.0, 38.0, truckPos.z);
+        this.tempLookAt.set(185.0, 0.0, truckPos.z);
 
         return {
           position: this.tempPos,

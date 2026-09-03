@@ -229,9 +229,11 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
         oreParticles.updateOreTrail(delta, pathTransform.position, false);
       }
 
-      // 2. Camera Director Update
+      // 2. Camera Director Update - zero out mouse wobble on highway to keep road 100% straight and stable
       const dummyVec = new THREE.Vector3();
-      const camFrame = cameraDirector.getFrame(sp, pathTransform.position, dummyVec, mouseX, mouseY);
+      const activeMouseX = sp >= 0.70 ? 0 : mouseX;
+      const activeMouseY = sp >= 0.70 ? 0 : mouseY;
+      const camFrame = cameraDirector.getFrame(sp, pathTransform.position, dummyVec, activeMouseX, activeMouseY);
       
       const lerpSpeed = Math.min(delta * 6, 1);
       camera.position.lerp(camFrame.position, lerpSpeed);

@@ -238,6 +238,25 @@ export class MiningTruckAssetManager {
 
           meshesToProcess.forEach((child) => {
             const meshName = child.name.toLowerCase();
+            const isDumpBed =
+              meshName.includes("bed") ||
+              meshName.includes("dump") ||
+              child.name === "Object_3" ||
+              child.name === "Object_4" ||
+              child.name === "Object_5" ||
+              child.name === "Object_6" ||
+              child.name === "Object_7" ||
+              child.name === "Object_8" ||
+              child.name === "Object_9" ||
+              child.name === "Object_10" ||
+              child.name === "Object_11" ||
+              child.name === "Object_12" ||
+              child.name === "Object_13" ||
+              child.name === "Object_14" ||
+              child.name === "Object_15" ||
+              child.name === "Object_16" ||
+              child.name === "Object_17" ||
+              child.name === "Object_18";
 
             let targetBodyMat = goldBodyMat;
             if (
@@ -260,13 +279,7 @@ export class MiningTruckAssetManager {
               child.name === "Object_2"
             ) {
               targetBodyMat = cylinderMat;
-            } else if (
-              meshName.includes("bed") ||
-              meshName.includes("dump") ||
-              child.name === "Object_5" ||
-              child.name === "Object_11" ||
-              child.name === "Object_13"
-            ) {
+            } else if (isDumpBed) {
               targetBodyMat = dumpBedMat;
             } else if (
               meshName.includes("chassis") ||
@@ -347,6 +360,18 @@ export class MiningTruckAssetManager {
               child.geometry.dispose();
               child.geometry = bodyGeom;
               child.material = targetBodyMat;
+
+              // Crisp black structural lines on the dump bed structure
+              if (isDumpBed) {
+                const edges = new THREE.EdgesGeometry(bodyGeom, 18);
+                const lineMat = new THREE.LineBasicMaterial({
+                  color: 0x050507, // Bold Black structural lines
+                  linewidth: 2.5,
+                });
+                const blackLines = new THREE.LineSegments(edges, lineMat);
+                blackLines.name = child.name + "_BlackStructuralLines";
+                child.parent?.add(blackLines);
+              }
             } else if (outerTirePos.length > 0) {
               const tireGeom = new THREE.BufferGeometry();
               tireGeom.setAttribute("position", new THREE.Float32BufferAttribute(outerTirePos, 3));

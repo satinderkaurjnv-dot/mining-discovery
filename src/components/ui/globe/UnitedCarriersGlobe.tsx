@@ -7,8 +7,7 @@ import {
   CSS2DObject,
 } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
-import * as topojson from "topojson-client";
-import * as d3Geo from "d3-geo";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 interface HubNode {
   id: string;
@@ -24,11 +23,6 @@ interface CorridorArc {
   alt: number;
 }
 
-interface GlobeData {
-  edge: number[];
-  fill: number[];
-}
-
 function latLngToVec3(lat: number, lng: number, r = 1): THREE.Vector3 {
   const phi = (90 - lat) * (Math.PI / 180);
   const theta = (lng + 180) * (Math.PI / 180);
@@ -37,112 +31,6 @@ function latLngToVec3(lat: number, lng: number, r = 1): THREE.Vector3 {
     r * Math.cos(phi),
     r * Math.sin(phi) * Math.sin(theta)
   );
-}
-
-// Crisp circular dot texture for point cloud
-function createDotTexture(size = 64): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = canvas.height = size;
-  const ctx = canvas.getContext("2d")!;
-  ctx.clearRect(0, 0, size, size);
-  const r = size / 2;
-  const grad = ctx.createRadialGradient(r, r, r * 0.60, r, r, r);
-  grad.addColorStop(0, "rgba(255, 255, 255, 1)");
-  grad.addColorStop(0.80, "rgba(255, 255, 255, 0.95)");
-  grad.addColorStop(1, "rgba(255, 255, 255, 0)");
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.arc(r, r, r - 0.5, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.fill();
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  return tex;
-}
-
-// High-Definition Canvas Texture with Lush Green Continents & Golden-Yellow Desert Sands
-function createEarthCanvasTexture(): Promise<THREE.CanvasTexture> {
-  return fetch("/globe/land-110m.json")
-    .then((res) => res.json())
-    .then((topology: any) => {
-      const landGeo = topojson.feature(topology, topology.objects.land) as any;
-      const canvas = document.createElement("canvas");
-      canvas.width = 2048;
-      canvas.height = 1024;
-      const ctx = canvas.getContext("2d")!;
-
-      // 1. Deep Royal Sapphire Ocean Base
-      const oceanGrad = ctx.createLinearGradient(0, 0, 0, 1024);
-      oceanGrad.addColorStop(0, "#081E3D");
-      oceanGrad.addColorStop(0.5, "#0A254C");
-      oceanGrad.addColorStop(1, "#081E3D");
-      ctx.fillStyle = oceanGrad;
-      ctx.fillRect(0, 0, 2048, 1024);
-
-      // 2. Setup Equirectangular Projection
-      const projection = d3Geo
-        .geoEquirectangular()
-        .scale(2048 / (2 * Math.PI))
-        .translate([1024, 512]);
-      const path = d3Geo.geoPath(projection, ctx);
-
-      // 3. Fill All Landmasses with Lush Vibrant Emerald Green
-      ctx.beginPath();
-      path(landGeo);
-      ctx.fillStyle = "#16A34A";
-      ctx.fill();
-
-      // 4. Clip to Land Polygons to Paint Desert and Polar Finishes
-      ctx.save();
-      ctx.beginPath();
-      path(landGeo);
-      ctx.clip();
-
-      // Sahara & Arabian Desert Golden-Yellow Sand Finish
-      const saharaGrad = ctx.createRadialGradient(1140, 380, 20, 1140, 380, 280);
-      saharaGrad.addColorStop(0, "#FACC15"); // Bright Golden Sand
-      saharaGrad.addColorStop(0.75, "#EAB308"); // Warm Golden Yellow
-      saharaGrad.addColorStop(1, "rgba(234, 179, 8, 0)"); // Smooth feather into green
-      ctx.fillStyle = saharaGrad;
-      ctx.fillRect(850, 240, 620, 320);
-
-      // Central Asia / Gobi Desert Finish
-      const gobiGrad = ctx.createRadialGradient(1540, 270, 10, 1540, 270, 200);
-      gobiGrad.addColorStop(0, "#FACC15");
-      gobiGrad.addColorStop(0.75, "#EAB308");
-      gobiGrad.addColorStop(1, "rgba(234, 179, 8, 0)");
-      ctx.fillStyle = gobiGrad;
-      ctx.fillRect(1380, 170, 360, 220);
-
-      // Western Australia Desert Finish
-      const ausGrad = ctx.createRadialGradient(1740, 660, 10, 1740, 660, 160);
-      ausGrad.addColorStop(0, "#FACC15");
-      ausGrad.addColorStop(0.8, "#EAB308");
-      ausGrad.addColorStop(1, "rgba(234, 179, 8, 0)");
-      ctx.fillStyle = ausGrad;
-      ctx.fillRect(1600, 550, 320, 240);
-
-      // Greenland Arctic Ice Cap
-      ctx.fillStyle = "#F8FAFC";
-      ctx.fillRect(700, 30, 220, 140);
-
-      ctx.restore();
-
-      // 5. Radiant Golden Vector Coastline Outlines (#FFAE00)
-      ctx.beginPath();
-      path(landGeo);
-      ctx.strokeStyle = "#FFAE00";
-      ctx.lineWidth = 1.8;
-      ctx.stroke();
-
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.colorSpace = THREE.SRGBColorSpace;
-      tex.minFilter = THREE.LinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      tex.needsUpdate = true;
-      return tex;
-    });
 }
 
 // Radiant starburst flare texture for beacon hubs
@@ -175,95 +63,6 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   tex.minFilter = THREE.LinearFilter;
   tex.magFilter = THREE.LinearFilter;
   return tex;
-}
-
-// Points material shader with pure golden dots
-function createLitPointsMaterial(
-  size: number,
-  mapTexture: THREE.CanvasTexture
-): THREE.PointsMaterial {
-  const mat = new THREE.PointsMaterial({
-    size,
-    sizeAttenuation: true,
-    depthWrite: false,
-    transparent: true,
-    color: new THREE.Color("#FFFFFF"),
-    map: mapTexture,
-    alphaTest: 0,
-    opacity: 1,
-  });
-
-  mat.onBeforeCompile = (shader) => {
-    shader.uniforms.uCamPos = { value: new THREE.Vector3() };
-
-    shader.vertexShader = shader.vertexShader
-      .replace(
-        "#include <common>",
-        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nvarying vec3 vGeoPos;\nuniform vec3 uCamPos;`
-      )
-      .replace(
-        "#include <begin_vertex>",
-        `#include <begin_vertex>\nvGeoPos = normalize(transformed);\nvWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvNorm = normalize(vWorldPos);`
-      )
-      .replace(
-        "#include <project_vertex>",
-        `#include <project_vertex>\nfloat ndv = dot(normalize(uCamPos - vWorldPos), vNorm);\ngl_PointSize *= mix(0.65, 1.0, smoothstep(0.0, 0.25, ndv));`
-      );
-
-    shader.fragmentShader = shader.fragmentShader
-      .replace(
-        "#include <common>",
-        `#include <common>\nvarying vec3 vWorldPos;\nvarying vec3 vNorm;\nvarying vec3 vGeoPos;\nuniform vec3 uCamPos;`
-      )
-      .replace(
-        "#include <color_fragment>",
-        `#include <color_fragment>
-        vec3 viewDir = normalize(uCamPos - vWorldPos);
-        float nd = dot(viewDir, vNorm);
-        if (nd <= 0.0) discard;
-
-        // Geographical UV coordinate from unrotated local model position
-        float lat = asin(clamp(vGeoPos.y, -1.0, 1.0));
-        float lng = atan(-vGeoPos.z, vGeoPos.x);
-        float u = lng / 6.28318530718 + 0.5;
-        float v = lat / 3.14159265359 + 0.5;
-
-        // Sahara desert & Middle East (u ≈ 0.44 to 0.66, v ≈ 0.54 to 0.72)
-        float inSaharaU = smoothstep(0.42, 0.48, u) * (1.0 - smoothstep(0.62, 0.68, u));
-        float inSaharaV = smoothstep(0.50, 0.56, v) * (1.0 - smoothstep(0.68, 0.74, v));
-        float isSahara = inSaharaU * inSaharaV;
-
-        // Australia & Kalahari desert (u ≈ 0.72 to 0.92, v ≈ 0.32 to 0.46)
-        float inAusU = smoothstep(0.70, 0.76, u) * (1.0 - smoothstep(0.88, 0.94, u));
-        float inAusV = smoothstep(0.30, 0.36, v) * (1.0 - smoothstep(0.44, 0.50, v));
-        float isAus = inAusU * inAusV;
-        float desertWeight = max(isSahara, isAus);
-
-        vec3 lushGreen = vec3(0.14, 0.76, 0.36);    // Rich Vibrant Emerald Green
-        vec3 desertYellow = vec3(1.0, 0.80, 0.22);  // Warm Golden-Yellow Sands
-        vec3 goldSparkle = vec3(1.0, 0.90, 0.40);   // Luminous Gold City Nodes
-        vec3 arcticWhite = vec3(0.92, 0.96, 1.0);   // Arctic White
-
-        vec3 pointCol = mix(lushGreen, desertYellow, desertWeight);
-        if (v > 0.85 || v < 0.15) {
-          pointCol = mix(pointCol, arcticWhite, 0.90);
-        }
-
-        // Golden night-light sparkles on mining hubs & coastlines
-        float sparkle = sin(vGeoPos.x * 55.0) * sin(vGeoPos.z * 55.0);
-        if (sparkle > 0.35) {
-          pointCol = mix(pointCol, goldSparkle, 0.85);
-        }
-
-        diffuseColor.rgb = pointCol;
-        diffuseColor.a *= smoothstep(0.0, 0.12, nd);
-        `
-      );
-
-    mat.userData.shader = shader;
-  };
-
-  return mat;
 }
 
 export function UnitedCarriersGlobe({
@@ -304,6 +103,8 @@ export function UnitedCarriersGlobe({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     renderer.setSize(width, height, false);
     renderer.setClearColor(0x000000, 0);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.25;
 
     // CSS2D Label Renderer
     const labelRenderer = new CSS2DRenderer({ element: labelContainer });
@@ -320,6 +121,18 @@ export function UnitedCarriersGlobe({
     const camera = new THREE.PerspectiveCamera(FOV, width / height, 0.1, 100);
     camera.position.set(0, 0, baseCameraZ);
 
+    // Lighting setup for photorealistic 3D Earth GLB
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2.4);
+    scene.add(ambientLight);
+
+    const sunLight = new THREE.DirectionalLight(0xfffaec, 3.2);
+    sunLight.position.set(5, 3.5, 6);
+    scene.add(sunLight);
+
+    const rimLight = new THREE.DirectionalLight(0x5ca9ff, 2.2);
+    rimLight.position.set(-6, 3, -4);
+    scene.add(rimLight);
+
     // Master Globe Group
     const globeGroup = new THREE.Group();
     // Tilt to show Atlantic, North America, South America, Africa, India, and Australia
@@ -328,112 +141,63 @@ export function UnitedCarriersGlobe({
     globeGroup.rotation.z = 0.03;
     scene.add(globeGroup);
 
-    // 1. Deep Royal Sapphire Ocean Sphere Base with Horizon Rim Light
-    const oceanGeom = new THREE.SphereGeometry(0.995, 64, 64);
-    const oceanMat = new THREE.ShaderMaterial({
-      uniforms: {
-        uCamPos: { value: camera.position },
+    let mixer: THREE.AnimationMixer | null = null;
+
+    // 1. Load Genuine 3D Earth Model (earth.glb)
+    const gltfLoader = new GLTFLoader();
+    gltfLoader.load(
+      "/assets/mining/earth.glb",
+      (gltf) => {
+        if (isDisposed) return;
+        const model = gltf.scene;
+
+        // Auto-scale model to exact radius 1.0 (diameter 2.0)
+        const box = new THREE.Box3().setFromObject(model);
+        const size = new THREE.Vector3();
+        box.getSize(size);
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scaleFactor = 2.0 / (maxDim || 1);
+        model.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+        // Center model exactly
+        const center = new THREE.Vector3();
+        box.getCenter(center);
+        model.position.sub(center.multiplyScalar(scaleFactor));
+
+        // Configure textures and materials
+        model.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const mesh = child as THREE.Mesh;
+            if (mesh.material) {
+              const mat = mesh.material as THREE.MeshStandardMaterial;
+              if (mat.map) {
+                mat.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
+                mat.map.colorSpace = THREE.SRGBColorSpace;
+              }
+              if (mat.emissiveMap) {
+                mat.emissiveMap.anisotropy = renderer.capabilities.getMaxAnisotropy();
+                mat.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+                mat.emissiveIntensity = 1.8;
+              }
+            }
+          }
+        });
+
+        // Cloud rotation animation
+        if (gltf.animations && gltf.animations.length > 0) {
+          mixer = new THREE.AnimationMixer(model);
+          gltf.animations.forEach((clip) => {
+            mixer?.clipAction(clip).play();
+          });
+        }
+
+        globeGroup.add(model);
       },
-      vertexShader: `
-        varying vec3 vWorldPos;
-        varying vec3 vNorm;
-        void main() {
-          vNorm = normalize(normalMatrix * normal);
-          vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-      `,
-      fragmentShader: `
-        uniform vec3 uCamPos;
-        varying vec3 vWorldPos;
-        varying vec3 vNorm;
-        void main() {
-          vec3 norm = normalize(vWorldPos);
-          vec3 viewDir = normalize(uCamPos - vWorldPos);
-          float nd = max(0.0, dot(viewDir, norm));
-          float fresnel = 1.0 - nd;
+      undefined,
+      (err) => console.error("earth.glb load error:", err)
+    );
 
-          // Directional solar illumination
-          vec3 sunDir = normalize(vec3(0.60, 0.55, 0.45));
-          float sunDot = max(0.0, dot(norm, sunDir));
-
-          // Deep Royal Sapphire Ocean
-          vec3 deepOcean = vec3(0.024, 0.085, 0.20);
-          vec3 shallowOcean = vec3(0.05, 0.18, 0.38);
-          vec3 oceanCol = mix(deepOcean, shallowOcean, pow(sunDot, 1.8));
-
-          // Atmospheric Horizon Glow
-          vec3 crescentDir = normalize(vec3(-0.45, 0.75, 0.45));
-          float crescentDot = max(0.0, dot(norm, crescentDir));
-          float crescentBloom = pow(fresnel, 2.8) * (0.30 + 2.2 * pow(crescentDot, 2.0));
-          vec3 crescentCol = mix(vec3(0.12, 0.55, 1.0), vec3(0.75, 0.92, 1.0), crescentDot);
-          oceanCol += crescentCol * crescentBloom * 0.75;
-
-          float edgeAlpha = smoothstep(0.0, 0.08, nd);
-          gl_FragColor = vec4(oceanCol, edgeAlpha * 0.98);
-        }
-      `,
-      transparent: true,
-      depthWrite: true,
-    });
-    const oceanMesh = new THREE.Mesh(oceanGeom, oceanMat);
-    oceanMesh.renderOrder = 0;
-    globeGroup.add(oceanMesh);
-
-    // 2. Continents: Dense Multi-Tone Dot Matrix with Two-Tone Green & Golden-Yellow Lighting
-    const dotTex = createDotTexture(64);
-    const edgeMat = createLitPointsMaterial(0.0072, dotTex);
-    const fillMat = createLitPointsMaterial(0.0058, dotTex);
-    const shaderMats = [edgeMat, fillMat];
-
-    fetch("/globe/globe-data.json")
-      .then((res) => res.json())
-      .then((data: GlobeData) => {
-        if (isDisposed) return;
-
-        const edgeGeom = new THREE.BufferGeometry();
-        edgeGeom.setAttribute(
-          "position",
-          new THREE.BufferAttribute(new Float32Array(data.edge), 3)
-        );
-        const edgePoints = new THREE.Points(edgeGeom, edgeMat);
-        edgePoints.renderOrder = 1;
-        globeGroup.add(edgePoints);
-
-        const fillGeom = new THREE.BufferGeometry();
-        fillGeom.setAttribute(
-          "position",
-          new THREE.BufferAttribute(new Float32Array(data.fill), 3)
-        );
-        const fillPoints = new THREE.Points(fillGeom, fillMat);
-        fillPoints.renderOrder = 1;
-        globeGroup.add(fillPoints);
-      })
-      .catch((err) => console.error("Globe data load error:", err));
-
-    // Golden Continent Outline Lines - crisp razor-sharp vector lines (NEVER blurry)
-    const coastlineMat = new THREE.LineBasicMaterial({
-      color: new THREE.Color("#FFAE00"),
-      transparent: false,
-      depthTest: true,
-    });
-
-    fetch("/globe/coastline-segments.json")
-      .then((res) => res.json())
-      .then((segments: number[]) => {
-        if (isDisposed) return;
-        const geom = new THREE.BufferGeometry();
-        geom.setAttribute(
-          "position",
-          new THREE.BufferAttribute(new Float32Array(segments), 3)
-        );
-        const lines = new THREE.LineSegments(geom, coastlineMat);
-        lines.renderOrder = 2;
-        globeGroup.add(lines);
-      })
-      .catch((err) => console.error("Coastline load error:", err));
-
-    // 3. Highlighted Mining Hub Jurisdictions with mineral metadata & interactive tooltips
+    // 2. Highlighted Mining Hub Jurisdictions with mineral metadata & interactive tooltips
     const HUB_NODES: (HubNode & { minerals: string; region: string })[] = [
       { id: "na", name: "USA & CANADA", region: "TIER-1 JURISDICTION", minerals: "GOLD • COPPER • CRITICAL MINERALS", lat: 41.5, lng: -116.2, size: 1.4 },
       { id: "sa", name: "CHILE & PERU", region: "GLOBAL COPPER BELT", minerals: "COPPER • LITHIUM • SILVER", lat: -24.3, lng: -69.1, size: 1.4 },
@@ -803,13 +567,10 @@ export function UnitedCarriersGlobe({
         (ring.material as THREE.MeshBasicMaterial).opacity = ringOpacity;
       });
 
-      // Update shader uniforms
-      oceanMat.uniforms.uCamPos.value.copy(camera.position);
-      shaderMats.forEach((mat) => {
-        if (mat.userData.shader) {
-          mat.userData.shader.uniforms.uCamPos.value.copy(camera.position);
-        }
-      });
+      // Update GLTF animation mixer for revolving cloud layer
+      if (mixer) {
+        mixer.update(delta);
+      }
 
       // Occlude labels when on the back side of the Earth
       labelObjects.forEach(({ obj, pos }) => {
@@ -836,14 +597,8 @@ export function UnitedCarriersGlobe({
       container.removeEventListener("pointerup", onPointerUp);
       container.removeEventListener("pointercancel", onPointerUp);
       renderer.dispose();
-      dotTex.dispose();
       beaconTex.dispose();
-      oceanGeom.dispose();
-      oceanMat.dispose();
-      edgeMat.dispose();
-      fillMat.dispose();
       beaconMat.dispose();
-      coastlineMat.dispose();
       arcMat.dispose();
     };
   }, []);

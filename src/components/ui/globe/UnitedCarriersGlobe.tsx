@@ -222,15 +222,15 @@ export function UnitedCarriersGlobe({
     globeGroup.rotation.z = 0.03;
     scene.add(globeGroup);
 
-    // 1. 3D Ocean Sphere with Deep Obsidian Cyber Base & Holographic Scanlines
-    const landTex = new THREE.TextureLoader().load("/globe/land-mask.png");
-    landTex.colorSpace = THREE.SRGBColorSpace;
+    // 1. 3D Digital Earth Sphere with User-Provided High-Res Asset
+    const earthTex = new THREE.TextureLoader().load("/globe/digital-earth.jpg");
+    earthTex.colorSpace = THREE.SRGBColorSpace;
 
     const oceanGeom = new THREE.SphereGeometry(0.995, 64, 64);
     const oceanMat = new THREE.ShaderMaterial({
       uniforms: {
         uCamPos: { value: camera.position },
-        uLandMap: { value: landTex },
+        uEarthMap: { value: earthTex },
         uTime: { value: 0 },
       },
       vertexShader: `
@@ -245,7 +245,7 @@ export function UnitedCarriersGlobe({
         }
       `,
       fragmentShader: `
-        uniform sampler2D uLandMap;
+        uniform sampler2D uEarthMap;
         uniform vec3 uCamPos;
         uniform float uTime;
         varying vec3 vWorldPos;
@@ -257,33 +257,20 @@ export function UnitedCarriersGlobe({
           float nd = max(0.0, dot(viewDir, norm));
           float fresnel = 1.0 - nd;
 
-          // Sample land mask: rich dark obsidian / cyber navy
-          vec4 mapCol = texture2D(uLandMap, vUv);
+          // Sample user-provided high-definition digital earth
+          vec4 earthCol = texture2D(uEarthMap, vUv);
 
-          // Deep contrasty cyber ocean (dark obsidian midnight)
-          vec3 deepOcean = vec3(0.015, 0.035, 0.075);
-          vec3 continentTint = vec3(0.035, 0.070, 0.130);
-          vec3 surfaceCol = mix(deepOcean, continentTint, mapCol.r);
-
-          // Subtle directional sun shading
+          // Directional lighting illumination
           vec3 sunDir = normalize(vec3(0.65, 0.55, 0.45));
           float sunDot = max(0.0, dot(norm, sunDir));
-          surfaceCol *= (0.75 + 0.35 * sunDot);
+          vec3 surfaceCol = earthCol.rgb * (0.85 + 0.35 * sunDot);
 
-          // Digital holographic scanlines and telemetry coordinate pulse
-          float scanline = sin(vUv.y * 220.0 + uTime * 1.5) * 0.5 + 0.5;
-          float latGrid = smoothstep(0.96, 1.0, sin(vUv.y * 36.0 * 3.14159));
-          float lngGrid = smoothstep(0.96, 1.0, sin(vUv.x * 72.0 * 3.14159));
-          float digitalMesh = max(latGrid, lngGrid);
-          surfaceCol += vec3(0.04, 0.12, 0.25) * scanline * 0.10;
-          surfaceCol += vec3(0.85, 0.65, 0.15) * digitalMesh * 0.08;
-
-          // Crisp crystalline electric cyan-gold horizon rim sheen
+          // Subtle horizon crescent glow
           vec3 crescentDir = normalize(vec3(-0.48, 0.72, 0.50));
           float crescentDot = max(0.0, dot(norm, crescentDir));
           float crescentBloom = pow(fresnel, 3.0) * (0.30 + 2.2 * pow(crescentDot, 2.0));
           vec3 crescentCol = mix(vec3(0.95, 0.75, 0.18), vec3(0.55, 0.85, 1.0), pow(crescentDot, 1.6));
-          surfaceCol += crescentCol * crescentBloom * 0.85;
+          surfaceCol += crescentCol * crescentBloom * 0.40;
 
           // Crystalline outer edge alpha
           float edgeAlpha = smoothstep(0.0, 0.08, nd);
@@ -866,7 +853,7 @@ export function UnitedCarriersGlobe({
       container.removeEventListener("pointercancel", onPointerUp);
       renderer.dispose();
       dotTex.dispose();
-      landTex.dispose();
+      earthTex.dispose();
       beaconTex.dispose();
       oceanGeom.dispose();
       oceanMat.dispose();

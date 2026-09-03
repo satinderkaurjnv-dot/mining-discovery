@@ -44,10 +44,10 @@ export class TruckPath {
       
       tangent.set(Math.cos(angle), 0, Math.sin(angle)).normalize();
     } else {
-      // 4. Long Vertical Highway Journey Across 3 Mining Milestones (x = 185, z = 45 -> 525)
+      // 4. Long Vertical Highway Journey: ONLY loader moves down the frozen road corridor (x = 185, z = 45 -> 280)
       const t = (clampedSp - 0.84) / 0.16;
       posX = 185.0;
-      posZ = 45.0 + t * 480.0;
+      posZ = 45.0 + t * 235.0;
       tangent.set(0, 0, 1);
     }
 

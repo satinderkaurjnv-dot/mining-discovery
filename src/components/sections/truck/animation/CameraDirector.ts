@@ -114,9 +114,9 @@ export class CameraDirector {
           fov: 36,
         };
       } else {
-        // PINNED CAMERA ANGLE: Rock-solid locked X-axis (x = 185.0, y = 56.0) tracking ONLY loader along Z
-        this.tempPos.set(185.0, 56.0, truckPos.z);
-        this.tempLookAt.set(185.0, 0.0, truckPos.z);
+        // PINNED CAMERA & ROAD: 100% frozen camera framing so ONLY loader travels down
+        this.tempPos.set(185.0, 56.0, 160.0);
+        this.tempLookAt.set(185.0, 0.0, 160.0);
 
         return {
           position: this.tempPos,

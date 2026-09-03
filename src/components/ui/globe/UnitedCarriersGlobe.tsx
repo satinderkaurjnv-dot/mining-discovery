@@ -246,21 +246,54 @@ export function UnitedCarriersGlobe({
           float nd = max(0.0, dot(viewDir, norm));
           float fresnel = 1.0 - nd;
 
-          // Sample land mask: dark ocean where there are no continents, lighter sapphire where continents are
+          // Sample land mask
           vec4 mapCol = texture2D(uLandMap, vUv);
+          float isLand = mapCol.r;
 
-          // Subtle sunlit illumination
-          vec3 sunDir = normalize(vec3(0.65, 0.55, 0.45));
+          // Directional solar illumination
+          vec3 sunDir = normalize(vec3(0.60, 0.55, 0.45));
           float sunDot = max(0.0, dot(norm, sunDir));
-          vec3 surfaceCol = mapCol.rgb * (0.85 + 0.35 * sunDot);
 
-          // Atmosphere rim blend into website background (#DFE7F3)
-          vec3 skyBg = vec3(0.875, 0.906, 0.953);
-          float rimHaze = pow(fresnel, 2.6);
-          surfaceCol = mix(surfaceCol, skyBg, rimHaze * 0.85);
+          // 1. Deep Royal Sapphire Ocean
+          vec3 deepOcean = vec3(0.028, 0.10, 0.24);
+          vec3 shallowOcean = vec3(0.06, 0.22, 0.44);
+          vec3 oceanCol = mix(deepOcean, shallowOcean, pow(sunDot, 1.8));
 
-          // Smooth edge alpha feathering so the globe dissolves seamlessly into the website canvas
-          float edgeAlpha = smoothstep(0.0, 0.12, nd);
+          // 2. Continent Land Finishing (Lush Green & Golden-Yellow Desert)
+          float lat = vUv.y;
+          // Sahara & Middle East desert latitudes (~15° to 35° North)
+          float isSahara = smoothstep(0.48, 0.62, lat) * (1.0 - smoothstep(0.68, 0.82, lat));
+          // Australia & Kalahari desert latitudes (~15° to 35° South)
+          float isSouthDesert = smoothstep(0.20, 0.35, lat) * (1.0 - smoothstep(0.38, 0.50, lat));
+          float desertMask = max(isSahara, isSouthDesert * 0.85);
+
+          vec3 desertYellow = vec3(0.86, 0.66, 0.32); // Warm Golden-Yellow Sands
+          vec3 lushGreen = vec3(0.12, 0.38, 0.22);    // Rich Emerald Vegetation
+          vec3 arcticWhite = vec3(0.92, 0.96, 1.0);    // Arctic Ice Cap
+
+          vec3 landBase = mix(lushGreen, desertYellow, desertMask);
+          if (lat > 0.86 || lat < 0.14) {
+            landBase = mix(landBase, arcticWhite, 0.92);
+          }
+
+          // Golden City Lights & Shimmering Mineral Nodes
+          float cityCluster = sin(vUv.x * 280.0) * sin(vUv.y * 280.0);
+          cityCluster = smoothstep(0.55, 0.95, cityCluster);
+          vec3 goldNightLights = vec3(1.0, 0.76, 0.18);
+          vec3 landSurface = landBase * (0.75 + 0.42 * sunDot) + goldNightLights * cityCluster * 0.70;
+
+          // Blend ocean and land
+          vec3 surfaceCol = mix(oceanCol, landSurface, isLand);
+
+          // 3. Atmospheric Crescent Horizon Glow
+          vec3 crescentDir = normalize(vec3(-0.45, 0.75, 0.45));
+          float crescentDot = max(0.0, dot(norm, crescentDir));
+          float crescentBloom = pow(fresnel, 2.8) * (0.30 + 2.2 * pow(crescentDot, 2.0));
+          vec3 crescentCol = mix(vec3(0.12, 0.55, 1.0), vec3(0.75, 0.92, 1.0), crescentDot);
+          surfaceCol += crescentCol * crescentBloom * 0.75;
+
+          // Smooth edge alpha feathering
+          float edgeAlpha = smoothstep(0.0, 0.08, nd);
           gl_FragColor = vec4(surfaceCol, edgeAlpha * 0.98);
         }
       `,

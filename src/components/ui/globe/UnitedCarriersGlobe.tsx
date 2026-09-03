@@ -7,6 +7,9 @@ import {
   CSS2DObject,
 } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
+import * as topojson from "topojson-client";
+import * as d3Geo from "d3-geo";
+
 interface HubNode {
   id: string;
   name: string;
@@ -58,6 +61,90 @@ function createDotTexture(size = 64): THREE.CanvasTexture {
   return tex;
 }
 
+// High-Definition Canvas Texture with Lush Green Continents & Golden-Yellow Desert Sands
+function createEarthCanvasTexture(): Promise<THREE.CanvasTexture> {
+  return fetch("/globe/land-110m.json")
+    .then((res) => res.json())
+    .then((topology: any) => {
+      const landGeo = topojson.feature(topology, topology.objects.land) as any;
+      const canvas = document.createElement("canvas");
+      canvas.width = 2048;
+      canvas.height = 1024;
+      const ctx = canvas.getContext("2d")!;
+
+      // 1. Deep Royal Sapphire Ocean Base
+      const oceanGrad = ctx.createLinearGradient(0, 0, 0, 1024);
+      oceanGrad.addColorStop(0, "#081E3D");
+      oceanGrad.addColorStop(0.5, "#0A254C");
+      oceanGrad.addColorStop(1, "#081E3D");
+      ctx.fillStyle = oceanGrad;
+      ctx.fillRect(0, 0, 2048, 1024);
+
+      // 2. Setup Equirectangular Projection
+      const projection = d3Geo
+        .geoEquirectangular()
+        .scale(2048 / (2 * Math.PI))
+        .translate([1024, 512]);
+      const path = d3Geo.geoPath(projection, ctx);
+
+      // 3. Fill All Landmasses with Lush Vibrant Emerald Green
+      ctx.beginPath();
+      path(landGeo);
+      ctx.fillStyle = "#16A34A";
+      ctx.fill();
+
+      // 4. Clip to Land Polygons to Paint Desert and Polar Finishes
+      ctx.save();
+      ctx.beginPath();
+      path(landGeo);
+      ctx.clip();
+
+      // Sahara & Arabian Desert Golden-Yellow Sand Finish
+      const saharaGrad = ctx.createRadialGradient(1140, 380, 20, 1140, 380, 280);
+      saharaGrad.addColorStop(0, "#FACC15"); // Bright Golden Sand
+      saharaGrad.addColorStop(0.75, "#EAB308"); // Warm Golden Yellow
+      saharaGrad.addColorStop(1, "rgba(234, 179, 8, 0)"); // Smooth feather into green
+      ctx.fillStyle = saharaGrad;
+      ctx.fillRect(850, 240, 620, 320);
+
+      // Central Asia / Gobi Desert Finish
+      const gobiGrad = ctx.createRadialGradient(1540, 270, 10, 1540, 270, 200);
+      gobiGrad.addColorStop(0, "#FACC15");
+      gobiGrad.addColorStop(0.75, "#EAB308");
+      gobiGrad.addColorStop(1, "rgba(234, 179, 8, 0)");
+      ctx.fillStyle = gobiGrad;
+      ctx.fillRect(1380, 170, 360, 220);
+
+      // Western Australia Desert Finish
+      const ausGrad = ctx.createRadialGradient(1740, 660, 10, 1740, 660, 160);
+      ausGrad.addColorStop(0, "#FACC15");
+      ausGrad.addColorStop(0.8, "#EAB308");
+      ausGrad.addColorStop(1, "rgba(234, 179, 8, 0)");
+      ctx.fillStyle = ausGrad;
+      ctx.fillRect(1600, 550, 320, 240);
+
+      // Greenland Arctic Ice Cap
+      ctx.fillStyle = "#F8FAFC";
+      ctx.fillRect(700, 30, 220, 140);
+
+      ctx.restore();
+
+      // 5. Radiant Golden Vector Coastline Outlines (#FFAE00)
+      ctx.beginPath();
+      path(landGeo);
+      ctx.strokeStyle = "#FFAE00";
+      ctx.lineWidth = 1.8;
+      ctx.stroke();
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.needsUpdate = true;
+      return tex;
+    });
+}
+
 // Radiant starburst flare texture for beacon hubs
 function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
@@ -66,7 +153,6 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   const c = size / 2;
   ctx.clearRect(0, 0, size, size);
 
-  // Soft spherical fiery-gold bloom matching media_1788173039083.png
   const bloom = ctx.createRadialGradient(c, c, 0, c, c, c);
   bloom.addColorStop(0, "rgba(255, 255, 255, 1)");
   bloom.addColorStop(0.16, "rgba(255, 235, 150, 0.98)");
@@ -76,9 +162,8 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   ctx.fillStyle = bloom;
   ctx.fillRect(0, 0, size, size);
 
-  // Cross flares
-  ctx.strokeStyle = "rgba(255, 255, 240, 0.96)";
-  ctx.lineWidth = 2.0;
+  ctx.strokeStyle = "rgba(255, 255, 245, 0.98)";
+  ctx.lineWidth = 2.2;
   ctx.beginPath();
   ctx.moveTo(c, 0);
   ctx.lineTo(c, size);
@@ -243,15 +328,12 @@ export function UnitedCarriersGlobe({
     globeGroup.rotation.z = 0.03;
     scene.add(globeGroup);
 
-    // 1. 3D Ocean Sphere with Continent Land Mask (Dark Ocean, Green & Yellow Continents)
-    const landTex = new THREE.TextureLoader().load("/globe/land-mask.png");
-    landTex.colorSpace = THREE.SRGBColorSpace;
-
+    // 1. 3D Ocean Sphere with Dynamic High-Res Canvas Texture (Lush Green & Golden-Yellow Desert Land)
     const oceanGeom = new THREE.SphereGeometry(0.995, 64, 64);
     const oceanMat = new THREE.ShaderMaterial({
       uniforms: {
         uCamPos: { value: camera.position },
-        uLandMap: { value: landTex },
+        uEarthMap: { value: new THREE.Texture() },
       },
       vertexShader: `
         varying vec3 vWorldPos;
@@ -265,7 +347,7 @@ export function UnitedCarriersGlobe({
         }
       `,
       fragmentShader: `
-        uniform sampler2D uLandMap;
+        uniform sampler2D uEarthMap;
         uniform vec3 uCamPos;
         varying vec3 vWorldPos;
         varying vec3 vNorm;
@@ -281,58 +363,20 @@ export function UnitedCarriersGlobe({
           float lng = atan(-vGeoPos.z, vGeoPos.x);
           vec2 geoUv = vec2(lng / 6.28318530718 + 0.5, lat / 3.14159265359 + 0.5);
 
-          // Sample land mask
-          vec4 mapCol = texture2D(uLandMap, geoUv);
-          float isLand = smoothstep(0.20, 0.60, mapCol.r);
+          // Sample Dynamic High-Res Earth Texture (Green Americas/Europe, Golden-Yellow Sahara/Australia, Royal Blue Ocean)
+          vec4 mapCol = texture2D(uEarthMap, geoUv);
 
           // Directional solar illumination
           vec3 sunDir = normalize(vec3(0.60, 0.55, 0.45));
           float sunDot = max(0.0, dot(norm, sunDir));
+          vec3 surfaceCol = mapCol.rgb * (0.85 + 0.35 * sunDot);
 
-          // 1. Deep Royal Sapphire Ocean
-          vec3 deepOcean = vec3(0.024, 0.09, 0.22);
-          vec3 shallowOcean = vec3(0.05, 0.20, 0.42);
-          vec3 oceanCol = mix(deepOcean, shallowOcean, pow(sunDot, 1.8));
-
-          // 2. Continent Land Finishing (Lush Green & Golden-Yellow Desert)
-          float u = geoUv.x;
-          float v = geoUv.y;
-
-          // Sahara desert & Middle East (u ≈ 0.44 to 0.66, v ≈ 0.54 to 0.72)
-          float inSaharaU = smoothstep(0.42, 0.48, u) * (1.0 - smoothstep(0.62, 0.68, u));
-          float inSaharaV = smoothstep(0.50, 0.56, v) * (1.0 - smoothstep(0.68, 0.74, v));
-          float isSahara = inSaharaU * inSaharaV;
-
-          // Australia & Kalahari desert (u ≈ 0.72 to 0.92, v ≈ 0.32 to 0.46)
-          float inAusU = smoothstep(0.70, 0.76, u) * (1.0 - smoothstep(0.88, 0.94, u));
-          float inAusV = smoothstep(0.30, 0.36, v) * (1.0 - smoothstep(0.44, 0.50, v));
-          float isAus = inAusU * inAusV;
-          float desertMask = max(isSahara, isAus);
-
-          vec3 desertYellow = vec3(0.88, 0.68, 0.28); // Warm Golden-Yellow Sands
-          vec3 lushGreen = vec3(0.10, 0.42, 0.22);    // Rich Emerald Vegetation
-          vec3 arcticWhite = vec3(0.92, 0.96, 1.0);    // Arctic Ice Cap
-
-          vec3 landBase = mix(lushGreen, desertYellow, desertMask);
-          if (v > 0.85 || v < 0.15) {
-            landBase = mix(landBase, arcticWhite, 0.92);
-          }
-
-          // Golden City Lights & Shimmering Mineral Nodes
-          float cityCluster = sin(geoUv.x * 280.0) * sin(geoUv.y * 280.0);
-          cityCluster = smoothstep(0.55, 0.95, cityCluster);
-          vec3 goldNightLights = vec3(1.0, 0.78, 0.20);
-          vec3 landSurface = landBase * (0.80 + 0.45 * sunDot) + goldNightLights * cityCluster * 0.65;
-
-          // Blend ocean and land
-          vec3 surfaceCol = mix(oceanCol, landSurface, isLand);
-
-          // 3. Atmospheric Crescent Horizon Glow
+          // Atmospheric Crescent Horizon Glow
           vec3 crescentDir = normalize(vec3(-0.45, 0.75, 0.45));
           float crescentDot = max(0.0, dot(norm, crescentDir));
           float crescentBloom = pow(fresnel, 2.8) * (0.30 + 2.2 * pow(crescentDot, 2.0));
           vec3 crescentCol = mix(vec3(0.12, 0.55, 1.0), vec3(0.75, 0.92, 1.0), crescentDot);
-          surfaceCol += crescentCol * crescentBloom * 0.75;
+          surfaceCol += crescentCol * crescentBloom * 0.65;
 
           // Smooth edge alpha feathering
           float edgeAlpha = smoothstep(0.0, 0.08, nd);
@@ -345,6 +389,12 @@ export function UnitedCarriersGlobe({
     const oceanMesh = new THREE.Mesh(oceanGeom, oceanMat);
     oceanMesh.renderOrder = 0;
     globeGroup.add(oceanMesh);
+
+    // Generate and apply crystal-clear Earth canvas texture
+    createEarthCanvasTexture().then((tex) => {
+      if (isDisposed) return;
+      oceanMat.uniforms.uEarthMap.value = tex;
+    });
 
     // 2. Continents: Dense Dot Matrix with two-tone lighting
     const dotTex = createDotTexture(64);
@@ -803,7 +853,6 @@ export function UnitedCarriersGlobe({
       container.removeEventListener("pointercancel", onPointerUp);
       renderer.dispose();
       dotTex.dispose();
-      landTex.dispose();
       beaconTex.dispose();
       oceanGeom.dispose();
       oceanMat.dispose();

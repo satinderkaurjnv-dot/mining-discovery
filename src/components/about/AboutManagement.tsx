@@ -1,32 +1,13 @@
 "use client";
 
-import React, { useRef } from "react";
-import {
-  HIDDEN_RISE,
-  HIDDEN_RULE_X,
-  MaskedWords,
-  revealBlocks,
-  useAboutMotion,
-} from "./reveal";
-
-/*
- * Section 03 — Management.
- *
- * Two people, two full-width editorial rows, no cards. A card grid would give Gaurav and
- * Sagar a hundred-odd words each in a box the width of a phone; the whole reason to run
- * them full width is that the bios are the content here, not decoration around a headshot
- * we do not have.
- *
- * Every claim below is from miningdiscovery.com/about-us. Nothing has been rounded up,
- * and no qualification, employer, or achievement has been added.
- */
+import React from "react";
+import { motion, useReducedMotion } from "framer-motion";
 
 interface Person {
   name: string;
   initials: string;
   role: string;
   bio: string;
-  /** The remit as the source lists it — used as scannable tags beside the prose. */
   focus: string[];
 }
 
@@ -64,109 +45,118 @@ const MANAGEMENT: Person[] = [
 ];
 
 export const AboutManagement: React.FC = () => {
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const headerRef = useRef<HTMLDivElement | null>(null);
-  const rowsRef = useRef<Array<HTMLElement | null>>([]);
-
-  useAboutMotion(sectionRef, () => {
-    if (headerRef.current) revealBlocks(headerRef.current);
-
-    // One trigger per row rather than one for the section: the second bio sits a full
-    // viewport below the first, and revealing both off the first row's arrival would play
-    // Sagar's entrance to an empty screen.
-    rowsRef.current.forEach((row) => {
-      if (row) revealBlocks(row, { stagger: 0.05 });
-    });
-  });
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section ref={sectionRef} className="border-b border-[#E5E4DE]">
-      <div className="container-editorial py-20 md:py-28">
-        <div ref={headerRef}>
-          <div data-about-rule-x className={`h-0.5 w-12 bg-[#B8860B] ${HIDDEN_RULE_X}`} />
-          <span
-            data-about-reveal
-            className={`mt-6 block text-xs font-semibold uppercase tracking-[0.15em] text-[#B8860B] ${HIDDEN_RISE}`}
-          >
-            Management
-          </span>
-          <h2 className="mt-6 max-w-[22ch] font-serif text-[clamp(2rem,4.2vw,3.25rem)] font-normal leading-[1.1] tracking-[-0.02em] text-[#0B1F3A]">
-            <MaskedWords text="The people behind the platform." />
+    <section className="relative border-b border-[#E5E4DE] bg-white py-16 md:py-24 overflow-hidden">
+      <div className="container-editorial relative z-10">
+        {/* Section Heading */}
+        <div className="max-w-3xl mb-12 md:mb-16">
+          <div className="flex items-center gap-3 mb-4">
+            <span className="h-0.5 w-10 bg-[#B8860B]" />
+            <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[#9E7208]">
+              Management
+            </span>
+          </div>
+
+          <h2 className="font-serif text-[clamp(2.25rem,4.5vw,3.75rem)] font-normal leading-[1.08] tracking-[-0.025em] text-[#0B1F3A]">
+            The people behind the platform.
           </h2>
         </div>
 
-        <div className="mt-16 md:mt-20">
-          {MANAGEMENT.map((person, index) => (
-            <article
-              key={person.name}
-              ref={(el) => {
-                rowsRef.current[index] = el;
-              }}
-              /*
-               * group/person rather than a bare group: the focus tags below run their own
-               * hover state, and an unnamed group would have the row and the tag competing
-               * for the same modifier.
-               */
-              className="group/person border-t border-[#E5E4DE] py-12 first:border-t-0 first:pt-0 md:py-16 md:first:pt-0"
-            >
-              <div className="grid grid-cols-1 gap-x-16 gap-y-8 lg:grid-cols-12">
-                {/* --- Identity ------------------------------------------------- */}
-                <div className="lg:col-span-5">
-                  <div className="flex items-center gap-5">
-                    {/* Monogram stands in for a headshot: gold ring, navy initials — the
-                        same treatment the leadership cards used before real names existed. */}
-                    <div
-                      aria-hidden="true"
-                      data-about-reveal
-                      className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-[#B8860B]/35 bg-[#FAF5E8] font-serif text-xl font-normal tracking-[0.02em] text-[#0B1F3A] transition-colors duration-300 group-hover/person:border-[#B8860B]/70 ${HIDDEN_RISE}`}
-                    >
-                      {person.initials}
+        {/* Editorial Profiles with Alternating Composition */}
+        <div className="flex flex-col gap-16 md:gap-20">
+          {MANAGEMENT.map((person, index) => {
+            const isEven = index % 2 === 0;
+
+            return (
+              <div
+                key={person.name}
+                className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center"
+              >
+                {/* Visual / Monogram Architectural Block */}
+                <motion.div
+                  initial={reduceMotion ? {} : { clipPath: "inset(0 100% 0 0)", opacity: 0 }}
+                  whileInView={{ clipPath: "inset(0 0% 0 0)", opacity: 1 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+                  className={`lg:col-span-4 ${isEven ? "lg:order-1" : "lg:order-2"}`}
+                >
+                  <div className="relative aspect-square w-full max-w-[340px] mx-auto rounded-2xl border border-[#E5E4DE] bg-[#FAF9F5] p-8 flex flex-col justify-between shadow-sm overflow-hidden group hover:border-[#B8860B]/50 transition-colors duration-300">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(#B8860B_1px,transparent_1px)] opacity-15 [background-size:12px_12px]" />
+                    <div className="flex justify-between items-start">
+                      <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#9E7208]">
+                        Leadership
+                      </span>
+                      <span className="font-mono text-xs text-[#888A8E]">
+                        REF #{String(index + 1).padStart(2, "0")}
+                      </span>
                     </div>
 
-                    <span
-                      data-about-reveal
-                      className={`font-mono text-[11px] tabular-nums text-[#B8860B] ${HIDDEN_RISE}`}
-                    >
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
+                    <div className="my-auto text-center py-6">
+                      <span className="font-geist text-6xl md:text-7xl font-bold tracking-tight text-[#0B1F3A] group-hover:text-[#B8860B] transition-colors">
+                        {person.initials}
+                      </span>
+                    </div>
+
+                    <div className="border-t border-[#E5E4DE] pt-3">
+                      <p className="font-mono text-[11px] font-semibold text-[#0B1F3A]">
+                        {person.name}
+                      </p>
+                      <p className="text-[10.5px] font-mono text-[#57595E] truncate">
+                        {person.role}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Narrative & Focus Remit */}
+                <motion.div
+                  initial={reduceMotion ? {} : { opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  transition={{ duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                  className={`lg:col-span-8 flex flex-col gap-6 ${
+                    isEven ? "lg:order-2" : "lg:order-1"
+                  }`}
+                >
+                  <div>
+                    <h3 className="font-serif text-3xl sm:text-4xl font-normal text-[#0B1F3A] tracking-tight">
+                      {person.name}
+                    </h3>
+                    <p className="mt-2 font-mono text-xs font-bold uppercase tracking-[0.16em] text-[#9E7208]">
+                      {person.role}
+                    </p>
                   </div>
 
-                  <h3 className="mt-7 font-serif text-[clamp(2rem,4vw,3rem)] font-normal leading-[1.08] tracking-[-0.02em] text-[#0B1F3A] transition-colors duration-300 group-hover/person:text-[#B8860B]">
-                    <MaskedWords text={person.name} />
-                  </h3>
-
-                  <p
-                    data-about-reveal
-                    className={`mt-4 text-xs font-semibold uppercase tracking-[0.15em] text-[#57595E] ${HIDDEN_RISE}`}
-                  >
-                    {person.role}
-                  </p>
-                </div>
-
-                {/* --- Remit ---------------------------------------------------- */}
-                <div className="lg:col-span-7 lg:border-l lg:border-[#E5E4DE] lg:pl-12">
-                  <p
-                    data-about-reveal
-                    className={`text-lg font-normal leading-relaxed text-[#3A3D42] sm:text-xl ${HIDDEN_RISE}`}
-                  >
+                  <p className="text-lg leading-relaxed text-[#3A3D42]">
                     {person.bio}
                   </p>
 
-                  <ul className="mt-8 flex flex-wrap gap-2">
-                    {person.focus.map((item) => (
-                      <li
-                        key={item}
-                        data-about-reveal
-                        className={`rounded-full border border-[#E5E4DE] bg-white px-4 py-1.5 text-xs font-medium tracking-wide text-[#57595E] transition-colors duration-300 hover:border-[#B8860B]/40 hover:text-[#0B1F3A] ${HIDDEN_RISE}`}
-                      >
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  {/* Sequential Focus Tags */}
+                  <div className="pt-4 border-t border-[#E5E4DE]">
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#0B1F3A] block mb-3">
+                      Core Strategic Focus:
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {person.focus.map((item, fIdx) => (
+                        <motion.span
+                          key={item}
+                          initial={reduceMotion ? {} : { opacity: 0, scale: 0.9 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.4, delay: 0.04 * fIdx }}
+                          className="px-3 py-1.5 rounded-lg border border-[#E5E4DE] bg-[#FAF9F5] font-mono text-xs text-[#3A3D42] hover:border-[#B8860B]/40 hover:bg-white transition-colors"
+                        >
+                          {item}
+                        </motion.span>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
               </div>
-            </article>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

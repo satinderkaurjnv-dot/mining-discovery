@@ -1,10 +1,15 @@
 "use client";
 
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform, useMotionValueEvent } from "framer-motion";
-import { Badge } from "@/components/ui/Badge";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useMotionValueEvent,
+  useReducedMotion,
+} from "framer-motion";
 import {
   Compass,
   Palette,
@@ -16,6 +21,9 @@ import {
   Globe,
   Smartphone,
   ArrowRight,
+  CheckCircle2,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 
 export interface ServiceCardData {
@@ -27,584 +35,711 @@ export interface ServiceCardData {
   icon: React.ElementType;
 }
 
-// 9 Service Cards mapped 1:1 across 4 Stages (2 / 3 / 2 / 2)
-export const STAGE_1_CARDS: ServiceCardData[] = [
-  {
-    id: "digital-branding",
-    title: "Digital Branding",
-    category: "Exploration & Identity",
-    description: "Establish a high-conviction market narrative and corporate identity for junior explorers & mining leaders.",
-    href: "/services#branding",
-    icon: Compass,
-  },
-  {
-    id: "logo-design",
-    title: "Logo & Visual Design",
-    category: "Brand Assets",
-    description: "Vector geological typography, technical report templates, and institutional pitch decks.",
-    href: "/services#logo-design",
-    icon: Palette,
-  },
-];
-
-export const STAGE_2_CARDS: ServiceCardData[] = [
-  {
-    id: "social-media",
-    title: "Social Media Marketing",
-    category: "Discovery Campaign",
-    description: "Targeted broadcast of drill core discoveries and mineral assay highlights across X, YouTube & Stockhouse.",
-    href: "/services#social-media",
-    icon: Share2,
-  },
-  {
-    id: "google-ads",
-    title: "Google Ads & Paid Campaigns",
-    category: "Investor Reach",
-    description: "High-intent search campaign targeting institutional mining funds, retail investors, and sector analysts.",
-    href: "/services#google-ads",
-    icon: Target,
-  },
-  {
-    id: "paid-social",
-    title: "LinkedIn & Meta Ads",
-    category: "Executive Audience",
-    description: "Geotargeted executive placement in financial capitals (Toronto, Vancouver, Perth, London, New York).",
-    href: "/services#paid-social",
-    icon: Building2,
-  },
-];
-
-export const STAGE_3_CARDS: ServiceCardData[] = [
-  {
-    id: "public-relations",
-    title: "Public Relations",
-    category: "Assay & Editorial",
-    description: "Direct wire distribution of drill intercepts, NI 43-101 technical reports, and quarterly filings.",
-    href: "/services#pr",
-    icon: Megaphone,
-  },
-  {
-    id: "webinars-events",
-    title: "Webinars & Events",
-    category: "Executive Q&A",
-    description: "Live CEO townhalls, virtual site visits, and 1-on-1 institutional investor conference hosting.",
-    href: "/services#events",
-    icon: Video,
-  },
-];
-
-export const STAGE_4_CARDS: ServiceCardData[] = [
-  {
-    id: "website-dev",
-    title: "Website Development",
-    category: "Production & Hub",
-    description: "Custom Next.js corporate portals with live commodity tickers, interactive property maps & SEC/SEDAR filings.",
-    href: "/services#web-dev",
-    icon: Globe,
-  },
-  {
-    id: "app-dev",
-    title: "App Development",
-    category: "Investor Mobile App",
-    description: "Native iOS/Android investor relation apps for real-time news alerts, drill results & stock tracking.",
-    href: "/services#app-dev",
-    icon: Smartphone,
-  },
-];
-
-interface StageData {
-  stageNum: string;
+export interface StageData {
+  id: string;
+  num: string;
+  stageCode: string;
+  tabLabel: string;
   badge: string;
   title: string;
+  subtitle: string;
   description: string;
+  deliverables: string[];
   imageSrc: string;
+  imageAlt: string;
   cards: ServiceCardData[];
 }
 
-const STAGES: StageData[] = [
+export const STAGES: StageData[] = [
   {
-    stageNum: "01",
-    badge: "STAGE 01 // STAKE THE CLAIM",
-    title: "Geological Survey & Identity",
-    description: "Laying the foundation with high-precision exploration surveying, market positioning, and core brand assets.",
+    id: "stage-01",
+    num: "01",
+    stageCode: "STAGE 01 // STAKE THE CLAIM",
+    tabLabel: "Exploration & Branding",
+    badge: "Stage 01 // Geological Survey & Identity",
+    title: "Stake the Claim",
+    subtitle: "High-conviction branding and exploration market narrative.",
+    description:
+      "Before a drill bit touches the earth, mining companies require institutional credibility. We translate geophysical surveys, concession boundaries, and technical potential into a commanding brand that commands market attention.",
+    deliverables: [
+      "Vector geological brand identity & typography",
+      "Institutional pitch decks & technical report templates",
+      "Executive corporate positioning for junior explorers",
+      "Pre-drilling digital market introduction campaigns",
+    ],
     imageSrc: "/services/01-survey.jpg",
-    cards: STAGE_1_CARDS,
+    imageAlt: "Geological exploration survey team in open highland terrain",
+    cards: [
+      {
+        id: "digital-branding",
+        title: "Digital Branding",
+        category: "Exploration & Identity",
+        description:
+          "Establish a high-conviction market narrative and corporate identity tailored specifically for junior explorers and mid-tier mining companies.",
+        href: "/services#branding",
+        icon: Compass,
+      },
+      {
+        id: "logo-design",
+        title: "Logo & Visual Design",
+        category: "Brand Assets",
+        description:
+          "Vector geological typography, technical report templates, NI 43-101 design systems, and institutional investor pitch decks.",
+        href: "/services#logo-design",
+        icon: Palette,
+      },
+    ],
   },
   {
-    stageNum: "02",
-    badge: "STAGE 02 // DRILL & REACH",
-    title: "Exploration Drilling & Reach",
-    description: "Amplifying active drill rig milestones, core discoveries, and paid institutional investor campaigns.",
+    id: "stage-02",
+    num: "02",
+    stageCode: "STAGE 02 // DRILL & REACH",
+    tabLabel: "Drilling & Market Reach",
+    badge: "Stage 02 // Exploration Drilling & Reach",
+    title: "Drill & Reach",
+    subtitle: "Precision media distribution reaching high-intent capital.",
+    description:
+      "Active diamond drill programs generate pivotal market catalysts. We deploy targeted multi-channel digital campaigns across global financial hubs to ensure discovery milestones reach accredited mining funds and retail investors.",
+    deliverables: [
+      "Geotargeted placement in Toronto, Perth, Vancouver, London & New York",
+      "Real-time drill result broadcast across YouTube, X & Stockhouse",
+      "High-intent Google Ads targeting active commodity and mining funds",
+      "Executive LinkedIn thought-leadership campaigns for management",
+    ],
     imageSrc: "/services/02-drill.jpg",
-    cards: STAGE_2_CARDS,
+    imageAlt: "Active diamond drill rig operating during exploration program",
+    cards: [
+      {
+        id: "social-media",
+        title: "Social Media Marketing",
+        category: "Discovery Campaign",
+        description:
+          "Targeted broadcast of drill core discoveries, visual drill logs, and mineral assay highlights across X, YouTube, and mining forums.",
+        href: "/services#social-media",
+        icon: Share2,
+      },
+      {
+        id: "google-ads",
+        title: "Google Ads & Paid Search",
+        category: "Investor Reach",
+        description:
+          "High-intent search campaigns targeting institutional mining funds, retail investors, and sector analysts searching specific commodities.",
+        href: "/services#google-ads",
+        icon: Target,
+      },
+      {
+        id: "paid-social",
+        title: "LinkedIn & Meta Ads",
+        category: "Executive Audience",
+        description:
+          "Geotargeted executive placement in primary capital markets, engaging fund managers, private equity directors, and mining executives.",
+        href: "/services#paid-social",
+        icon: Building2,
+      },
+    ],
   },
   {
-    stageNum: "03",
-    badge: "STAGE 03 // ASSAY & PROVE",
-    title: "Assay Verification & PR",
-    description: "Broadcasting lab results, technical filings, CEO townhalls, and tier-1 financial press coverage.",
+    id: "stage-03",
+    num: "03",
+    stageCode: "STAGE 03 // ASSAY & PROVE",
+    tabLabel: "Technical PR & Assays",
+    badge: "Stage 03 // Assay Verification & PR",
+    title: "Deliver Core Data",
+    subtitle: "Authoritative technical PR, townhalls, and news wire distribution.",
+    description:
+      "High-grade intercepts mean nothing if they remain unread. We structure, format, and broadcast NI 43-101 compliant technical filings, CEO video interviews, and institutional webinars that clearly articulate mineral grade and strike length.",
+    deliverables: [
+      "Global newswire distribution across Bloomberg, PR Newswire & SEDAR",
+      "Live CEO townhalls, technical Q&As, and virtual site visits",
+      "Interviews and feature placement in leading financial mining publications",
+      "Crisis communications and regulatory disclosure management",
+    ],
     imageSrc: "/services/03-assay.jpg",
-    cards: STAGE_3_CARDS,
+    imageAlt: "Geologist logging core samples in certified assay shed",
+    cards: [
+      {
+        id: "public-relations",
+        title: "Public Relations & Wire Distribution",
+        category: "Assay & Editorial",
+        description:
+          "Direct global wire distribution of drill intercepts, resource updates, NI 43-101 technical reports, and quarterly filings.",
+        href: "/services#pr",
+        icon: Megaphone,
+      },
+      {
+        id: "webinars-events",
+        title: "Webinars & Executive Events",
+        category: "Executive Q&A",
+        description:
+          "Live CEO townhalls, virtual site visits, and 1-on-1 institutional investor conference hosting with verified attendance analytics.",
+        href: "/services#events",
+        icon: Video,
+      },
+    ],
   },
   {
-    stageNum: "04",
-    badge: "STAGE 04 // SMELT & SHIP",
-    title: "Commercial Production & Hub",
-    description: "Deploying enterprise corporate web hubs and mobile apps for continuous capital market engagement.",
+    id: "stage-04",
+    num: "04",
+    stageCode: "STAGE 04 // SMELT & SHIP",
+    tabLabel: "Enterprise Web & Scale",
+    badge: "Stage 04 // Commercial Production & Hub",
+    title: "Liquidity & Scale",
+    subtitle: "Enterprise corporate portals and continuous investor mobile engagement.",
+    description:
+      "As a project advances into feasibility and commercial production, institutional transparency is mandatory. We build custom Next.js investor portals and native mobile apps with live commodity pricing, interactive maps, and SEC/SEDAR integration.",
+    deliverables: [
+      "Custom Next.js corporate portals with sub-second page loads",
+      "Interactive 3D drill hole visualizers and GIS concession maps",
+      "Native iOS/Android investor relation apps with push notification alerts",
+      "Automated SEC / SEDAR regulatory filing sync and interactive stock charts",
+    ],
     imageSrc: "/services/04-pit.jpg",
-    cards: STAGE_4_CARDS,
+    imageAlt: "Commercial open-pit mining operation with haul trucks",
+    cards: [
+      {
+        id: "website-dev",
+        title: "Enterprise Website Development",
+        category: "Corporate Web Portal",
+        description:
+          "Custom Next.js corporate portals with live commodity tickers, interactive property maps, and automated regulatory filing feeds.",
+        href: "/services#web-dev",
+        icon: Globe,
+      },
+      {
+        id: "app-dev",
+        title: "Investor Relations Mobile Apps",
+        category: "Mobile Application",
+        description:
+          "Native iOS/Android investor relation apps for real-time press releases, drill results, stock tracking, and push alerts.",
+        href: "/services#app-dev",
+        icon: Smartphone,
+      },
+    ],
   },
 ];
 
 export const ServicesScrollStory: React.FC = () => {
+  const reduceMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isMobileOrReduced, setIsMobileOrReduced] = useState(false);
-  const [currentProgress, setCurrentProgress] = useState(0);
+
+  const [activeStage, setActiveStage] = useState(0);
+  const [direction, setDirection] = useState(1); // 1 = forward, -1 = reverse
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    const checkMediaQuery = () => {
-      const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const isMobile = window.innerWidth < 1024;
-      setIsMobileOrReduced(isReduced || isMobile);
-    };
-
-    checkMediaQuery();
-    window.addEventListener("resize", checkMediaQuery);
-    return () => window.removeEventListener("resize", checkMediaQuery);
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // SINGLE USE_SCROLL HOOK SOURCE OF TRUTH (Requirement #1)
+  // Scroll Progress across the 4 stages pinned container
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    setCurrentProgress(latest);
+    if (!isDesktop) return;
+
+    let targetIdx = 0;
+    if (latest < 0.25) targetIdx = 0;
+    else if (latest < 0.50) targetIdx = 1;
+    else if (latest < 0.75) targetIdx = 2;
+    else targetIdx = 3;
+
+    if (targetIdx !== activeStage) {
+      setDirection(targetIdx > activeStage ? 1 : -1);
+      setActiveStage(targetIdx);
+    }
   });
 
-  // --- STAGE OPACITIES (Strict Non-Overlapping Sequential Crossfades) ---
-  // Stage 1: 0.00 -> 0.18 hold 1, 0.18 -> 0.25 fade to 0
-  const stage1Opacity = useTransform(scrollYProgress, [0.00, 0.18, 0.25], [1, 1, 0]);
+  const scrollToStage = (index: number) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    const containerTop = rect.top + scrollTop;
+    const scrollableDistance = containerRef.current.offsetHeight - window.innerHeight;
+    const progressTargets = [0.10, 0.36, 0.62, 0.88];
+    const targetScroll = containerTop + progressTargets[index] * scrollableDistance;
+    window.scrollTo({ top: targetScroll, behavior: "smooth" });
+  };
 
-  // Stage 2: 0.22 -> 0.27 fade in, 0.27 -> 0.43 hold 1, 0.43 -> 0.50 fade to 0
-  const stage2Opacity = useTransform(scrollYProgress, [0.22, 0.27, 0.43, 0.50], [0, 1, 1, 0]);
+  const currentStage = STAGES[activeStage];
 
-  // Stage 3: 0.47 -> 0.52 fade in, 0.52 -> 0.68 hold 1, 0.68 -> 0.75 fade to 0
-  const stage3Opacity = useTransform(scrollYProgress, [0.47, 0.52, 0.68, 0.75], [0, 1, 1, 0]);
+  // Alternating directional transitions for rhythm
+  // Stage 01 -> 02: Image exits Left, Text enters Left
+  // Stage 02 -> 03: Image exits Right, Text enters Right
+  // Stage 03 -> 04: Image exits Left, Text enters Left
+  const isAltDirection = activeStage % 2 === 1;
+  const effectiveDirection = isAltDirection ? -direction : direction;
 
-  // Stage 4: 0.72 -> 0.77 fade in, holds at 1 permanently (Requirement #3)
-  const stage4Opacity = useTransform(scrollYProgress, [0.72, 0.77], [0, 1]);
+  return (
+    <section
+      id="services"
+      className="relative w-full border-b border-[#E5E5E3] bg-[#F8F8F6] font-sans text-[#15181C] overflow-x-clip"
+    >
+      {/* -------------------------------------------------------------------- */}
+      {/* BACKGROUND GEOLOGICAL CONTOUR & SUBTLE GRID                          */}
+      {/* -------------------------------------------------------------------- */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none opacity-40">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(11,31,58,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(11,31,58,0.02)_1px,transparent_1px)] bg-[size:5rem_5rem]" />
+        <svg
+          viewBox="0 0 1440 1600"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute -top-10 left-0 w-full h-[120%] opacity-20 mix-blend-multiply"
+        >
+          <path
+            d="M-40,200 C300,140 600,320 960,220 C1300,120 1500,280 1800,200"
+            stroke="rgba(184, 134, 11, 0.2)"
+            strokeWidth="1.2"
+            strokeDasharray="6 10"
+          />
+          <path
+            d="M-60,700 C280,620 620,800 1020,690 C1360,600 1560,740 1860,670"
+            stroke="rgba(11, 31, 58, 0.08)"
+            strokeWidth="1"
+          />
+          <path
+            d="M-40,1200 C320,1120 660,1300 1060,1190 C1400,1100 1600,1240 1900,1170"
+            stroke="rgba(184, 134, 11, 0.15)"
+            strokeWidth="1.2"
+            strokeDasharray="4 8"
+          />
+        </svg>
+      </div>
 
-  // --- POINTER EVENTS SAFETY NET (Requirement #4) ---
-  const stage1Pointer = useTransform(stage1Opacity, (o) => (o < 0.05 ? "none" : "auto"));
-  const stage2Pointer = useTransform(stage2Opacity, (o) => (o < 0.05 ? "none" : "auto"));
-  const stage3Pointer = useTransform(stage3Opacity, (o) => (o < 0.05 ? "none" : "auto"));
-  const stage4Pointer = useTransform(stage4Opacity, (o) => (o < 0.05 ? "none" : "auto"));
+      {/* -------------------------------------------------------------------- */}
+      {/* SECTION HEADER (EDITORIAL INTRODUCTION)                              */}
+      {/* -------------------------------------------------------------------- */}
+      <div className="container-editorial relative z-10 pt-20 lg:pt-28 pb-10 lg:pb-14">
+        <div className="max-w-3xl">
+          <motion.div
+            initial={reduceMotion ? {} : { opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="flex items-center gap-3"
+          >
+            <span className="h-px w-8 bg-[#B8860B]" />
+            <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[#9E7208]">
+              Integrated Mining Capabilities
+            </span>
+          </motion.div>
 
-  // --- KEN BURNS TRANSFORMS (GPU Composited scale + translate) ---
-  // Stage 1: Subtle zoom 1.0 -> 1.15, slow pan left-up
-  const stage1Scale = useTransform(scrollYProgress, [0.00, 0.25], [1.0, 1.15]);
-  const stage1X = useTransform(scrollYProgress, [0.00, 0.25], ["0%", "-3%"]);
-  const stage1Y = useTransform(scrollYProgress, [0.00, 0.25], ["0%", "-2%"]);
+          <motion.h2
+            initial={reduceMotion ? {} : { opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-4 font-serif text-3xl sm:text-4xl lg:text-5xl font-normal leading-[1.1] text-[#0B1F3A]"
+          >
+            From initial ground discovery to global capital markets.
+          </motion.h2>
 
-  // Stage 2: Subtle zoom 1.0 -> 1.15, slow pan right-up
-  const stage2Scale = useTransform(scrollYProgress, [0.22, 0.50], [1.0, 1.15]);
-  const stage2X = useTransform(scrollYProgress, [0.22, 0.50], ["0%", "3%"]);
-  const stage2Y = useTransform(scrollYProgress, [0.22, 0.50], ["0%", "-2%"]);
+          <motion.p
+            initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-4 text-base sm:text-lg leading-relaxed text-[#57595E]"
+          >
+            We provide full-lifecycle media, branding, public relations, and enterprise digital solutions designed specifically for junior explorers, developers, and global mining producers.
+          </motion.p>
+        </div>
+      </div>
 
-  // Stage 3: Subtle zoom 1.05 -> 1.18, slow pan left-down
-  const stage3Scale = useTransform(scrollYProgress, [0.47, 0.75], [1.05, 1.18]);
-  const stage3X = useTransform(scrollYProgress, [0.47, 0.75], ["0%", "-2%"]);
-  const stage3Y = useTransform(scrollYProgress, [0.47, 0.75], ["0%", "2%"]);
+      {/* =================================================================== */}
+      {/* DESKTOP: STICKY CINEMATIC MINING STORY CANVAS (700vh scroll space)  */}
+      {/* =================================================================== */}
+      <div
+        ref={containerRef}
+        className="hidden lg:block relative h-[700vh]"
+      >
+        <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden z-20 pt-16 lg:pt-20">
+          <div className="container-editorial w-full relative">
+            {/* Interactive Vertical Stage Indicator & Prev/Next Controls */}
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-end gap-5 z-40 bg-white/70 backdrop-blur-xs p-2 rounded-xl border border-[#E5E5E3] shadow-xs">
+              <div className="flex flex-col gap-3.5">
+                {STAGES.map((s, idx) => {
+                  const isActive = idx === activeStage;
+                  return (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => scrollToStage(idx)}
+                      className="flex items-center justify-end gap-2.5 group cursor-pointer focus:outline-none"
+                      aria-label={`Jump to Stage ${s.num}`}
+                    >
+                      <span
+                        className={`font-mono text-[11px] transition-colors duration-300 ${
+                          isActive ? "text-[#0B1F3A] font-bold" : "text-[#888A8E] group-hover:text-[#0B1F3A]"
+                        }`}
+                      >
+                        {s.num}
+                      </span>
+                      <span
+                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                          isActive
+                            ? "bg-[#B8860B] scale-125 shadow-[0_0_8px_rgba(184,134,11,0.5)]"
+                            : "bg-[#D1D1CE] group-hover:bg-[#B8860B]/60"
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
+              </div>
 
-  // Stage 4: Subtle zoom 1.0 -> 1.15, slow pan right-down
-  const stage4Scale = useTransform(scrollYProgress, [0.72, 1.00], [1.0, 1.15]);
-  const stage4X = useTransform(scrollYProgress, [0.72, 1.00], ["0%", "3%"]);
-  const stage4Y = useTransform(scrollYProgress, [0.72, 1.00], ["0%", "-2%"]);
+              {/* Prev / Next chapter controls */}
+              <div className="flex items-center gap-1 pt-2 border-t border-[#E5E5E3]">
+                <button
+                  type="button"
+                  disabled={activeStage === 0}
+                  onClick={() => scrollToStage(Math.max(0, activeStage - 1))}
+                  className="p-1 text-[#888A8E] hover:text-[#0B1F3A] disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  aria-label="Previous Chapter"
+                >
+                  <ChevronUp className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={activeStage === STAGES.length - 1}
+                  onClick={() => scrollToStage(Math.min(STAGES.length - 1, activeStage + 1))}
+                  className="p-1 text-[#888A8E] hover:text-[#0B1F3A] disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  aria-label="Next Chapter"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
 
-  // --- CARD REVEAL TRANSFORMS (Reveals before stage crossfade out) ---
-  // Stage 1 Cards (Revealed by 0.14; stage 1 fade starts at 0.18)
-  const card1_1_opacity = useTransform(scrollYProgress, [0.00, 0.08], [0, 1]);
-  const card1_1_y = useTransform(scrollYProgress, [0.00, 0.08], ["50px", "0px"]);
+            {/* Split-Screen Canvas (58% Image & Deliverables / 42% Story & Cards) */}
+            <div className="grid grid-cols-12 gap-10 lg:gap-14 items-center pr-14">
+              {/* LEFT: 58% LARGE CINEMATIC IMAGE + CORE STAGE DELIVERABLES */}
+              <div className="col-span-7 flex flex-col gap-4 relative">
+                <div className="relative aspect-[16/9.5] w-full rounded-2xl overflow-hidden border border-[#E5E5E3] shadow-md bg-white">
+                  <AnimatePresence initial={false} custom={effectiveDirection} mode="popLayout">
+                    <motion.div
+                      key={currentStage.id}
+                      custom={effectiveDirection}
+                      variants={{
+                        enter: (dir: number) => ({
+                          x: dir > 0 ? "100%" : "-100%",
+                          clipPath: dir > 0 ? "inset(0 100% 0 0)" : "inset(0 0 0 100%)",
+                          opacity: 0,
+                        }),
+                        center: {
+                          x: "0%",
+                          clipPath: "inset(0 0% 0 0)",
+                          opacity: 1,
+                          transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                        },
+                        exit: (dir: number) => ({
+                          x: dir > 0 ? "-100%" : "100%",
+                          opacity: 0,
+                          transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] },
+                        }),
+                      }}
+                      initial={reduceMotion ? false : "enter"}
+                      animate="center"
+                      exit={reduceMotion ? undefined : "exit"}
+                      className="absolute inset-0 w-full h-full"
+                    >
+                      <Image
+                        src={currentStage.imageSrc}
+                        alt={currentStage.imageAlt}
+                        fill
+                        priority
+                        className="object-cover transition-all duration-700 hover:scale-[1.025]"
+                        sizes="58vw"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/70 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between font-mono text-[11px] text-white uppercase tracking-wider font-medium">
+                        <span>{currentStage.imageAlt}</span>
+                        <span className="text-[#D4AF37]">CHAPTER #{currentStage.num}</span>
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
 
-  const card1_2_opacity = useTransform(scrollYProgress, [0.06, 0.14], [0, 1]);
-  const card1_2_y = useTransform(scrollYProgress, [0.06, 0.14], ["50px", "0px"]);
+                {/* Core Stage Deliverables (Moved to Left Side to Balance Content) */}
+                <AnimatePresence initial={false} custom={effectiveDirection} mode="wait">
+                  <motion.div
+                    key={`deliv-${currentStage.id}`}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -12 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="rounded-xl border border-[#E5E5E3] bg-white p-4 shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#E5E5E3]">
+                      <div className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B]" />
+                        <h4 className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#0B1F3A]">
+                          Stage {currentStage.num} Core Deliverables:
+                        </h4>
+                      </div>
+                      <span className="font-mono text-[9.5px] text-[#9E7208] font-bold uppercase tracking-wider">
+                        Verified Milestones ({currentStage.deliverables.length})
+                      </span>
+                    </div>
 
-  // Stage 2 Cards (Revealed by 0.39; stage 2 fade starts at 0.43)
-  const card2_1_opacity = useTransform(scrollYProgress, [0.27, 0.31], [0, 1]);
-  const card2_1_y = useTransform(scrollYProgress, [0.27, 0.31], ["50px", "0px"]);
+                    <ul className="grid grid-cols-2 gap-2.5">
+                      {currentStage.deliverables.map((item) => (
+                        <li
+                          key={item}
+                          className="flex items-start gap-2 text-xs text-[#3A3D42] leading-snug"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#B8860B] shrink-0 mt-0.5" />
+                          <span>{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-  const card2_2_opacity = useTransform(scrollYProgress, [0.31, 0.35], [0, 1]);
-  const card2_2_y = useTransform(scrollYProgress, [0.31, 0.35], ["50px", "0px"]);
+              {/* RIGHT: 42% EDITORIAL STORY & SERVICE LINKS */}
+              <div className="col-span-5 relative">
+                <AnimatePresence initial={false} custom={effectiveDirection} mode="wait">
+                  <motion.div
+                    key={currentStage.id}
+                    custom={effectiveDirection}
+                    variants={{
+                      enter: (dir: number) => ({
+                        x: dir > 0 ? -35 : 35,
+                        opacity: 0,
+                      }),
+                      center: {
+                        x: 0,
+                        opacity: 1,
+                        transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
+                      },
+                      exit: (dir: number) => ({
+                        x: dir > 0 ? 30 : -30,
+                        opacity: 0,
+                        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] },
+                      }),
+                    }}
+                    initial={reduceMotion ? false : "enter"}
+                    animate="center"
+                    exit={reduceMotion ? undefined : "exit"}
+                    className="flex flex-col gap-4"
+                  >
+                    {/* Animated Stage Number & Badge */}
+                    <div className="flex items-center gap-3">
+                      <div className="relative overflow-hidden h-9 flex items-center">
+                        <motion.span
+                          key={`num-${currentStage.num}`}
+                          initial={{ y: 25, opacity: 0 }}
+                          animate={{ y: 0, opacity: 1 }}
+                          exit={{ y: -25, opacity: 0 }}
+                          transition={{ duration: 0.5, ease: "easeOut" }}
+                          className="font-geist text-3xl font-black text-[#0B1F3A] leading-none"
+                        >
+                          {currentStage.num}
+                        </motion.span>
+                      </div>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B]" />
+                      <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#9E7208]">
+                        {currentStage.stageCode}
+                      </span>
+                    </div>
 
-  const card2_3_opacity = useTransform(scrollYProgress, [0.35, 0.39], [0, 1]);
-  const card2_3_y = useTransform(scrollYProgress, [0.35, 0.39], ["50px", "0px"]);
+                    <div>
+                      <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#57595E] block mb-1">
+                        {currentStage.badge}
+                      </span>
+                      <h3 className="font-serif text-2xl sm:text-3xl font-normal text-[#0B1F3A] leading-tight">
+                        {currentStage.title}
+                      </h3>
+                      <p className="mt-1.5 text-sm font-medium text-[#9E7208]">
+                        {currentStage.subtitle}
+                      </p>
+                      <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-[#57595E]">
+                        {currentStage.description}
+                      </p>
+                    </div>
 
-  // Stage 3 Cards (Revealed by 0.64; stage 3 fade starts at 0.68)
-  const card3_1_opacity = useTransform(scrollYProgress, [0.52, 0.58], [0, 1]);
-  const card3_1_y = useTransform(scrollYProgress, [0.52, 0.58], ["50px", "0px"]);
+                    {/* Specialized Capabilities Service Cards */}
+                    <div className="flex flex-col gap-2.5 pt-1">
+                      <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#9E7208]">
+                        Specialized Capabilities ({currentStage.cards.length})
+                      </span>
 
-  const card3_2_opacity = useTransform(scrollYProgress, [0.58, 0.64], [0, 1]);
-  const card3_2_y = useTransform(scrollYProgress, [0.58, 0.64], ["50px", "0px"]);
+                      <div className="grid grid-cols-1 gap-2.5">
+                        {currentStage.cards.map((card) => {
+                          const IconComponent = card.icon;
+                          return (
+                            <div
+                              key={card.id}
+                              className="group relative rounded-xl border border-[#E5E5E3] bg-white p-3.5 shadow-2xs transition-all duration-300 hover:border-[#D4AF37]/60 hover:shadow-xs"
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FAF5E8] text-[#9E7208] border border-[#B8860B]/25 transition-colors group-hover:bg-[#B8860B] group-hover:text-white">
+                                  <IconComponent className="h-4 w-4" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="font-serif text-sm font-normal text-[#0B1F3A] group-hover:text-[#B8860B] transition-colors truncate">
+                                      {card.title}
+                                    </h4>
+                                    <Link
+                                      href={card.href}
+                                      className="inline-flex items-center gap-1 text-[10.5px] font-mono font-semibold uppercase tracking-wider text-[#9E7208] hover:text-[#0B1F3A] transition-colors shrink-0 ml-2"
+                                    >
+                                      <span>Explore</span>
+                                      <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
+                                    </Link>
+                                  </div>
+                                  <p className="text-[11px] leading-snug text-[#57595E] line-clamp-2 mt-1">
+                                    {card.description}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  // Stage 4 Cards (Revealed by 0.90; stage 4 holds)
-  const card4_1_opacity = useTransform(scrollYProgress, [0.77, 0.83], [0, 1]);
-  const card4_1_y = useTransform(scrollYProgress, [0.77, 0.83], ["50px", "0px"]);
+      {/* =================================================================== */}
+      {/* MOBILE: CLEAN VERTICAL CHAPTERS (< 1024px)                          */}
+      {/* =================================================================== */}
+      <div className="lg:hidden container-editorial pb-20 flex flex-col gap-16">
+        {STAGES.map((stage) => (
+          <div key={stage.id} className="flex flex-col gap-5">
+            {/* Stage Number & Badge */}
+            <div className="flex items-center gap-2">
+              <span className="font-geist text-2xl font-black text-[#0B1F3A]">
+                {stage.num}
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B]" />
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#9E7208]">
+                {stage.stageCode}
+              </span>
+            </div>
 
-  const card4_2_opacity = useTransform(scrollYProgress, [0.83, 0.90], [0, 1]);
-  const card4_2_y = useTransform(scrollYProgress, [0.83, 0.90], ["50px", "0px"]);
+            {/* Cinematic Image */}
+            <div className="relative aspect-[16/10] w-full rounded-xl overflow-hidden border border-[#E5E5E3] shadow-sm bg-white">
+              <Image
+                src={stage.imageSrc}
+                alt={stage.imageAlt}
+                fill
+                className="object-cover"
+                sizes="100vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/70 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between font-mono text-[10px] text-white uppercase font-medium">
+                <span>{stage.imageAlt}</span>
+                <span className="text-[#D4AF37]">CHAPTER #{stage.num}</span>
+              </div>
+            </div>
 
-  // STATIC FALLBACK FOR MOBILE & REDUCED MOTION
-  if (isMobileOrReduced) {
-    return (
-      <section id="services" className="py-16 md:py-24 bg-[#0B1220] text-[#F5F1E8] font-sans border-b border-[#C89216]/20">
-        <div className="container-editorial">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <Badge variant="gold" size="md" className="mb-3 uppercase tracking-[0.05em] text-[11px] bg-[#C89216]/20 text-[#E0B544] border border-[#C89216]/40">
-              Mining Media Services
-            </Badge>
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-white mb-4">
-              End-to-End Mining Communications
-            </h2>
-            <p className="text-sm sm:text-base text-[#D8D2C7]/85 leading-relaxed">
-              From initial exploration surveys to commercial production briefings, our integrated communications platform connects global mining issuers directly with capital markets.
+            {/* Narrative */}
+            <div>
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#57595E] block mb-1">
+                {stage.badge}
+              </span>
+              <h3 className="font-serif text-2xl font-normal text-[#0B1F3A]">
+                {stage.title}
+              </h3>
+              <p className="mt-1.5 text-sm font-medium text-[#9E7208]">
+                {stage.subtitle}
+              </p>
+              <p className="mt-2.5 text-xs sm:text-sm leading-relaxed text-[#57595E]">
+                {stage.description}
+              </p>
+            </div>
+
+            {/* Specialized Capabilities */}
+            <div className="flex flex-col gap-3">
+              {stage.cards.map((card) => {
+                const IconComponent = card.icon;
+                return (
+                  <div
+                    key={card.id}
+                    className="rounded-xl border border-[#E5E5E3] bg-white p-4 shadow-2xs"
+                  >
+                    <div className="flex items-start gap-3 mb-2">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#FAF5E8] text-[#9E7208] border border-[#B8860B]/25">
+                        <IconComponent className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <span className="font-mono text-[9px] font-semibold uppercase tracking-wider text-[#9E7208]">
+                          {card.category}
+                        </span>
+                        <h4 className="font-serif text-base font-normal text-[#0B1F3A]">
+                          {card.title}
+                        </h4>
+                      </div>
+                    </div>
+                    <p className="text-xs text-[#57595E] leading-relaxed mb-3">
+                      {card.description}
+                    </p>
+                    <Link
+                      href={card.href}
+                      className="inline-flex items-center gap-1 text-xs font-mono font-semibold uppercase tracking-wider text-[#9E7208]"
+                    >
+                      <span>Explore Service Details</span>
+                      <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Core Deliverables */}
+            <div className="rounded-xl border border-[#E5E5E3] bg-white p-4 shadow-2xs">
+              <h4 className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0B1F3A] mb-2.5">
+                Stage {stage.num} Deliverables:
+              </h4>
+              <ul className="space-y-2">
+                {stage.deliverables.map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2 text-xs text-[#3A3D42] leading-tight"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#B8860B] shrink-0 mt-0.5" />
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Multi-stage integrated campaign execution banner */}
+      <div className="container-editorial relative z-20 pb-20 lg:pb-28">
+        <div className="rounded-2xl border border-[#E5E5E3] bg-white p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+          <div>
+            <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#9E7208] block mb-1">
+              Full-Lifecycle Execution
+            </span>
+            <p className="text-sm sm:text-base text-[#15181C] font-medium">
+              Looking for multi-stage integrated campaign execution tailored to your mineral asset?
             </p>
           </div>
-
-          {/* 4 Sequential Stage Sections for Mobile */}
-          <div className="flex flex-col gap-16">
-            {STAGES.map((stage) => (
-              <div key={stage.stageNum} className="flex flex-col gap-6">
-                <div className="relative h-64 rounded-xl overflow-hidden border border-[#C89216]/30 shadow-lg">
-                  <Image
-                    src={stage.imageSrc}
-                    alt={stage.title}
-                    fill
-                    className="object-cover"
-                    sizes="100vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220] via-[#0B1220]/40 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <span className="text-xs font-mono font-semibold text-[#E0B544] uppercase tracking-widest block mb-1">
-                      {stage.badge}
-                    </span>
-                    <h3 className="font-serif text-xl text-white">{stage.title}</h3>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {stage.cards.map((card) => (
-                    <StaticServiceCard key={card.id} card={card} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <Link
+            href="/contact"
+            className="group inline-flex items-center gap-2 rounded-xl bg-[#0B1F3A] px-5 py-3 text-xs font-mono font-bold uppercase tracking-wider text-white transition-all hover:bg-[#B8860B] shrink-0"
+          >
+            <span>Request Consultation</span>
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </Link>
         </div>
-      </section>
-    );
-  }
-
-  // DESKTOP SCROLL-JACKED STORY (500vh PINNED TRACK FOR REAL PHOTOGRAPHY KEN BURNS)
-  return (
-    <section id="services" ref={containerRef} className="relative h-[500vh] bg-[#0B1220] text-[#F5F1E8] font-sans border-b border-[#C89216]/20">
-      {/* STICKY VIEWPORT CONTAINER */}
-      <div className="sticky top-0 h-screen overflow-hidden flex flex-col justify-center">
-
-        {/* =========================================================================
-            STAGE 01: STAKE THE CLAIM (Geological Survey Rig Photography)
-           ========================================================================= */}
-        <motion.div
-          className="absolute inset-0 z-0 overflow-hidden"
-          style={{ opacity: stage1Opacity, pointerEvents: stage1Pointer }}
-        >
-          <motion.div
-            className="absolute inset-0 w-full h-full"
-            style={{
-              scale: stage1Scale,
-              x: stage1X,
-              y: stage1Y,
-            }}
-          >
-            <Image
-              src="/services/01-survey.jpg"
-              alt="Geological exploration survey rig"
-              fill
-              priority
-              className="object-cover"
-              sizes="100vw"
-            />
-          </motion.div>
-
-          {/* GRADIENT SCRIM FOR TEXT LEGIBILITY */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220]/95 via-[#0B1220]/50 to-[#0B1220]/20 pointer-events-none" />
-          <div className="absolute inset-0 bg-radial-gradient from-transparent via-[#0B1220]/30 to-[#0B1220]/80 pointer-events-none" />
-
-          {/* STAGE CONTENT OVERLAY */}
-          <div className="relative z-20 container-editorial h-full flex flex-col justify-between py-20">
-            {/* Header HUD */}
-            <div>
-              <span className="inline-flex items-center gap-2 font-mono text-xs text-[#E0B544] uppercase tracking-widest bg-[#C89216]/20 border border-[#C89216]/40 px-4 py-1.5 rounded-full backdrop-blur-md mb-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#E0B544] animate-pulse" />
-                STAGE 01 // STAKE THE CLAIM
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white max-w-2xl leading-tight">
-                Geological Survey & Identity
-              </h2>
-            </div>
-
-            {/* Service Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
-              <motion.div style={{ opacity: card1_1_opacity, y: card1_1_y }}>
-                <AnimatedServiceCard card={STAGE_1_CARDS[0]} />
-              </motion.div>
-              <motion.div style={{ opacity: card1_2_opacity, y: card1_2_y }}>
-                <AnimatedServiceCard card={STAGE_1_CARDS[1]} />
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* =========================================================================
-            STAGE 02: DRILL & REACH (Exploration Diamond Drill Rig Photography)
-           ========================================================================= */}
-        <motion.div
-          className="absolute inset-0 z-0 overflow-hidden"
-          style={{ opacity: stage2Opacity, pointerEvents: stage2Pointer }}
-        >
-          <motion.div
-            className="absolute inset-0 w-full h-full"
-            style={{
-              scale: stage2Scale,
-              x: stage2X,
-              y: stage2Y,
-            }}
-          >
-            <Image
-              src="/services/02-drill.jpg"
-              alt="Active diamond drill rig operation"
-              fill
-              className="object-cover"
-              sizes="100vw"
-            />
-          </motion.div>
-
-          {/* GRADIENT SCRIM FOR TEXT LEGIBILITY */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220]/95 via-[#0B1220]/50 to-[#0B1220]/20 pointer-events-none" />
-          <div className="absolute inset-0 bg-radial-gradient from-transparent via-[#0B1220]/30 to-[#0B1220]/80 pointer-events-none" />
-
-          {/* STAGE CONTENT OVERLAY */}
-          <div className="relative z-20 container-editorial h-full flex flex-col justify-between py-20">
-            {/* Header HUD */}
-            <div>
-              <span className="inline-flex items-center gap-2 font-mono text-xs text-[#E0B544] uppercase tracking-widest bg-[#C89216]/20 border border-[#C89216]/40 px-4 py-1.5 rounded-full backdrop-blur-md mb-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#E0B544] animate-pulse" />
-                STAGE 02 // DRILL & REACH
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white max-w-2xl leading-tight">
-                Exploration Drilling & Reach
-              </h2>
-            </div>
-
-            {/* Service Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl">
-              <motion.div style={{ opacity: card2_1_opacity, y: card2_1_y }}>
-                <AnimatedServiceCard card={STAGE_2_CARDS[0]} compact />
-              </motion.div>
-              <motion.div style={{ opacity: card2_2_opacity, y: card2_2_y }}>
-                <AnimatedServiceCard card={STAGE_2_CARDS[1]} compact />
-              </motion.div>
-              <motion.div style={{ opacity: card2_3_opacity, y: card2_3_y }}>
-                <AnimatedServiceCard card={STAGE_2_CARDS[2]} compact />
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* =========================================================================
-            STAGE 03: ASSAY & PROVE (Geological Core Sample Laboratory Photography)
-           ========================================================================= */}
-        <motion.div
-          className="absolute inset-0 z-0 overflow-hidden"
-          style={{ opacity: stage3Opacity, pointerEvents: stage3Pointer }}
-        >
-          <motion.div
-            className="absolute inset-0 w-full h-full"
-            style={{
-              scale: stage3Scale,
-              x: stage3X,
-              y: stage3Y,
-            }}
-          >
-            <Image
-              src="/services/03-assay.jpg"
-              alt="Geologist logging diamond drill core trays"
-              fill
-              className="object-cover"
-              sizes="100vw"
-            />
-          </motion.div>
-
-          {/* GRADIENT SCRIM FOR TEXT LEGIBILITY */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220]/95 via-[#0B1220]/50 to-[#0B1220]/20 pointer-events-none" />
-          <div className="absolute inset-0 bg-radial-gradient from-transparent via-[#0B1220]/30 to-[#0B1220]/80 pointer-events-none" />
-
-          {/* STAGE CONTENT OVERLAY */}
-          <div className="relative z-20 container-editorial h-full flex flex-col justify-between py-20">
-            {/* Header HUD */}
-            <div>
-              <span className="inline-flex items-center gap-2 font-mono text-xs text-[#E0B544] uppercase tracking-widest bg-[#C89216]/20 border border-[#C89216]/40 px-4 py-1.5 rounded-full backdrop-blur-md mb-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#E0B544] animate-pulse" />
-                STAGE 03 // ASSAY & PROVE
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white max-w-2xl leading-tight">
-                Assay Verification & PR
-              </h2>
-            </div>
-
-            {/* Service Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
-              <motion.div style={{ opacity: card3_1_opacity, y: card3_1_y }}>
-                <AnimatedServiceCard card={STAGE_3_CARDS[0]} />
-              </motion.div>
-              <motion.div style={{ opacity: card3_2_opacity, y: card3_2_y }}>
-                <AnimatedServiceCard card={STAGE_3_CARDS[1]} />
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* =========================================================================
-            STAGE 04: SMELT & SHIP (Massive Open-Pit Mine Photography)
-           ========================================================================= */}
-        <motion.div
-          className="absolute inset-0 z-0 overflow-hidden"
-          style={{ opacity: stage4Opacity, pointerEvents: stage4Pointer }}
-        >
-          <motion.div
-            className="absolute inset-0 w-full h-full"
-            style={{
-              scale: stage4Scale,
-              x: stage4X,
-              y: stage4Y,
-            }}
-          >
-            <Image
-              src="/services/04-pit.jpg"
-              alt="Massive open pit mine with haul trucks and terraces"
-              fill
-              className="object-cover"
-              sizes="100vw"
-            />
-          </motion.div>
-
-          {/* GRADIENT SCRIM FOR TEXT LEGIBILITY */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B1220]/95 via-[#0B1220]/50 to-[#0B1220]/20 pointer-events-none" />
-          <div className="absolute inset-0 bg-radial-gradient from-transparent via-[#0B1220]/30 to-[#0B1220]/80 pointer-events-none" />
-
-          {/* STAGE CONTENT OVERLAY */}
-          <div className="relative z-20 container-editorial h-full flex flex-col justify-between py-20">
-            {/* Header HUD */}
-            <div>
-              <span className="inline-flex items-center gap-2 font-mono text-xs text-[#E0B544] uppercase tracking-widest bg-[#C89216]/20 border border-[#C89216]/40 px-4 py-1.5 rounded-full backdrop-blur-md mb-4">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#E0B544] animate-pulse" />
-                STAGE 04 // SMELT & SHIP
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-white max-w-2xl leading-tight">
-                Commercial Production & Hub
-              </h2>
-            </div>
-
-            {/* Service Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl">
-              <motion.div style={{ opacity: card4_1_opacity, y: card4_1_y }}>
-                <AnimatedServiceCard card={STAGE_4_CARDS[0]} />
-              </motion.div>
-              <motion.div style={{ opacity: card4_2_opacity, y: card4_2_y }}>
-                <AnimatedServiceCard card={STAGE_4_CARDS[1]} />
-              </motion.div>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* BOTTOM SCROLL PROGRESS INDICATOR BAR */}
-        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-30 flex items-center gap-3 bg-[#0B1220]/85 backdrop-blur-md px-6 py-2 rounded-full border border-[#C89216]/30 pointer-events-none">
-          <div className="w-48 h-1.5 bg-[#1E293B] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-[#C89216] to-[#E0B544] transition-all duration-75"
-              style={{ width: `${Math.min(currentProgress * 100, 100)}%` }}
-            />
-          </div>
-          <span className="font-mono text-[11px] text-[#E0B544] font-semibold">
-            {Math.round(currentProgress * 100)}%
-          </span>
-        </div>
-
       </div>
     </section>
   );
 };
 
-// --- ANIMATED SERVICE CARD COMPONENT ---
-const AnimatedServiceCard: React.FC<{ card: ServiceCardData; compact?: boolean }> = ({
-  card,
-  compact = false,
-}) => {
-  const IconComponent = card.icon;
-  return (
-    <div className={`group relative bg-[#0B1220]/85 backdrop-blur-md border border-[#C89216]/40 hover:border-[#E0B544] rounded-xl transition-all duration-300 hover:shadow-[0_0_30px_rgba(200,146,22,0.25)] font-sans ${compact ? "p-4 sm:p-5" : "p-6 sm:p-7"}`}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="p-2.5 bg-[#C89216]/20 text-[#E0B544] rounded-lg group-hover:bg-[#C89216] group-hover:text-[#0B1220] transition-colors">
-          <IconComponent className="w-5 h-5" />
-        </div>
-        <span className="font-mono text-[9px] sm:text-[10px] font-semibold tracking-wider uppercase text-[#E0B544] bg-[#C89216]/15 px-2.5 py-0.5 rounded border border-[#C89216]/35">
-          {card.category}
-        </span>
-      </div>
-
-      <h3 className={`font-serif font-normal text-[#F5F1E8] group-hover:text-[#E0B544] transition-colors leading-snug mb-2 ${compact ? "text-base sm:text-lg" : "text-lg sm:text-xl"}`}>
-        {card.title}
-      </h3>
-
-      <p className={`font-sans text-[#D8D2C7]/85 leading-relaxed font-normal mb-4 ${compact ? "text-xs line-clamp-2" : "text-xs sm:text-sm"}`}>
-        {card.description}
-      </p>
-
-      <Link
-        href={card.href}
-        className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-[#E0B544] hover:text-white transition-colors"
-      >
-        Learn More
-        <ArrowRight className="w-3.5 h-3.5 ml-1.5 transform group-hover:translate-x-1 transition-transform" />
-      </Link>
-    </div>
-  );
-};
-
-// --- STATIC SERVICE CARD COMPONENT FOR MOBILE ---
-const StaticServiceCard: React.FC<{ card: ServiceCardData }> = ({ card }) => {
-  const IconComponent = card.icon;
-  return (
-    <div className="bg-[#0B1220]/90 border border-[#C89216]/35 rounded-xl p-6 flex flex-col justify-between font-sans">
-      <div>
-        <div className="flex items-center justify-between mb-4">
-          <div className="p-2.5 bg-[#C89216]/20 text-[#E0B544] rounded-lg">
-            <IconComponent className="w-5 h-5" />
-          </div>
-          <span className="font-mono text-[9px] font-semibold tracking-wider uppercase text-[#E0B544] bg-[#C89216]/15 px-2 py-0.5 rounded border border-[#C89216]/35">
-            {card.category}
-          </span>
-        </div>
-        <h4 className="font-serif text-lg text-[#F5F1E8] mb-2">{card.title}</h4>
-        <p className="text-xs text-[#D8D2C7]/85 leading-relaxed mb-4">{card.description}</p>
-      </div>
-      <Link
-        href={card.href}
-        className="inline-flex items-center text-xs font-semibold uppercase tracking-wider text-[#E0B544] hover:text-white transition-colors"
-      >
-        Learn More
-        <ArrowRight className="w-3.5 h-3.5 ml-1.5" />
-      </Link>
-    </div>
-  );
-};
+export default ServicesScrollStory;

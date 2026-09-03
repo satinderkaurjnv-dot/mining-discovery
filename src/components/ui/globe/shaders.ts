@@ -95,7 +95,7 @@ export const earthFragmentShader = /* glsl */ `
     // floor. Still soft-edged — the planet is composited over a white band and a hard
     // shadow line would read as a smudge — but now it actually turns the surface away.
     float ndl = dot(N, L);
-    float daylight = smoothstep(-0.25, 0.58, ndl);
+    float daylight = smoothstep(-0.15, 0.40, ndl);
 
     vec3 albedo = texture2D(uDayMap, vUv).rgb;
 
@@ -107,32 +107,16 @@ export const earthFragmentShader = /* glsl */ `
     vec3 color = albedo * (uAmbient + uSunIntensity * daylight);
 
     // --- Limb darkening -------------------------------------------------------------
-    // A lit sphere loses brightness toward its silhouette, where the view grazes the
-    // surface. Without it the disc stays uniformly bright to its edge and reads flat no
-    // matter how strong the terminator is. Deliberately driven by the geometric normal
-    // rather than the relief-perturbed one, so terrain cannot punch false dark patches
-    // into the middle of the disc.
     float grazing = 1.0 - max(dot(normalize(vNormalWorld), V), 0.0);
     color *= mix(1.0, 1.0 - uLimbDarkening, grazing * grazing);
 
     // --- Ocean sheen ---------------------------------------------------------------
-    // A sun glint on water is the other cue that sells curvature: it slides across the
-    // ocean as the planet turns, which a flat map cannot do. Broadened (a tighter lobe
-    // reads as a smudge at small viewport sizes) and brought up to where it is actually
-    // visible instead of merely present.
     vec3 halfway = normalize(L + V);
     float specular = pow(max(dot(N, halfway), 0.0), 58.0) * (1.0 - land) * daylight;
     color += vec3(0.52, 0.64, 0.78) * specular * uSpecularStrength;
 
-    // --- Limb haze on the sphere itself -------------------------------------------
-    float fresnel = pow(1.0 - max(dot(N, V), 0.0), 2.8);
-    color += uHazeColor * fresnel * (0.35 + 0.65 * daylight) * uHazeStrength;
-
-    // The limb also thins out: fading alpha toward the silhouette keeps the sphere from
-    // ending on a hard cut-out edge against the white card.
-    float edgeSoftening = mix(0.72, 1.0, 1.0 - fresnel);
-
-    gl_FragColor = vec4(color, uOpacity * edgeSoftening);
+    // Razor-sharp 3D silhouette edge with 100% solid opacity (zero haze, zero blur)
+    gl_FragColor = vec4(color, uOpacity);
 
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
@@ -165,10 +149,10 @@ export const cloudFragmentShader = /* glsl */ `
 
     float coverage = texture2D(uCloudMap, vUv).a;
 
-    // Clouds only catch the light they are given; on the unlit side they settle to a
-    // dim grey rather than glowing white.
-    vec3 color = vec3(mix(0.62, 1.0, daylight));
-    float alpha = coverage * uOpacity * mix(0.45, 1.0, daylight);
+    // Clouds only catch the light they are given; on the unlit side they fade out
+    // cleanly rather than creating a blurry grey haze.
+    vec3 color = vec3(1.0);
+    float alpha = coverage * uOpacity * daylight;
 
     gl_FragColor = vec4(color, clamp(alpha, 0.0, 1.0));
 
@@ -212,9 +196,10 @@ export const atmosphereFragmentShader = /* glsl */ `
     float d = max(dot(N, V), 0.0);
     float outward = smoothstep(0.0, 1.0, d / uLimb);
     float inward = exp(-max(d - uLimb, 0.0) * uInnerFalloff);
-    float lit = smoothstep(-0.45, 0.55, dot(N, normalize(uSunDirection)));
+    float lit = smoothstep(-0.10, 0.45, dot(N, normalize(uSunDirection)));
 
-    float alpha = outward * inward * (0.18 + 0.82 * lit) * uStrength;
+    // Atmosphere rim only appears on the sunlit limb — dark side has zero blurry halo
+    float alpha = outward * inward * lit * uStrength;
 
     gl_FragColor = vec4(uColor, clamp(alpha, 0.0, 1.0));
   }

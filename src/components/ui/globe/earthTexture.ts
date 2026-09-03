@@ -96,42 +96,40 @@ function createFractalNoise(w: number, h: number, opts: NoiseOptions): HTMLCanva
 
 /** Resolution the noise is generated at before being scaled onto a map. */
 function noiseSize(mapWidth: number) {
-  const w = Math.min(2048, mapWidth);
+  const w = Math.min(4096, mapWidth);
   return { w, h: w / 2 };
 }
 
 /**
- * Latitude-banded terrain palette: ice, tundra, boreal, arid, tropic, ice.
- *
- * Deliberately muted and mid-toned. The sphere is composited semi-transparently over a
- * white card, which already lifts everything several stops, so a saturated palette here
- * would wash out to pastel while a dark one would fight the airy look.
+ * Latitude-banded terrain palette: United Carriers dark-globe style.
+ * Very dark, muted blue-grey continents — almost matching the dark ocean,
+ * giving that iconic "barely lit from space" appearance.
  */
 function terrainGradient(ctx: CanvasRenderingContext2D, h: number) {
   const g = ctx.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0.0, "#E4E8E8");
-  g.addColorStop(0.06, "#A3ADA5");
-  g.addColorStop(0.14, "#78846F");
-  g.addColorStop(0.26, "#6C7A64");
-  g.addColorStop(0.36, "#87866A");
-  g.addColorStop(0.44, "#948E70");
-  g.addColorStop(0.52, "#6D7B62");
-  g.addColorStop(0.6, "#78805F");
-  g.addColorStop(0.68, "#8F8B6D");
-  g.addColorStop(0.78, "#77806A");
-  g.addColorStop(0.88, "#9EA6A0");
-  g.addColorStop(1.0, "#E4E8E8");
+  g.addColorStop(0.0,  "#1E2A36");  // Sub-polar — dark blue-grey slate
+  g.addColorStop(0.06, "#1A2830");  // Arctic — very dark teal-grey
+  g.addColorStop(0.15, "#162432");  // Boreal — deep muted teal
+  g.addColorStop(0.26, "#1C2A36");  // Temperate — dark steel blue-grey
+  g.addColorStop(0.36, "#1A2830");  // Plateau — very dark grey-teal
+  g.addColorStop(0.44, "#182630");  // Semi-arid — dark charcoal-teal
+  g.addColorStop(0.52, "#162232");  // Equatorial — deepest muted teal
+  g.addColorStop(0.60, "#1A2830");  // Tropical — dark blue-grey
+  g.addColorStop(0.68, "#1C2A34");  // Southern savanna — dark slate
+  g.addColorStop(0.78, "#1A2830");  // Temperate south — dark teal
+  g.addColorStop(0.88, "#1E2C38");  // Sub-antarctic — dark blue slate
+  g.addColorStop(1.0,  "#1E2A36");  // Antarctica — same as north
   return g;
 }
 
-/** Soft blue-grey ocean, lighter toward the poles. */
+/** Near-black deep ocean for United Carriers "dark globe from space" look. */
 function oceanGradient(ctx: CanvasRenderingContext2D, h: number) {
   const g = ctx.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0.0, "#5B7791");
-  g.addColorStop(0.16, "#4C6883");
-  g.addColorStop(0.5, "#3B586F");
-  g.addColorStop(0.84, "#4C6883");
-  g.addColorStop(1.0, "#5B7791");
+  g.addColorStop(0.0,  "#060E1A");  // Polar — near black-navy
+  g.addColorStop(0.18, "#050B16");  // High latitude — deepest navy
+  g.addColorStop(0.5,  "#04091A");  // Deep ocean — almost black
+  g.addColorStop(0.82, "#050B16");
+  g.addColorStop(1.0,  "#060E1A");
   return g;
 }
 
@@ -209,19 +207,25 @@ function paintDayMap(
   );
   ctx.restore();
 
-  // Coastlines and administrative borders
+  // Coastlines — glowing teal-cyan edge, United Carriers style
   ctx.save();
   ctx.lineJoin = "round";
   ctx.beginPath();
   path(land);
-  ctx.lineWidth = 1.1 * unit;
-  ctx.strokeStyle = "rgba(196,214,214,0.34)";
+  ctx.lineWidth = 1.4 * unit;
+  ctx.strokeStyle = "rgba(0, 200, 220, 0.55)";
+  ctx.stroke();
+
+  ctx.beginPath();
+  path(land);
+  ctx.lineWidth = 0.5 * unit;
+  ctx.strokeStyle = "rgba(100, 230, 255, 0.25)";
   ctx.stroke();
 
   ctx.beginPath();
   path(borders);
-  ctx.lineWidth = 0.8 * unit;
-  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 0.5 * unit;
+  ctx.strokeStyle = "rgba(100, 200, 255, 0.10)";
   ctx.stroke();
   ctx.restore();
 

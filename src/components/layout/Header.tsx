@@ -40,13 +40,7 @@ export const Header: React.FC = () => {
   }, []);
 
   return (
-    <header
-      className={`fixed top-0 z-50 w-full transition-all duration-300 font-sans ${
-        isScrolled
-          ? "bg-[#0B1F3A]/95 backdrop-blur-md border-b border-white/10 shadow-lg py-2.5"
-          : "bg-transparent border-b border-transparent py-3"
-      }`}
-    >
+    <header className="fixed top-0 z-50 w-full font-sans bg-[#0B1F3A] backdrop-blur-md border-b border-white/10 shadow-lg py-2.5 transition-all duration-300">
       {/* Full-width container */}
       <div className="w-full px-4 sm:px-8 lg:px-16 flex items-center justify-between">
         {/* Original Brand Logo Left */}
@@ -61,6 +55,7 @@ export const Header: React.FC = () => {
             width={220}
             height={85}
             priority
+            loading="eager"
             className="h-11 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-102"
           />
         </Link>
@@ -71,9 +66,7 @@ export const Header: React.FC = () => {
             <Link
               key={link.name}
               href={link.href}
-              className={`text-xs font-semibold uppercase tracking-wider hover:text-[#B8860B] transition-colors duration-300 ${
-                isScrolled ? "text-white/90 hover:text-[#D4AF37]" : "text-[#1A1D21]"
-              }`}
+              className="text-xs font-semibold uppercase tracking-wider text-white/90 hover:text-[#D4AF37] transition-colors duration-300"
             >
               {link.name}
             </Link>
@@ -96,9 +89,7 @@ export const Header: React.FC = () => {
         <button
           type="button"
           onClick={() => setMobileMenuOpen(true)}
-          className={`lg:hidden p-1.5 rounded-md focus:outline-none transition-colors ${
-            isScrolled ? "text-white hover:bg-white/10" : "text-[#1A1D21] hover:bg-black/5"
-          }`}
+          className="lg:hidden p-1.5 rounded-md text-white hover:bg-white/10 focus:outline-none transition-colors"
           aria-label="Open navigation menu"
         >
           <Menu className="w-5 h-5" />
@@ -129,6 +120,7 @@ export const Header: React.FC = () => {
                     alt="Mining Discovery"
                     width={160}
                     height={60}
+                    loading="eager"
                     className="h-8 w-auto object-contain"
                   />
                 </Link>

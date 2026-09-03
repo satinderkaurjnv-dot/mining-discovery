@@ -12,6 +12,7 @@
  */
 export * from "./AboutHero";
 export * from "./AboutOrigin";
+export * from "./AboutCoverage";
 export * from "./AboutManagement";
 export * from "./AboutAdvisor";
 export * from "./AboutPurpose";

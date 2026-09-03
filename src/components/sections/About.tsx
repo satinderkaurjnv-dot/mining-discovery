@@ -1,26 +1,17 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
-import {
-  motion,
-  useMotionValueEvent,
-  useScroll,
-  useTransform,
-} from "framer-motion";
+import { motion } from "framer-motion";
 
 interface Panel {
-  /** Uppercase label shown above the panel heading and read by the progress dots. */
   label: string;
   heading: string;
   body: string;
-  /** Optional index list; rendered as numbered rules down the right of the panel. */
   items?: string[];
-  /** Optional call to action, rendered under the body copy. Panel 4 carries the only one. */
   cta?: { label: string; href: string };
-  /** Supporting photograph for the panel's right column. */
   image: { src: string; alt: string };
 }
 
@@ -81,235 +72,271 @@ const PANELS: Panel[] = [
 const PANEL_COUNT = PANELS.length;
 
 export const About: React.FC = () => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isMobileOrReduced, setIsMobileOrReduced] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const stageRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  /*
-   * Same guard ServicesScrollStory uses, and for the same two reasons. A horizontal pin
-   * hijacks the scroll direction, which is the exact motion prefers-reduced-motion is
-   * asking us not to run; and on a phone the panels have no width to travel across, so
-   * the pin costs four viewports of scroll to deliver what a stack delivers for free.
-   * Both cases fall through to the plain vertical version below.
-   */
-  useEffect(() => {
-    const check = () => {
-      const isReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      const isNarrow = window.innerWidth < 1024;
-      setIsMobileOrReduced(isReduced || isNarrow);
-    };
-
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
-
-  /*
-   * The track is PANEL_COUNT viewports wide, and the last panel has to finish flush with
-   * the right edge rather than scrolling past it — so the travel is (n-1)/n of the track,
-   * not the whole of it. At four panels that is -75%, which lands panel 4 exactly filling
-   * the viewport at progress 1.
-   */
-  const x = useTransform(
-    scrollYProgress,
-    [0, 1],
-    ["0%", `-${(100 * (PANEL_COUNT - 1)) / PANEL_COUNT}%`]
+  const setStageRef = useCallback(
+    (index: number) => (node: HTMLDivElement | null) => {
+      stageRefs.current[index] = node;
+    },
+    []
   );
 
-  useMotionValueEvent(scrollYProgress, "change", (latest) => {
-    // Rounded rather than floored: the dot should flip at the midpoint of a transition,
-    // when the incoming panel is already the one being read, not when it finally lands.
-    const next = Math.min(
-      PANEL_COUNT - 1,
-      Math.max(0, Math.round(latest * (PANEL_COUNT - 1)))
+  // Synchronize active stage indicator with vertical scroll position
+  useEffect(() => {
+    const nodes = stageRefs.current.filter((node): node is HTMLDivElement => node !== null);
+    if (nodes.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const index = stageRefs.current.indexOf(entry.target as HTMLDivElement);
+          if (index !== -1) setActiveIdx(index);
+        }
+      },
+      { root: null, rootMargin: "-35% 0px -35% 0px", threshold: 0 }
     );
-    setActiveIndex((current) => (current === next ? current : next));
-  });
+
+    nodes.forEach((node) => observer.observe(node));
+    return () => observer.disconnect();
+  }, []);
+
+  const scrollToStage = (index: number) => {
+    const el = document.getElementById(`about-stage-${index}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  };
 
   return (
-    /*
-     * #FFFFFF — the hero card's own surface, and the brightest ground on the page. Stats
-     * (#FBFBFA) sits above and TrustedBy (#F4F4F2) below, so pure white is a full step up
-     * from both rather than a fourth shade of off-white: the section still separates from
-     * its neighbours, but by being lighter than them instead of by inverting.
-     *
-     * Height is PANEL_COUNT viewports. With offset ["start start", "end end"] the sticky
-     * child stays parked for height - 100vh, which is the (n-1) viewports of travel the
-     * transform above consumes — so the two cannot drift apart when a panel is added.
-     */
     <section
-      id="about"
-      ref={containerRef}
-      className={`relative w-full border-b border-[#E5E5E3] bg-white font-sans text-[#15181C] ${
-        isMobileOrReduced ? "" : "h-[var(--about-track-height)]"
-      }`}
-      style={
-        { "--about-track-height": `${PANEL_COUNT * 100}vh` } as React.CSSProperties
-      }
+      id="about-journey"
+      className="relative bg-[#FAF9F6] text-[#0B1F3A] border-b border-[#E5E4DE] font-sans py-20 sm:py-24 lg:py-28 overflow-x-clip"
     >
-      {isMobileOrReduced ? (
-        /* --- Static fallback: the same four panels, stacked ---------------------- */
-        <div className="container-editorial flex flex-col gap-16 py-20 md:gap-20 md:py-28">
-          {PANELS.map((panel, index) => (
-            // The stack has no "active" panel, so every image starts settled.
-            <PanelBody key={panel.label} panel={panel} index={index} isActive />
-          ))}
-        </div>
-      ) : (
-        <div className="sticky top-0 h-screen overflow-hidden">
-          {/*
-            The width is explicit and in viewport units. A flex row left at width:auto is
-            block-level and sizes to its 100vw parent, so the percentage x below would
-            resolve against ONE viewport rather than four and the track would travel a
-            quarter of the distance it needs to.
-          */}
-          <motion.div style={{ x, width: `${PANEL_COUNT * 100}vw` }} className="flex h-full">
+      {/* Subtle Geological Background Strata */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_65%_at_45%_20%,rgba(240,236,226,0.65),rgba(250,249,246,1)_82%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(11,31,58,0.018)_1px,transparent_1px),linear-gradient(to_bottom,rgba(11,31,58,0.018)_1px,transparent_1px)] bg-[size:5.5rem_5.5rem] opacity-50" />
+      </div>
+
+      {/* Main Container */}
+      <div className="relative w-full max-w-[1400px] mx-auto px-6 sm:px-10 lg:px-14 z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 xl:gap-20 items-start">
+
+          {/* ================================================================ */}
+          {/* LEFT COLUMN: STICKY EDITORIAL OVERVIEW & LIQUID GOLD INDICATOR   */}
+          {/* ================================================================ */}
+          <div className="lg:col-span-5 lg:sticky lg:top-28 flex flex-col items-start gap-6 sm:gap-7">
+            {/* Eyebrow with gold hairline */}
+            <div className="flex flex-col items-start gap-3">
+              <div className="w-10 h-0.5 bg-[#B8860B]" />
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B] animate-pulse" />
+                <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[#9E7208]">
+                  About Mining Discovery
+                </span>
+              </div>
+            </div>
+
+            {/* Section Headline & Intro Subtitle */}
+            <div>
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] font-normal leading-[1.12] tracking-[-0.018em] text-[#0B1F3A]">
+                The beats that define modern mining.
+              </h2>
+              <p className="mt-4 text-base sm:text-lg leading-relaxed text-[#57595E] max-w-lg">
+                From exploratory drill cores to international capital markets, our newsroom articulates the stories that carry real institutional weight.
+              </p>
+            </div>
+
+            {/* Foundation Stage Card with Gliding Liquid Gold Pill */}
+            <div className="w-full rounded-2xl border border-[#E5E4DE] bg-white/85 backdrop-blur-xs p-5 sm:p-6 shadow-xs">
+              {/* Stage Counter */}
+              <div className="flex items-center justify-between text-xs font-mono font-bold text-[#9E7208] mb-3">
+                <span className="uppercase tracking-[0.16em]">Foundation Stage</span>
+                <span className="tabular-nums">0{activeIdx + 1} / 0{PANEL_COUNT}</span>
+              </div>
+
+              {/* Segmented Gold Progress Bar */}
+              <div className="h-1.5 w-full rounded-full bg-[#E5E4DE] overflow-hidden mb-5">
+                <div
+                  className="h-full bg-[#B8860B] transition-all duration-500 ease-out"
+                  style={{ width: `${((activeIdx + 1) / PANEL_COUNT) * 100}%` }}
+                />
+              </div>
+
+              {/* Chapter Selection Buttons with Liquid Gold Gliding Indicator */}
+              <div className="flex flex-col gap-1.5 relative">
+                {PANELS.map((p, idx) => {
+                  const isActive = idx === activeIdx;
+                  return (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => scrollToStage(idx)}
+                      className="relative flex items-center justify-between rounded-xl px-4 py-2.5 text-left text-xs font-medium transition-colors duration-200 cursor-pointer group"
+                    >
+                      {/* Animated Liquid Gold Background Pill */}
+                      {isActive && (
+                        <motion.span
+                          layoutId="active-stage-pill"
+                          className="absolute inset-0 rounded-xl bg-[#FAF5E8] border border-[#D4AF37]/50 shadow-2xs z-0"
+                          transition={{
+                            type: "spring",
+                            stiffness: 380,
+                            damping: 32,
+                          }}
+                        />
+                      )}
+
+                      {/* Text Content */}
+                      <div className="relative z-10 flex items-center gap-3">
+                        <span
+                          className={`font-mono text-[11px] font-bold ${
+                            isActive ? "text-[#9E7208]" : "text-[#8C9099] group-hover:text-[#9E7208]"
+                          }`}
+                        >
+                          0{idx + 1}
+                        </span>
+                        <span
+                          className={`tracking-tight ${
+                            isActive
+                              ? "text-[#0B1F3A] font-bold"
+                              : "text-[#57595E] group-hover:text-[#0B1F3A]"
+                          }`}
+                        >
+                          {p.label}
+                        </span>
+                      </div>
+
+                      {isActive && (
+                        <span className="relative z-10 h-1.5 w-1.5 rounded-full bg-[#B8860B]" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* ================================================================ */}
+          {/* RIGHT COLUMN: ARCHITECTURAL CURTAIN REVEAL STREAM                */}
+          {/* ================================================================ */}
+          <div className="lg:col-span-7 flex flex-col gap-20 lg:gap-28">
             {PANELS.map((panel, index) => (
               <div
                 key={panel.label}
-                className="flex h-full w-screen shrink-0 items-center"
+                id={`about-stage-${index}`}
+                ref={setStageRef(index)}
+                className="flex flex-col"
               >
-                <div className="container-editorial w-full">
-                  <PanelBody
-                    panel={panel}
-                    index={index}
-                    isActive={index === activeIndex}
-                  />
-                </div>
+                {/* 1. ARCHITECTURAL CURTAIN / MASKED PHOTOGRAPH REVEAL */}
+                <motion.div
+                  initial={{ clipPath: "inset(100% 0% 0% 0%)", opacity: 0.6 }}
+                  whileInView={{ clipPath: "inset(0% 0% 0% 0%)", opacity: 1 }}
+                  viewport={{ once: true, margin: "-15% 0px -15% 0px" }}
+                  transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden border border-[#E5E4DE] shadow-sm bg-[#EFECE6] group"
+                >
+                  {/* Fine Gold Corner Registration Ticks */}
+                  <div className="absolute top-2.5 left-2.5 w-3 h-3 border-t border-l border-[#B8860B]/50 z-20 pointer-events-none" />
+                  <div className="absolute top-2.5 right-2.5 w-3 h-3 border-t border-r border-[#B8860B]/50 z-20 pointer-events-none" />
+                  <div className="absolute bottom-2.5 left-2.5 w-3 h-3 border-b border-l border-[#B8860B]/50 z-20 pointer-events-none" />
+                  <div className="absolute bottom-2.5 right-2.5 w-3 h-3 border-b border-r border-[#B8860B]/50 z-20 pointer-events-none" />
+
+                  {/* Photograph with smooth desktop hover */}
+                  <motion.div
+                    whileHover={{ scale: 1.025 }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="w-full h-full relative"
+                  >
+                    <Image
+                      src={panel.image.src}
+                      alt={panel.image.alt}
+                      fill
+                      sizes="(max-width: 1023px) 100vw, 55vw"
+                      priority={index === 0}
+                      className="object-cover transition-all duration-500 group-hover:contrast-[1.03]"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/30 via-transparent to-transparent opacity-40 pointer-events-none" />
+                  </motion.div>
+
+                  {/* Stage Telemetry Badge */}
+                  <div className="absolute bottom-3 left-3.5 right-3.5 z-20 flex items-center justify-between font-mono text-[9.5px] text-white/95 bg-[#0B1F3A]/80 backdrop-blur-xs px-3 py-1.5 rounded-sm">
+                    <span className="uppercase tracking-wider font-bold">
+                      STAGE 0{index + 1} // {panel.label}
+                    </span>
+                    <span className="text-[#F5C542]">VERIFIED RECORD</span>
+                  </div>
+                </motion.div>
+
+                {/* 2. WEIGHTED EDITORIAL TYPOGRAPHY */}
+                <motion.div
+                  initial={{ opacity: 0, y: 22 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-10% 0px" }}
+                  transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                  className="pt-6 sm:pt-8"
+                >
+                  <h3 className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#0B1F3A]">
+                    {panel.heading}
+                  </h3>
+
+                  <p className="mt-4 text-base sm:text-lg font-normal leading-relaxed text-[#57595E] max-w-2xl">
+                    {panel.body}
+                  </p>
+
+                  {/* Index List Items (What We Do & Our Expertise) */}
+                  {panel.items && (
+                    <ul className="mt-6 grid grid-cols-1 border-l-2 border-[#B8860B]/40 sm:grid-cols-2 sm:gap-x-6">
+                      {panel.items.map((item, itemIndex) => (
+                        <li
+                          key={item}
+                          className="flex items-baseline gap-3 border-b border-[#E5E4DE] py-2.5 pl-4"
+                        >
+                          <span className="font-mono text-[11px] tabular-nums font-bold text-[#9E7208]">
+                            {String(itemIndex + 1).padStart(2, "0")}
+                          </span>
+                          <span className="font-sans text-sm font-medium tracking-tight text-[#0B1F3A]">
+                            {item}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {/* Call to Action Button (Our Approach) */}
+                  {panel.cta && (
+                    <div className="mt-7">
+                      <Link
+                        href={panel.cta.href}
+                        className="group inline-flex items-center gap-2 rounded-lg bg-[#B8860B] px-6 py-3 font-sans text-xs font-semibold uppercase tracking-wider text-[#0B1F3A] shadow-sm transition-all duration-300 hover:bg-[#D4AF37] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
+                      >
+                        {panel.cta.label}
+                        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                      </Link>
+                    </div>
+                  )}
+                </motion.div>
+
+                {/* Subtle Technical Stage Divider (except last) */}
+                {index < PANEL_COUNT - 1 && (
+                  <div className="w-full flex items-center justify-between pt-16 lg:pt-20">
+                    <div className="w-full h-px bg-[#E5E4DE]" />
+                    <span className="font-mono text-[8.5px] text-[#B8860B]/60 tracking-widest px-3">
+                      STAGE 0{index + 1} // 0{index + 2}
+                    </span>
+                    <div className="w-12 h-px bg-[#B8860B]/40" />
+                  </div>
+                )}
               </div>
             ))}
-          </motion.div>
-
-          {/* --- Progress dots --------------------------------------------------- */}
-          <div className="pointer-events-none absolute bottom-12 left-1/2 flex -translate-x-1/2 items-center gap-3">
-            {PANELS.map((panel, index) => {
-              const isActive = index === activeIndex;
-              return (
-                <span
-                  key={panel.label}
-                  aria-hidden="true"
-                  className={`block h-1.5 rounded-full transition-all duration-500 ease-out ${
-                    isActive ? "w-8 bg-[#B8860B]" : "w-1.5 bg-[#15181C]/20"
-                  }`}
-                />
-              );
-            })}
-            <span className="sr-only">
-              Panel {activeIndex + 1} of {PANEL_COUNT}: {PANELS[activeIndex].label}
-            </span>
           </div>
+
         </div>
-      )}
+      </div>
     </section>
   );
 };
-
-/**
- * One panel's contents, shared by the pinned track and the stacked fallback so the two
- * can never drift into being different sections.
- */
-const PanelBody: React.FC<{ panel: Panel; index: number; isActive: boolean }> = ({
-  panel,
-  index,
-  isActive,
-}) => (
-  <div className="grid grid-cols-1 items-center gap-x-16 gap-y-10 lg:grid-cols-12">
-    <div className="lg:col-span-7">
-      <div className="flex items-center gap-4">
-        <span className="font-mono text-[11px] tabular-nums text-[#9E7208]/80">
-          {String(index + 1).padStart(2, "0")}
-        </span>
-        <span className="h-px w-10 bg-[#B8860B]/40" />
-        <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9E7208]">
-          {panel.label}
-        </p>
-      </div>
-
-      {/* Hero type, one section down: font-geist semibold at the same tracking. */}
-      <h2 className="mt-7 max-w-[18ch] font-geist text-[clamp(2rem,3.8vw,3.5rem)] font-semibold leading-[1.06] tracking-[-0.035em] text-[#15181C]">
-        {panel.heading}
-      </h2>
-
-      <p className="mt-7 max-w-xl text-lg font-normal leading-relaxed text-[#57595E] sm:text-xl">
-        {panel.body}
-      </p>
-
-      {/*
-        Rendered unconditionally — no whileInView, no reveal variant. The pinned track
-        moves its panels with a transform, and an element translated in from off-screen
-        never fires an IntersectionObserver entry the way a vertically-scrolled one does,
-        so a scroll-triggered button would sit at opacity 0 for the whole section.
-
-        A Link rather than the <Button> component: Button renders a real <button>, and a
-        <button> inside an <a> is invalid HTML. Same gold palette and glow as the header's
-        "Get Featured" CTA, one size up for body copy.
-      */}
-      {panel.cta && (
-        <Link
-          href={panel.cta.href}
-          className="group mt-9 inline-flex items-center gap-2 rounded-md bg-[#B8860B] px-6 py-3 font-sans text-sm font-semibold tracking-wide text-[#0B1F3A] shadow-[0_0_20px_rgba(184,134,11,0.35)] transition-all duration-300 hover:bg-[#D4AF37] hover:shadow-[0_0_25px_rgba(212,175,55,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-2"
-        >
-          {panel.cta.label}
-          <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
-        </Link>
-      )}
-
-      {/*
-        The index list, which used to be the panel's right-hand column. The photograph
-        has that side now, so it sits under the copy as a two-up - same numbering, same
-        gold rule, same serif, just folded rather than moved out of the panel. Matches
-        how /about lays its six beats out, so the two pages stay recognisably related.
-      */}
-      {panel.items && (
-        <ul className="mt-9 grid grid-cols-1 border-l border-[#B8860B]/30 sm:grid-cols-2 sm:gap-x-8">
-          {panel.items.map((item, itemIndex) => (
-            <li
-              key={item}
-              className="flex items-baseline gap-4 border-b border-[#15181C]/[0.09] py-3 pl-6 sm:pl-5"
-            >
-              <span className="font-mono text-[11px] tabular-nums text-[#9E7208]/80">
-                {String(itemIndex + 1).padStart(2, "0")}
-              </span>
-              <span className="font-serif text-lg font-normal tracking-[-0.01em] text-[#15181C] sm:text-xl">
-                {item}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-
-    {/*
-      The photograph. 4:3 on every panel so the four read as a set rather than as four
-      separately-cropped pictures.
-
-      The reveal is driven by isActive - the panel index the track already computes - not
-      by whileInView. A panel that arrives by horizontal transform never produces the
-      IntersectionObserver entry a vertically-scrolled one does, so an in-view trigger
-      would leave every image at opacity 0 for the whole section. This is a plain CSS
-      transition on state that already exists, so it adds nothing to the scroll path.
-    */}
-    <div className="lg:col-span-5">
-      <div
-        className={`relative aspect-[4/3] w-full overflow-hidden rounded-[18px] border border-[rgba(212,175,55,0.2)] shadow-[0_20px_40px_rgba(0,0,0,0.1)] transition-[opacity,scale] duration-700 ease-[cubic-bezier(0.25,0.1,0.25,1)] motion-reduce:transition-none ${
-          isActive ? "scale-100 opacity-100" : "scale-[0.95] opacity-0 motion-reduce:opacity-100 motion-reduce:scale-100"
-        }`}
-      >
-        <Image
-          src={panel.image.src}
-          alt={panel.image.alt}
-          fill
-          sizes="(max-width: 1023px) 100vw, 40vw"
-          className="object-cover"
-        />
-      </div>
-    </div>
-  </div>
-);
 
 export default About;

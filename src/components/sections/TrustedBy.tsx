@@ -1,24 +1,20 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
-import { SectionReveal, itemVariants } from "@/components/ui/SectionReveal";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  motion,
+  useInView,
+  useReducedMotion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+} from "framer-motion";
 
 interface Company {
   name: string;
   logo: string;
 }
 
-/*
- * Hotlinked straight from miningdiscovery.com rather than copied into /public.
- *
- * The URLs carry literal spaces and are passed through unencoded on purpose. A browser
- * percent-encodes the path when it builds the request, so these resolve; pre-encoding
- * them here would be equivalent, but hand-editing them to %20 or to dashes is how the
- * filenames drift out of sync with the source. They are the source's names, verbatim.
- *
- * "BBluenergies" is not a typo on this side — that is the filename as served.
- */
 const companies: Company[] = [
   { name: "Arras Minerals", logo: "https://www.miningdiscovery.com/trustedbrands/ARRAS Minerals LOGO.png" },
   { name: "Afrikor", logo: "https://www.miningdiscovery.com/trustedbrands/Afrikor LOGO.png" },
@@ -49,82 +45,35 @@ const companies: Company[] = [
   { name: "West Red Lake", logo: "https://www.miningdiscovery.com/trustedbrands/West Red Lake LOGO.png" },
 ];
 
-/**
- * Stagger is declared on the container and inherited, rather than being a per-item delay.
- * The distinction matters here: 27 items at a hand-computed `index * 60ms` would need the
- * index threaded through every child, and would keep firing on a list that later changes
- * length. staggerChildren lets the parent own the cadence and the children stay identical.
- */
-const GRID_VARIANTS: Variants = {
-  hidden: {},
-  visible: {
-    transition: { staggerChildren: 0.06 },
-  },
-};
+// 3 balanced streams (9 companies each)
+const ROW_1 = companies.slice(0, 9);
+const ROW_2 = companies.slice(9, 18);
+const ROW_3 = companies.slice(18, 27);
 
-const CELL_VARIANTS: Variants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.4, ease: "easeOut" },
-  },
-};
-
-/*
- * One grid cell's logo. Renders the remote image and falls back to a plain text wordmark
- * if the request fails, so a renamed or withdrawn file downgrades to a wordmark instead
- * of leaving a hole in the grid.
- *
- * Plain <img>, not next/image, and deliberately so. next/image would need the host added
- * to images.remotePatterns, and it would proxy all 27 files through the optimizer on a
- * host we do not control — one that could rate-limit or change a filename at any time.
- * A bare <img> also just fires onError on failure, which is the signal the fallback
- * needs; the optimizer surfaces a remote failure as a server-side error instead.
- */
-const CompanyLogo: React.FC<{ company: Company }> = ({ company }) => {
+const CompanyLogo: React.FC<{ company: Company; nodeIndex: number }> = ({ company, nodeIndex }) => {
   const [logoAvailable, setLogoAvailable] = useState(true);
 
   if (!logoAvailable) {
     return (
-      <span className="text-center font-sans text-base font-semibold tracking-tight text-[#57595E] opacity-70 transition-opacity duration-300 ease-out group-hover:opacity-100">
+      <span className="text-center font-sans text-xs sm:text-sm font-bold tracking-tight text-[#0B1F3A] uppercase px-3">
         {company.name}
       </span>
     );
   }
+
+  // Subtle breathing float with non-synchronized organic timing
+  const driftDur = 5.6 + ((nodeIndex * 1.2) % 2.8);
+  const driftDelay = (nodeIndex * 0.6) % 2.2;
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={company.logo}
       alt={`${company.name} logo`}
-      /*
-       * Sized by WIDTH, not height, and that is the whole fix.
-       *
-       * Every one of these files is a 400x400 square, and the wordmark inside occupies a
-       * median of 22% of that height (15% at worst) with white above and below it. A
-       * max-height therefore caps the CANVAS, not the artwork: at max-h-11 the mark
-       * rendered about 10px tall. Because the canvas is square, any height cap below the
-       * cell's width binds first and shrinks the mark in both directions.
-       *
-       * w-full lets the square fill the cell instead, so the mark itself lands at ~171px
-       * wide and ~43px tall. max-w caps it where a cell is wider than the artwork can
-       * usefully fill (a two-column phone layout).
-       */
-      className="h-auto w-full max-w-[220px] object-contain opacity-70 grayscale transition-all duration-300 ease-out group-hover:opacity-100 group-hover:grayscale-0"
-      /*
-       * The files have no alpha channel — colour type 2, RGB, on a #FFFFFF ground. Left
-       * alone, filling the cell would paint 27 white tiles onto the section's #F4F4F2.
-       * multiply maps white onto the backdrop exactly (white x bg = bg) and leaves the
-       * ink, which is why the cell below carries an explicit background: mix-blend-mode
-       * blends within its own stacking context, and framer-motion's transform on the cell
-       * creates one, so without a real colour there the white would blend against nothing
-       * and survive.
-       */
-      style={{ mixBlendMode: "multiply" }}
-      // Sent without a Referer so the request matches the one these URLs were verified
-      // with. Costs nothing if the host does not hotlink-protect, and is the difference
-      // between logos and 27 wordmarks if it ever starts to.
+      style={{
+        animation: `logo-breathing ${driftDur}s ease-in-out infinite alternate ${driftDelay}s`,
+      }}
+      className="h-auto w-full max-w-[165px] sm:max-w-[185px] lg:max-w-[205px] max-h-[62px] sm:max-h-[70px] lg:max-h-[76px] object-contain transition-all duration-350 pointer-events-none opacity-88 contrast-[1.02] group-hover:scale-[1.055] group-hover:contrast-105 group-hover:!opacity-100"
       referrerPolicy="no-referrer"
       onError={() => setLogoAvailable(false)}
     />
@@ -132,144 +81,392 @@ const CompanyLogo: React.FC<{ company: Company }> = ({ company }) => {
 };
 
 export const TrustedBy: React.FC = () => {
-  // A staggered reveal is exactly the motion this asks to be spared, and with once: true
-  // there is no later chance to show the content — so reduced motion starts at the end
-  // state rather than animating to it.
   const reduceMotion = useReducedMotion();
+  const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { once: true, margin: "-10% 0px -10% 0px" });
+
+  // ---------------------------------------------------------------------------
+  // INTERACTIVE MOUSE SPOTLIGHT (PERFORMANT CSS VARIABLES, ZERO REACT RE-RENDERS)
+  // ---------------------------------------------------------------------------
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const springConfig = { stiffness: 50, damping: 28 };
+  const smoothMouseX = useSpring(mouseX, springConfig);
+  const smoothMouseY = useSpring(mouseY, springConfig);
+
+  // Background subtle parallax shifts (1–2px grid, 2–3px topographic lines)
+  const gridShiftX = useTransform(smoothMouseX, [-0.5, 0.5], [-1.5, 1.5]);
+  const gridShiftY = useTransform(smoothMouseY, [-0.5, 0.5], [-1.5, 1.5]);
+
+  const topoShiftX = useTransform(smoothMouseX, [-0.5, 0.5], [-2.5, 2.5]);
+  const topoShiftY = useTransform(smoothMouseY, [-0.5, 0.5], [-2.5, 2.5]);
+
+  const cardsShiftX = useTransform(smoothMouseX, [-0.5, 0.5], [-0.8, 0.8]);
+  const cardsShiftY = useTransform(smoothMouseY, [-0.5, 0.5], [-0.8, 0.8]);
+
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (reduceMotion) return;
+    const rect = sectionRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // High-performance direct CSS variable updates
+    sectionRef.current?.style.setProperty("--mouse-x", `${x}px`);
+    sectionRef.current?.style.setProperty("--mouse-y", `${y}px`);
+    sectionRef.current?.style.setProperty("--spotlight-opacity", isDesktop ? "1" : "0.45");
+
+    if (isDesktop) {
+      mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+      mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    sectionRef.current?.style.setProperty("--spotlight-opacity", "0");
+    mouseX.set(0);
+    mouseY.set(0);
+  };
 
   return (
-    <section className="relative py-12 md:py-16 bg-[#F4F4F2] border-b border-[#E5E5E3] overflow-hidden font-sans">
-      {/*
-        Display heading. Two lines, black weight, the second nudged right by 0.14em so the
-        stack steps rather than aligns - the indent is in em, not px, so it holds its
-        proportion across the whole clamp range.
+    <section
+      ref={sectionRef}
+      id="trusted-by"
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative pt-12 pb-16 sm:pt-14 sm:pb-20 lg:pt-16 lg:pb-22 bg-[#F4F4F2] border-b border-[#E5E5E3] overflow-x-clip font-sans select-none"
+    >
+      {/* -------------------------------------------------------------------- */}
+      {/* CSS KEYFRAMES: 3-ROW CONVEYOR STREAMS & HOVER BEHAVIORS              */}
+      {/* -------------------------------------------------------------------- */}
+      <style>{`
+        /* Organic Breathing Logo Float (1.5px) */
+        @keyframes logo-breathing {
+          0% { transform: translateY(-1px); opacity: 0.88; }
+          100% { transform: translateY(1.5px); opacity: 0.95; }
+        }
 
-        justify-start, not justify-between: the arrow belongs to COMPANIES, and pushing it
-        to the container's right edge left it stranded in a metre of white on a wide
-        screen. It now trails the word by one gap.
-      */}
-      <SectionReveal className="container-editorial mb-6 md:mb-9">
-        <div className="flex items-end justify-start gap-4 sm:gap-6">
-          {/*
-            motion.h2 and motion.svg, both on the shared itemVariants. Neither carries a
-            whileInView of its own - they inherit state and stagger from the SectionReveal
-            through framer's context, which passes straight through the plain flex div
-            between them. So the heading lands, then the arrow, then the grid runs its own
-            existing stagger: one reading order rather than three independent reveals.
-          */}
-          <motion.h2
-            variants={itemVariants}
-            className="font-geist text-[clamp(3rem,8vw,7.5rem)] font-black uppercase leading-[0.86] tracking-[-0.035em] text-[#0B1F3A]"
-          >
-            <span className="block">Featured</span>
-            <span className="ml-[0.14em] block">Companies</span>
-          </motion.h2>
+        /* 3-Row Continuous Marquee Streams */
+        @keyframes network-flow-right {
+          0% { transform: translate3d(-50%, 0, 0); }
+          100% { transform: translate3d(0, 0, 0); }
+        }
+        @keyframes network-flow-left {
+          0% { transform: translate3d(0, 0, 0); }
+          100% { transform: translate3d(-50%, 0, 0); }
+        }
 
-          {/*
-            Down-left arrow, stroke only. Two paths: the diagonal shaft, and an L for the
-            head at its lower-left end.
+        /* Row 1: LEFT -> RIGHT (45–55s, linear) */
+        .animate-flow-right-1 {
+          animation: network-flow-right 50s linear infinite;
+        }
+        /* Row 2: RIGHT -> LEFT (50–60s, linear) */
+        .animate-flow-left-2 {
+          animation: network-flow-left 55s linear infinite;
+        }
+        /* Row 3: LEFT -> RIGHT (55–65s, linear) */
+        .animate-flow-right-3 {
+          animation: network-flow-right 60s linear infinite;
+        }
 
-            The bottom margin is the baseline correction, and it has to be in the HEADING's
-            scale, not the arrow's: an em on this element resolves against the inherited
-            16px, not against the h2's clamp, so the old mb-[0.1em] was buying 1.6px and
-            the arrow was sitting on the line BOX's floor rather than on the text baseline.
-            Geist's descender plus this line's negative half-leading puts that floor about
-            0.17em of the heading's size below the baseline, hence a clamp built from the
-            same 8vw curve the heading uses.
+        /* Hover pauses ONLY that specific row */
+        .group\\/row:hover .animate-flow-right-1,
+        .group\\/row:hover .animate-flow-left-2,
+        .group\\/row:hover .animate-flow-right-3 {
+          animation-play-state: paused;
+        }
 
-            Stroke scales with the box (no non-scaling-stroke, deliberately) so the arrow
-            keeps its proportions as it grows; 4.25 units holds its weight against a 900.
-          */}
-          <motion.svg
-            variants={itemVariants}
-            aria-hidden="true"
-            focusable="false"
-            viewBox="0 0 48 48"
-            fill="none"
-            stroke="#0B1F3A"
-            strokeWidth="4.25"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="mb-[clamp(0.5rem,1.35vw,1.25rem)] h-[clamp(2rem,4.8vw,4.5rem)] w-auto shrink-0"
-          >
-            {/* shaft, top-right to bottom-left */}
-            <path d="M40 8 10 38" />
-            {/* arrowhead */}
-            <path d="M10 14.5V38h23.5" />
-          </motion.svg>
-        </div>
-      </SectionReveal>
+        @media (prefers-reduced-motion: reduce) {
+          .animate-flow-right-1,
+          .animate-flow-left-2,
+          .animate-flow-right-3 {
+            animation: none !important;
+          }
+        }
+      `}</style>
 
-      <div className="container-editorial">
-        {/*
-          The shared divider lines are gone, and they had to be: a continuous 1px grid and
-          separated rounded cards are the same edge answered two different ways. Cells now
-          each draw their own full border, and the gap is what keeps neighbouring borders
-          from stacking into a 2px double line.
-
-          A side effect worth knowing: with the cells no longer flush, the ragged last row
-          stops reading as an unfinished grid and just reads as two cards. The old comment
-          about it no longer applies.
-        */}
-        <motion.div
-          className="grid gap-2"
-          // auto-fit with a floor, so the browser picks the column count from the space
-          // it actually has. At the container's 1136px interior this lands on 5 columns,
-          // stepping down to 4, 3, then 2 as the viewport narrows. Raise the floor for
-          // fewer, wider cells; 160px would give 7 and leave each logo noticeably tighter.
-          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))" }}
-          variants={GRID_VARIANTS}
-          initial={reduceMotion ? "visible" : "hidden"}
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          {companies.map((company) => (
-            <motion.div
-              key={company.name}
-              variants={CELL_VARIANTS}
-              /*
-               * Fixed height with overflow-hidden, rather than padding plus an auto
-               * height. The square canvas is as tall as the cell is wide (~189px), and
-               * letting that set the row height would make every row a square of mostly
-               * white space. 180px clips the canvas top and bottom instead — invisibly,
-               * since what is clipped is the white margin, and 180px still clears the
-               * tallest artwork in the set (Mining Investment Event, ~170px).
-               *
-               * px-4 is 16px: with the artwork already carrying its own white margin, the
-               * cell only needs enough to keep it off its border.
-               *
-               * Two details in the hover state are load-bearing rather than cosmetic:
-               *
-               *  - the transition names its properties instead of using transition-all.
-               *    framer-motion drives the transform property on this element every frame during the
-               *    reveal, and a CSS transition on that property would smear its own
-               *    animation. the translate property is a SEPARATE property in Tailwind v4, so the
-               *    hover lift composes with framer's transform instead of fighting it.
-               *
-               *  - the hover background is an opaque #F3F2EC, not rgba(212,175,55,0.03).
-               *    It is that tint, pre-composited over #F4F4F2 by hand. The logo below
-               *    relies on mix-blend-mode: multiply to erase its white ground, and
-               *    multiply needs an opaque backdrop — swapping in a translucent colour
-               *    would let the white box reappear on exactly the cell being looked at.
-               */
-              className="group relative flex h-[180px] items-center justify-center overflow-hidden rounded-[10px] border border-[rgba(0,0,0,0.08)] bg-[#F4F4F2] px-4 transition-[translate,box-shadow,border-color,background-color] duration-[250ms] ease-out hover:z-10 hover:-translate-y-1 hover:border-[rgba(212,175,55,0.4)] hover:bg-[#F3F2EC] hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)]"
-            >
-              <CompanyLogo company={company} />
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-      {/*
-        Seam into ServicesScrollStory. Every other boundary on this page is one near-white
-        into another and needs nothing; this one drops #F4F4F2 straight into #0B1220, and
-        a 56px ramp is what stops that reading as a cut line. Decorative and inert, and it
-        sits inside this section so the pinned section below never has to know about it.
-      */}
+      {/* -------------------------------------------------------------------- */}
+      {/* INTERACTIVE MOUSE SPOTLIGHT (250–350px soft ambient studio spotlight)*/}
+      {/* -------------------------------------------------------------------- */}
       <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-b from-[#F4F4F2]/0 via-[#0B1220]/45 to-[#0B1220]"
+        className="pointer-events-none absolute inset-0 z-25 transition-opacity duration-500 ease-out"
+        style={{
+          opacity: "var(--spotlight-opacity, 0)",
+          background: `radial-gradient(300px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(184, 134, 11, 0.055), transparent 75%)`,
+        }}
       />
 
+      {/* -------------------------------------------------------------------- */}
+      {/* 01. SECTION BACKGROUND (MINIMAL GRID + VERY FAINT TECHNICAL PATHS)   */}
+      {/* -------------------------------------------------------------------- */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+        {/* Soft ambient lighting with low white wash so cards remain crisp */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_65%_at_50%_35%,rgba(255,255,255,0.4),rgba(244,244,242,1)_88%)]" />
+
+        {/* Faint coordinate grid lines (1–2px parallax) */}
+        <motion.div
+          style={{
+            x: isDesktop && !reduceMotion ? gridShiftX : 0,
+            y: isDesktop && !reduceMotion ? gridShiftY : 0,
+            opacity: isInView ? 0.45 : 0.15,
+          }}
+          transition={{ duration: 0.8 }}
+          className="absolute inset-0 bg-[linear-gradient(to_right,rgba(11,31,58,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(11,31,58,0.02)_1px,transparent_1px)] bg-[size:5rem_5rem]"
+        />
+
+        {/* Faint gold technical paths (2–3px parallax) */}
+        <motion.svg
+          style={{
+            x: isDesktop && !reduceMotion ? topoShiftX : 0,
+            y: isDesktop && !reduceMotion ? topoShiftY : 0,
+            opacity: isInView ? 0.25 : 0.08,
+          }}
+          transition={{ duration: 0.8 }}
+          viewBox="0 0 1440 800"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute -top-6 left-0 w-full h-[120%] mix-blend-multiply"
+        >
+          <path
+            d="M-60,160 C260,100 540,240 880,150 C1200,80 1380,220 1660,140"
+            stroke="rgba(184, 134, 11, 0.15)"
+            strokeWidth="1.2"
+            strokeDasharray="4 8"
+          />
+          <path
+            d="M-80,420 C240,360 560,500 920,410 C1220,330 1420,460 1720,390"
+            stroke="rgba(11, 31, 58, 0.06)"
+            strokeWidth="0.8"
+          />
+        </motion.svg>
+      </div>
+
+      {/* -------------------------------------------------------------------- */}
+      {/* 02. SECTION HEADER WITH STRICT VISUAL HIERARCHY                      */}
+      {/* -------------------------------------------------------------------- */}
+      <div className="relative w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 mb-7 sm:mb-9 z-20">
+        <div className="flex flex-col items-start gap-2.5 sm:gap-3">
+
+          {/* 
+            ==================================================================
+            1. SMALL LABEL: MARKET ECOSYSTEM // GLOBAL COVERAGE
+               (Indicator expands slightly, text fades in + translates up 8px)
+            ==================================================================
+          */}
+          <div className="flex items-center gap-2">
+            <motion.span
+              initial={reduceMotion ? {} : { scale: 0, opacity: 0 }}
+              animate={isInView ? { scale: [0, 1.2, 1], opacity: 1 } : {}}
+              transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
+              className="w-1.5 h-1.5 rounded-full bg-[#B8860B]"
+            />
+            <motion.span
+              initial={reduceMotion ? {} : { opacity: 0, y: 8 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.55, delay: 0.2, ease: "easeOut" }}
+              className="font-mono text-[10.5px] font-bold uppercase tracking-[0.22em] text-[#9E7208]"
+            >
+              Market Ecosystem // Global Coverage
+            </motion.span>
+          </div>
+
+          {/* 
+            ==================================================================
+            2. MAIN HEADING: FEATURED COMPANIES ↙
+               (Heading: translateY(40px) -> 0 in 800ms smooth ease-out)
+               (Arrow: translate(-15px, -15px) -> 0 at 250ms delay)
+            ==================================================================
+          */}
+          <div className="flex items-end justify-start gap-3 sm:gap-4 overflow-hidden py-0.5">
+            <motion.h2
+              initial={reduceMotion ? {} : { y: 40, opacity: 0 }}
+              animate={isInView ? { y: 0, opacity: 1 } : {}}
+              transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
+              className="font-geist text-[clamp(1.85rem,3.8vw,3.25rem)] font-black uppercase leading-[0.94] tracking-[-0.03em] text-[#0B1F3A]"
+            >
+              <span className="inline-block">Featured</span>
+              <span className="inline-block ml-2.5 sm:ml-3 text-[#0B1F3A]">Companies</span>
+            </motion.h2>
+
+            {/* Down-left Arrow: translate(-15px, -15px) -> (0,0) */}
+            <motion.svg
+              initial={reduceMotion ? {} : { opacity: 0, x: -15, y: -15 }}
+              animate={isInView ? { opacity: 1, x: 0, y: 0 } : {}}
+              transition={{ duration: 0.7, delay: 0.25, ease: "easeOut" }}
+              aria-hidden="true"
+              focusable="false"
+              viewBox="0 0 48 48"
+              fill="none"
+              stroke="#0B1F3A"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="mb-1 h-[clamp(1.3rem,2.4vw,2.1rem)] w-auto shrink-0 text-[#0B1F3A]"
+            >
+              <path d="M40 8 10 38" />
+              <path d="M10 14.5V38h23.5" />
+            </motion.svg>
+          </div>
+
+        </div>
+      </div>
+
+      {/* -------------------------------------------------------------------- */}
+      {/* 03. 3-ROW COMPANY NETWORK WAVES (Staggered horizontal reveals)       */}
+      {/* -------------------------------------------------------------------- */}
+      <motion.div
+        style={{
+          x: isDesktop && !reduceMotion ? cardsShiftX : 0,
+          y: isDesktop && !reduceMotion ? cardsShiftY : 0,
+        }}
+        className="relative w-full overflow-hidden flex flex-col gap-3 sm:gap-4 z-20"
+      >
+        {/* Subtle Horizontal Survey Grid Lines Between Rows */}
+        <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <line
+              x1="0"
+              y1="32%"
+              x2="100%"
+              y2="32%"
+              stroke="rgba(184, 134, 11, 0.12)"
+              strokeWidth="1"
+              strokeDasharray="4 6"
+            />
+            <line
+              x1="0"
+              y1="67%"
+              x2="100%"
+              y2="67%"
+              stroke="rgba(184, 134, 11, 0.12)"
+              strokeWidth="1"
+              strokeDasharray="4 6"
+            />
+          </svg>
+        </div>
+
+        {/* Subtle Edge Fades (Narrow so edge logos remain readable) */}
+        <div className="absolute top-0 bottom-0 left-0 w-6 sm:w-10 lg:w-14 bg-gradient-to-r from-[#F4F4F2] to-transparent pointer-events-none z-30" />
+        <div className="absolute top-0 bottom-0 right-0 w-6 sm:w-10 lg:w-14 bg-gradient-to-l from-[#F4F4F2] to-transparent pointer-events-none z-30" />
+
+        {/* ROW 1: Moves LEFT -> RIGHT (~50s, Wave 1: delay 0.50s) */}
+        <motion.div
+          initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.65, delay: 0.50, ease: "easeOut" }}
+          className="group/row relative w-full overflow-hidden flex z-20"
+        >
+          <div className="flex shrink-0 items-center gap-3 sm:gap-4 animate-flow-right-1">
+            {[...ROW_1, ...ROW_1].map((company, index) => (
+              <CompanyCard
+                key={`row1-${company.name}-${index}`}
+                company={company}
+                nodeIndex={(index % 9) + 1}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ROW 2: Moves RIGHT -> LEFT (~55s, Wave 2: delay 0.65s) */}
+        <motion.div
+          initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.65, delay: 0.65, ease: "easeOut" }}
+          className="group/row relative w-full overflow-hidden flex z-20"
+        >
+          <div className="flex shrink-0 items-center gap-3 sm:gap-4 animate-flow-left-2">
+            {[...ROW_2, ...ROW_2].map((company, index) => (
+              <CompanyCard
+                key={`row2-${company.name}-${index}`}
+                company={company}
+                nodeIndex={(index % 9) + 10}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+        {/* ROW 3: Moves LEFT -> RIGHT (~60s, Wave 3: delay 0.80s) */}
+        <motion.div
+          initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.65, delay: 0.80, ease: "easeOut" }}
+          className="group/row relative w-full overflow-hidden flex z-20"
+        >
+          <div className="flex shrink-0 items-center gap-3 sm:gap-4 animate-flow-right-3">
+            {[...ROW_3, ...ROW_3].map((company, index) => (
+              <CompanyCard
+                key={`row3-${company.name}-${index}`}
+                company={company}
+                nodeIndex={(index % 9) + 19}
+              />
+            ))}
+          </div>
+        </motion.div>
+
+      </motion.div>
+
+      {/* -------------------------------------------------------------------- */}
+      {/* 04. BOTTOM INFORMATION BAR (Left indicator pulses once on appear)    */}
+      {/* -------------------------------------------------------------------- */}
+      <div className="relative w-full max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 mt-7 sm:mt-9 z-20">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-5 border-t border-[#E5E5E3] font-mono text-[10px] uppercase tracking-wider text-[#6A6E77]">
+          <div className="flex items-center gap-2">
+            {/* Left gold indicator: pulses ONCE on entry without continuous blinking */}
+            <motion.span
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={isInView ? { scale: [1, 1.3, 1], opacity: [0.7, 1, 0.7] } : {}}
+              transition={{ duration: 1.2, delay: 0.9, ease: "easeOut" }}
+              className="w-1.5 h-1.5 rounded-full bg-[#B8860B]"
+            />
+            <span>GLOBAL NETWORK COVERAGE // 27 TIER-1 & JUNIOR PRODUCERS</span>
+          </div>
+          <span className="text-[#9E7208]">CONTINUOUS SURVEILLANCE & MARKET INTELLIGENCE</span>
+        </div>
+      </div>
     </section>
   );
 };
+
+/**
+ * Company Card:
+ * - Clean white background with subtle neutral border
+ * - Top Gold Line: 1.5px gold edge (default ~0.40 opacity, 1.0 on hover)
+ * - Corner markers that brighten on hover
+ * - Hover: translateY(-4px), scale(1.015), logo scale(1.06), soft radial glow behind logo
+ * - Sibling dimming: same row only drops 10–15% (opacity: 0.85)
+ */
+const CompanyCard: React.FC<{
+  company: Company;
+  nodeIndex: number;
+}> = ({ company, nodeIndex }) => {
+  return (
+    <div
+      className="group relative flex h-[84px] w-[188px] sm:h-[94px] sm:w-[220px] lg:h-[102px] lg:w-[245px] shrink-0 items-center justify-center rounded-xl border border-[#E8E8E6] bg-white px-4 sm:px-5 transition-all duration-350 ease-out cursor-pointer shadow-2xs group-hover/row:opacity-85 hover:!opacity-100 hover:!-translate-y-[3px] hover:!scale-[1.015] hover:z-30 hover:border-[#B8860B]/50 hover:shadow-[0_8px_22px_rgba(184,134,11,0.12)]"
+      style={{
+        backgroundImage: "radial-gradient(circle at center, rgba(184, 134, 11, 0.025), transparent 75%)",
+      }}
+    >
+
+      {/* Subtle Gold Corner Markers (Brighten on hover) */}
+      <div className="absolute top-1.5 left-1.5 w-2 h-2 border-t border-l border-[#B8860B]/20 group-hover:border-[#B8860B] transition-colors duration-300 pointer-events-none" />
+      <div className="absolute top-1.5 right-1.5 w-2 h-2 border-t border-r border-[#B8860B]/20 group-hover:border-[#B8860B] transition-colors duration-300 pointer-events-none" />
+      <div className="absolute bottom-1.5 left-1.5 w-2 h-2 border-b border-l border-[#B8860B]/20 group-hover:border-[#B8860B] transition-colors duration-300 pointer-events-none" />
+      <div className="absolute bottom-1.5 right-1.5 w-2 h-2 border-b border-r border-[#B8860B]/20 group-hover:border-[#B8860B] transition-colors duration-300 pointer-events-none" />
+
+      {/* Centered Company Logo */}
+      <CompanyLogo company={company} nodeIndex={nodeIndex} />
+    </div>
+  );
+};
+
+export default TrustedBy;

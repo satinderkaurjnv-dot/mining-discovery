@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import {
   AboutAdvisor,
   AboutClosing,
+  AboutCoverage,
   AboutHero,
   AboutLookingAhead,
   AboutManagement,
@@ -60,14 +61,16 @@ export default function AboutPage() {
         a <noscript> block's contents are never parsed as markup when scripting is enabled.
       */}
       <noscript>
-        <style>{`[data-about-reveal],[data-about-rule-x],[data-about-rule-y],.about-mask__word{transform:none!important;opacity:1!important}`}</style>
+        <style>{`[data-about-reveal],[data-about-rule-x],[data-about-rule-y],.about-deblur__word{transform:none!important;opacity:1!important;filter:none!important}`}</style>
       </noscript>
 
       {/* 01 — Hero */}
       <AboutHero />
       {/* 02 — Our Origin */}
       <AboutOrigin />
-      {/* 03 — Management */}
+      {/* 03 — What We Cover (Mining Ecosystem) */}
+      <AboutCoverage />
+      {/* 04 — Management */}
       <AboutManagement />
       {/* 04 — Advisor */}
       <AboutAdvisor />

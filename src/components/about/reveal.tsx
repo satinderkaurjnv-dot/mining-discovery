@@ -18,60 +18,33 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
  * simply triggered, and because SmoothScroll.tsx already feeds Lenis into ScrollTrigger.
  */
 
-/** Shared ease. A long flat tail and no overshoot — editorial rather than springy. */
+/** Shared ease. Luxury smooth deceleration with zero overshoot. */
 export const ABOUT_EASE = "power3.out";
 
-/** How far a masked word starts below its mask, as a percentage of its own height. It has
- *  to clear the mask's 0.2em descender allowance, hence >100. */
-export const RISE_PERCENT = 120;
-
-/** Where a section commits: its top edge 82% of the way down the viewport. Late enough
- *  that nothing fires while still off screen, early enough that it is moving as it lands. */
-export const REVEAL_START = "top 82%";
+/** Where a section commits: its top edge 85% of the way down the viewport. */
+export const REVEAL_START = "top 85%";
 
 /* ------------------------------------------------------------------------------------ *
  * Initial states.
- *
- * Written as CSS classes, not inline styles or a JS gsap.set, and that ordering is the
- * whole point: the server-rendered HTML paints before hydration, so a JS-only hidden state
- * would flash the finished section first. `motion-reduce:` neutralises them for readers
- * who have asked for less motion, and page.tsx carries a <noscript> override for readers
- * with no JS at all.
- *
- * These set the `transform` property rather than Tailwind's `translate-y-*` utilities.
- * Tailwind v4 compiles those to the separate `translate` property, which COMPOSES with the
- * `transform` GSAP writes instead of being replaced by it — the element would end up
- * permanently offset by its own start distance.
  * ------------------------------------------------------------------------------------ */
 
-/** A block that fades and rises into place. Pair with data-about-reveal. */
+/** A block that fades and gently rises into place with zero blur. */
 export const HIDDEN_RISE =
-  "opacity-0 [transform:translateY(28px)] motion-reduce:opacity-100 motion-reduce:[transform:none]";
+  "opacity-0 [transform:translateY(18px)] motion-reduce:opacity-100 motion-reduce:[transform:none]";
 
-/** A horizontal rule that draws left to right. Pair with data-about-rule-x. */
+/** A horizontal rule that draws left to right. */
 export const HIDDEN_RULE_X =
   "origin-left [transform:scaleX(0)] motion-reduce:[transform:none]";
 
-/** A vertical connector that draws top to bottom. Pair with data-about-rule-y. */
+/** A vertical connector that draws top to bottom. */
 export const HIDDEN_RULE_Y =
   "origin-top [transform:scaleY(0)] motion-reduce:[transform:none]";
 
-export const WORD_SELECTOR = ".about-mask__word";
+export const WORD_SELECTOR = ".about-deblur__word";
 
 /**
- * One word behind its own mask.
- *
- * inline-flex, not inline-block, and that is load-bearing: a block container with
- * `overflow: hidden` takes its baseline from its bottom margin edge, which would lift every
- * word off the baseline and visibly reposition the heading. A flex container keeps the
- * baseline of its first item, so the masked word sits exactly where the bare text sat.
- * Measured across 1440/1024/768/390: every word lands within 0.06px of where the
- * unmasked text renders, and the element boxes are identical.
- *
- * The padding/negative-margin pairs enlarge the clipping box without contributing anything
- * to layout: the bottom 0.2em stops descenders being shaved off at rest, and the
- * horizontal 0.08em gives the last glyph the room that negative tracking would otherwise
- * clip. Both are cancelled by their negative margins.
+ * Crystal Clear Word Component (Zero Blur).
+ * Each word smoothly rises into place with pure opacity and position transition.
  */
 export const MaskedWords: React.FC<{ text: string }> = ({ text }) => {
   const words = text.split(" ");
@@ -80,13 +53,11 @@ export const MaskedWords: React.FC<{ text: string }> = ({ text }) => {
     <>
       {words.map((word, index) => (
         <React.Fragment key={`${word}-${index}`}>
-          <span className="about-mask inline-flex overflow-hidden px-[0.08em] -mx-[0.08em] pb-[0.2em] -mb-[0.2em]">
-            <span className="about-mask__word about-mask__word--hidden inline-block opacity-0 [transform:translateY(120%)] motion-reduce:opacity-100 motion-reduce:[transform:none]">
-              {word}
-            </span>
+          <span
+            className="about-deblur__word inline-block opacity-0 [transform:translateY(14px)] motion-reduce:opacity-100 motion-reduce:[transform:none] transition-none will-change-[transform,opacity]"
+          >
+            {word}
           </span>
-          {/* A plain space between masks, so the line still wraps exactly where it wrapped
-              when this was one uninterrupted text node. */}
           {index < words.length - 1 ? " " : null}
         </React.Fragment>
       ))}
@@ -95,12 +66,7 @@ export const MaskedWords: React.FC<{ text: string }> = ({ text }) => {
 };
 
 /**
- * Group a masked run of text by the line each word actually landed on.
- *
- * Which words share a line is a question only the browser can answer — the copy wraps to
- * three lines on a phone and two at 1440 — so hard-coding a split would freeze one of those
- * and break the rest. offsetTop rather than a bounding rect, because it ignores the
- * transforms the words are already carrying.
+ * Group words by actual rendered line for cohesive reading rhythm.
  */
 export function groupWordsByLine(root: HTMLElement | null): HTMLElement[][] {
   if (!root) return [];
@@ -108,13 +74,12 @@ export function groupWordsByLine(root: HTMLElement | null): HTMLElement[][] {
   const lines: HTMLElement[][] = [];
   let lineTop = Number.NaN;
 
-  root.querySelectorAll<HTMLElement>(".about-mask").forEach((mask) => {
-    const word = mask.querySelector<HTMLElement>(WORD_SELECTOR);
+  root.querySelectorAll<HTMLElement>(WORD_SELECTOR).forEach((word) => {
     if (!word) return;
 
-    if (!lines.length || Math.abs(mask.offsetTop - lineTop) > 4) {
+    if (!lines.length || Math.abs(word.offsetTop - lineTop) > 6) {
       lines.push([]);
-      lineTop = mask.offsetTop;
+      lineTop = word.offsetTop;
     }
 
     lines[lines.length - 1].push(word);
@@ -123,16 +88,21 @@ export function groupWordsByLine(root: HTMLElement | null): HTMLElement[][] {
   return lines;
 }
 
-/** The from/to pair for a masked word rise. fromTo rather than to, throughout: the resting
- *  position is written in CSS, and GSAP would otherwise read that as the destination. */
-export const maskedFrom = { yPercent: RISE_PERCENT, y: 0, opacity: 0 } as const;
-export const maskedTo = { yPercent: 0, opacity: 1, duration: 1.05, ease: ABOUT_EASE } as const;
+/** The from/to pair for pure, razor-sharp text animation. */
+export const maskedFrom = {
+  y: 14,
+  opacity: 0,
+} as const;
+
+export const maskedTo = {
+  y: 0,
+  opacity: 1,
+  duration: 0.75,
+  ease: ABOUT_EASE,
+} as const;
 
 /**
- * Reveal every marked element inside `scope` on a single scroll trigger.
- *
- * The default for a section that simply arrives. Sections that need scrubbing or an active
- * index build their own timelines instead and call this for whatever is left over.
+ * Reveal marked elements with pure, razor-sharp opacity and smooth rise.
  */
 export function revealBlocks(
   scope: HTMLElement,
@@ -153,20 +123,25 @@ export function revealBlocks(
   });
 
   if (rules.length) {
-    tl.fromTo(rules, { scaleX: 0 }, { scaleX: 1, duration: 0.9 }, 0);
+    tl.fromTo(rules, { scaleX: 0 }, { scaleX: 1, duration: 0.8, ease: "power2.out" }, 0);
   }
   if (rulesY.length) {
-    tl.fromTo(rulesY, { scaleY: 0 }, { scaleY: 1, duration: 0.7, stagger: 0.12 }, 0.2);
+    tl.fromTo(rulesY, { scaleY: 0 }, { scaleY: 1, duration: 0.7, stagger: 0.1, ease: "power2.out" }, 0.15);
   }
   if (words.length) {
-    tl.fromTo(words, maskedFrom, { ...maskedTo, stagger: 0.07 }, 0.14);
+    tl.fromTo(words, maskedFrom, { ...maskedTo, stagger: 0.03 }, 0.1);
   }
   if (blocks.length) {
     tl.fromTo(
       blocks,
-      { y: 28, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.75, stagger: options.stagger ?? 0.09 },
-      0.24
+      { y: 16, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.7,
+        stagger: options.stagger ?? 0.06,
+      },
+      0.18
     );
   }
 

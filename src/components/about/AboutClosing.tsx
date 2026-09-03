@@ -1,52 +1,49 @@
 "use client";
 
-import React, { useRef } from "react";
+import React from "react";
 import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import {
-  HIDDEN_RISE,
-  HIDDEN_RULE_X,
-  MaskedWords,
-  revealBlocks,
-  useAboutMotion,
-} from "./reveal";
-
-/*
- * The closer — the page's positioning statement and its only call to action.
- *
- * Not one of the nine numbered sections, and kept deliberately: it is the existing About
- * page's ending, the statement is the source's own positioning line, and dropping it would
- * leave a nine-section page with nowhere to go at the bottom of it.
- */
 
 export const AboutClosing: React.FC = () => {
-  const sectionRef = useRef<HTMLElement | null>(null);
-
-  useAboutMotion(sectionRef, (scope) => {
-    revealBlocks(scope, { start: "top 85%" });
-  });
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section ref={sectionRef}>
-      <div className="container-editorial py-24 text-center md:py-32">
-        <div
-          data-about-rule-x
-          className={`mx-auto h-0.5 w-12 bg-[#B8860B] ${HIDDEN_RULE_X}`}
+    <section className="bg-[#F7F5EF] py-28 md:py-36">
+      <div className="container-editorial text-center">
+        <motion.div
+          initial={reduceMotion ? {} : { scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="mx-auto h-0.5 w-12 bg-[#B8860B]"
         />
 
-        <p className="mx-auto mt-10 max-w-4xl font-serif text-[clamp(1.75rem,3.6vw,3rem)] font-normal leading-[1.18] tracking-[-0.02em] text-[#0B1F3A]">
-          <MaskedWords text="Mining Discovery is the first choice for mining news and insights — covering exploration, production, regulation, investment, and ESG across global mining markets." />
-        </p>
+        <motion.p
+          initial={reduceMotion ? {} : { opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+          className="mx-auto mt-10 max-w-4xl font-serif text-[clamp(1.75rem,3.6vw,3rem)] font-normal leading-[1.18] tracking-[-0.02em] text-[#0B1F3A]"
+        >
+          Mining Discovery is the first choice for mining news and insights — covering exploration, production, regulation, investment, and ESG across global mining markets.
+        </motion.p>
 
-        <div data-about-reveal className={`mt-12 ${HIDDEN_RISE}`}>
+        <motion.div
+          initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+          className="mt-12"
+        >
           <Link
             href="/#submit-news"
-            className="group inline-flex items-center gap-2 rounded-md bg-[#B8860B] px-6 py-3 font-sans text-sm font-semibold tracking-wide text-[#0B1F3A] shadow-[0_0_20px_rgba(184,134,11,0.35)] transition-all duration-300 hover:bg-[#D4AF37] hover:shadow-[0_0_25px_rgba(212,175,55,0.5)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-2"
+            className="group inline-flex items-center gap-2 rounded-xl bg-[#0B1F3A] px-7 py-3.5 font-mono text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all duration-300 hover:bg-[#B8860B] hover:shadow-md"
           >
-            Get Featured
-            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
+            <span>Get Featured</span>
+            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
           </Link>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

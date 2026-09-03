@@ -1,242 +1,239 @@
 "use client";
 
 import React, { useRef } from "react";
-import gsap from "gsap";
-import {
-  ABOUT_EASE,
-  HIDDEN_RISE,
-  HIDDEN_RULE_X,
-  HIDDEN_RULE_Y,
-  MaskedWords,
-  REVEAL_START,
-  revealBlocks,
-  useAboutMotion,
-} from "./reveal";
-
-/*
- * Section 02 — Our Origin.
- *
- * The founding, told as a convergence: two people, two backgrounds, one platform. Every
- * fact in here is from miningdiscovery.com/about-us — the year, the two names, the two
- * backgrounds, the six beats, and the closing conviction. There are deliberately no
- * milestones between 2022 and now, because the source names none.
- */
-
-/** The six beats the source lists, in the source's order. */
-const BEATS = [
-  "Corporate actions",
-  "Sustainability",
-  "Exploration",
-  "Regulation",
-  "Investor relations",
-  "Innovation",
-];
-
-/** The convergence, row by row. Each row is one beat of the diagram's timeline. */
-const CONVERGENCE: Array<{ label: string; nodes: Array<{ title: string; meta?: string }> }> = [
-  {
-    label: "The founders",
-    nodes: [
-      { title: "Gaurav Sharma", meta: "Founder" },
-      { title: "Sagar Bakshi", meta: "Director & Co-Founder" },
-    ],
-  },
-  {
-    label: "What they brought",
-    nodes: [{ title: "Mining Markets" }, { title: "Strategic Communication" }],
-  },
-  {
-    label: "What it became",
-    nodes: [{ title: "Mining Discovery", meta: "Est. 2022" }],
-  },
-];
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 
 export const AboutOrigin: React.FC = () => {
+  const reduceMotion = useReducedMotion();
   const sectionRef = useRef<HTMLElement | null>(null);
-  const headerRef = useRef<HTMLDivElement | null>(null);
-  const diagramRef = useRef<HTMLDivElement | null>(null);
-  const storyRef = useRef<HTMLDivElement | null>(null);
 
-  useAboutMotion(sectionRef, () => {
-    if (headerRef.current) revealBlocks(headerRef.current);
-    if (storyRef.current) revealBlocks(storyRef.current, { stagger: 0.07 });
-
-    /*
-     * The diagram gets a bespoke timeline rather than the shared one, because its whole
-     * point is sequence: a row lands, the connector draws down from it, the next row lands.
-     * Run through revealBlocks it would have arrived as one block and said nothing.
-     */
-    const diagram = diagramRef.current;
-    if (!diagram) return;
-
-    const rows = diagram.querySelectorAll<HTMLElement>("[data-origin-row]");
-    const links = diagram.querySelectorAll<HTMLElement>("[data-origin-link]");
-
-    const tl = gsap.timeline({
-      defaults: { ease: ABOUT_EASE },
-      scrollTrigger: { trigger: diagram, start: REVEAL_START, once: true },
-    });
-
-    rows.forEach((row, index) => {
-      const at = index * 0.55;
-      tl.fromTo(row, { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, at);
-
-      const link = links[index];
-      if (link) {
-        tl.fromTo(link, { scaleY: 0 }, { scaleY: 1, duration: 0.45, ease: "power2.out" }, at + 0.45);
-      }
-    });
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"],
   });
 
-  return (
-    <section ref={sectionRef} className="border-b border-[#E5E4DE] bg-white">
-      <div className="container-editorial py-20 md:py-28">
-        {/* --- Header: the year, and what it was --------------------------------- */}
-        <div ref={headerRef} className="grid grid-cols-1 gap-x-16 gap-y-10 lg:grid-cols-12">
-          <div className="lg:col-span-4">
-            <div data-about-rule-x className={`h-0.5 w-12 bg-[#B8860B] ${HIDDEN_RULE_X}`} />
-            <span
-              data-about-reveal
-              className={`mt-6 block text-xs font-semibold uppercase tracking-[0.15em] text-[#B8860B] ${HIDDEN_RISE}`}
-            >
-              Our Origin
-            </span>
+  const yearY = useTransform(scrollYProgress, [0, 1], [35, -35]);
+  const strataOpacity = useTransform(scrollYProgress, [0.1, 0.5, 0.9], [0.05, 0.25, 0.05]);
 
-            {/*
-              The year at display scale. tabular-nums so the four digits sit on an even
-              rhythm rather than on the font's proportional widths, which is what makes a
-              date read as a date rather than as a word.
-            */}
-            <p
-              data-about-reveal
-              className={`mt-8 font-geist text-[clamp(4rem,10vw,7.5rem)] font-semibold leading-[0.9] tracking-[-0.05em] tabular-nums text-[#0B1F3A] ${HIDDEN_RISE}`}
+  return (
+    <section
+      ref={sectionRef}
+      className="relative overflow-hidden border-b border-[#E5E4DE] bg-white py-16 md:py-24"
+    >
+      {/* -------------------------------------------------------------------- */}
+      {/* GEOLOGICAL STRATA UNCOVER ANIMATION                                  */}
+      {/* -------------------------------------------------------------------- */}
+      <motion.div
+        style={{ opacity: reduceMotion ? 0.15 : strataOpacity }}
+        className="absolute inset-0 pointer-events-none overflow-hidden select-none"
+      >
+        <svg
+          viewBox="0 0 1440 900"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="w-full h-full object-cover"
+        >
+          <path
+            d="M-50,220 C280,180 580,320 940,240 C1240,170 1480,280 1600,240"
+            stroke="rgba(184, 134, 11, 0.3)"
+            strokeWidth="1.2"
+            strokeDasharray="4 8"
+          />
+          <path
+            d="M-80,440 C320,380 640,510 1020,420 C1320,350 1520,460 1650,420"
+            stroke="rgba(11, 31, 58, 0.12)"
+            strokeWidth="1"
+          />
+          <path
+            d="M-40,660 C260,600 620,740 980,650 C1280,580 1500,690 1620,660"
+            stroke="rgba(184, 134, 11, 0.2)"
+            strokeWidth="1"
+          />
+        </svg>
+      </motion.div>
+
+      <div className="container-editorial relative z-10">
+        {/* Header Grid: 2022 & A Shared Vision */}
+        <div className="grid grid-cols-1 gap-x-16 gap-y-12 lg:grid-cols-12 items-start">
+          {/* LEFT: Origin Label & Monumental Year 2022 */}
+          <div className="lg:col-span-5">
+            <div className="flex items-center gap-3 mb-6">
+              <span className="h-0.5 w-12 bg-[#B8860B]" />
+              <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[#9E7208]">
+                Our Origin
+              </span>
+            </div>
+
+            {/* Monumental Year 2022 with Parallax Drift */}
+            <motion.p
+              style={{ y: reduceMotion ? 0 : yearY }}
+              className="font-geist text-[clamp(5.5rem,14vw,10.5rem)] font-bold leading-[0.85] tracking-[-0.06em] tabular-nums text-[#0B1F3A] select-none"
             >
               2022
-            </p>
+            </motion.p>
           </div>
 
-          <div className="lg:col-span-8 lg:border-l lg:border-[#E5E4DE] lg:pl-12">
-            <h2 className="max-w-[18ch] font-serif text-[clamp(2rem,4.2vw,3.25rem)] font-normal leading-[1.1] tracking-[-0.02em] text-[#0B1F3A]">
-              <MaskedWords text="A shared vision." />
-            </h2>
+          {/* RIGHT: A shared vision & narrative */}
+          <div className="lg:col-span-7 lg:border-l lg:border-[#E5E4DE] lg:pl-14">
+            <motion.h2
+              initial={reduceMotion ? {} : { opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+              className="font-serif text-[clamp(2.25rem,4.5vw,3.75rem)] font-normal leading-[1.08] tracking-[-0.025em] text-[#0B1F3A]"
+            >
+              A shared vision.
+            </motion.h2>
 
-            <p
-              data-about-reveal
-              className={`mt-8 text-xl font-normal leading-relaxed text-[#3A3D42] sm:text-2xl ${HIDDEN_RISE}`}
+            <motion.p
+              initial={reduceMotion ? {} : { opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-8 text-xl font-normal leading-relaxed text-[#3A3D42] sm:text-2xl"
             >
               Mining Discovery began with a shared vision: to bring clarity and depth to a
               mining sector often clouded by noise and half-truths. We recognised the
               industry lacked a strong, trustworthy voice dedicated to the stories that
               actually matter.
-            </p>
+            </motion.p>
           </div>
         </div>
 
-        {/* --- The convergence ---------------------------------------------------- */}
-        <div ref={diagramRef} className="mt-20 flex flex-col items-center md:mt-24">
-          {CONVERGENCE.map((row, rowIndex) => (
-            <React.Fragment key={row.label}>
-              <div
-                data-origin-row
-                data-about-reveal
-                className={`flex w-full max-w-3xl flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-center ${HIDDEN_RISE}`}
-              >
-                {row.nodes.map((node, nodeIndex) => (
-                  <React.Fragment key={node.title}>
-                    {/* The plus is punctuation between the two nodes, not content — it
-                        carries no meaning a screen reader needs to hear. */}
-                    {nodeIndex > 0 && (
-                      <span
-                        aria-hidden="true"
-                        className="shrink-0 self-center font-serif text-xl leading-none text-[#B8860B] sm:text-2xl"
-                      >
-                        +
-                      </span>
-                    )}
-
-                    <div
-                      className={`flex-1 rounded-xl border px-6 py-5 text-center transition-colors duration-300 sm:px-8 sm:py-6 ${
-                        // The last row is the outcome, so it carries the gold ground the
-                        // rest of the page reserves for accents rather than another
-                        // neutral card — the diagram has to resolve somewhere.
-                        rowIndex === CONVERGENCE.length - 1
-                          ? "border-[#B8860B]/35 bg-[#FAF5E8]"
-                          : "border-[#E5E4DE] bg-[#FBFBFA]"
-                      }`}
-                    >
-                      <p className="font-serif text-xl font-normal tracking-[-0.01em] text-[#0B1F3A] sm:text-2xl">
-                        {node.title}
-                      </p>
-                      {node.meta && (
-                        <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-[#B8860B]">
-                          {node.meta}
-                        </p>
-                      )}
-                    </div>
-                  </React.Fragment>
-                ))}
-              </div>
-
-              {/* Connector down to the next row. Decorative: the reading order already
-                  carries the sequence. */}
-              {rowIndex < CONVERGENCE.length - 1 && (
-                <span
-                  aria-hidden="true"
-                  data-origin-link
-                  data-about-rule-y
-                  className={`my-5 block h-12 w-px bg-gradient-to-b from-[#B8860B]/70 to-[#B8860B]/25 md:h-14 ${HIDDEN_RULE_Y}`}
-                />
-              )}
-            </React.Fragment>
-          ))}
-        </div>
-
-        {/* --- What that platform covers ------------------------------------------ */}
-        <div ref={storyRef} className="mt-20 grid grid-cols-1 gap-x-16 gap-y-10 md:mt-24 lg:grid-cols-12">
-          <div className="lg:col-span-4">
-            <span
-              data-about-reveal
-              className={`block text-xs font-semibold uppercase tracking-[0.15em] text-[#B8860B] ${HIDDEN_RISE}`}
-            >
-              What We Cover
-            </span>
-
-            <p
-              data-about-reveal
-              className={`mt-6 text-lg font-normal leading-relaxed text-[#57595E] sm:text-xl ${HIDDEN_RISE}`}
-            >
-              Mining isn&apos;t just rocks and machines. It is people, communities,
-              economies, and a meaningful share of the planet&apos;s future — and we set out
-              to build a platform that honours all of that.
-            </p>
-          </div>
-
-          <div className="lg:col-span-8 lg:border-l lg:border-[#E5E4DE] lg:pl-12">
-            {/*
-              The six beats as a list rather than a comma run — they are the spine of what
-              we cover, and a reader scanning the page should be able to find them without
-              parsing a sentence.
-            */}
-            <ul className="grid grid-cols-1 gap-x-10 sm:grid-cols-2">
-              {BEATS.map((beat, index) => (
-                <li
-                  key={beat}
-                  data-about-reveal
-                  className={`flex items-baseline gap-4 border-b border-[#E5E4DE] py-3.5 ${HIDDEN_RISE}`}
-                >
-                  <span className="font-mono text-[11px] tabular-nums text-[#B8860B]">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <span className="text-base font-medium text-[#1A1D21] sm:text-lg">
-                    {beat}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+        {/* --- Convergence Flow: Two Founders, Two Strengths, One Platform --------- */}
+        <div className="mt-24 md:mt-32">
+          <ConvergenceFlow />
         </div>
       </div>
     </section>
+  );
+};
+
+const ConvergenceFlow: React.FC = () => {
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <div className="w-full max-w-3xl mx-auto flex flex-col items-center">
+      {/* Row 1: The Founders */}
+      <div className="flex w-full flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4">
+        <motion.div
+          initial={reduceMotion ? {} : { opacity: 0, x: -30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="group flex-1 rounded-2xl border border-[#E5E4DE] bg-[#FAF9F5] px-7 py-6 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#D4AF37]/60 hover:shadow-md"
+        >
+          <p className="font-serif text-2xl font-normal tracking-[-0.01em] text-[#0B1F3A] transition-colors group-hover:text-[#B8860B]">
+            Gaurav Sharma
+          </p>
+          <p className="mt-2 font-mono text-xs font-bold uppercase tracking-[0.16em] text-[#9E7208]">
+            Founder
+          </p>
+        </motion.div>
+
+        <motion.span
+          initial={reduceMotion ? {} : { opacity: 0, scale: 0 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.4, delay: 0.2, ease: "backOut" }}
+          aria-hidden="true"
+          className="shrink-0 self-center font-serif text-2xl text-[#B8860B]"
+        >
+          +
+        </motion.span>
+
+        <motion.div
+          initial={reduceMotion ? {} : { opacity: 0, x: 30 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+          className="group flex-1 rounded-2xl border border-[#E5E4DE] bg-[#FAF9F5] px-7 py-6 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#D4AF37]/60 hover:shadow-md"
+        >
+          <p className="font-serif text-2xl font-normal tracking-[-0.01em] text-[#0B1F3A] transition-colors group-hover:text-[#B8860B]">
+            Sagar Bakshi
+          </p>
+          <p className="mt-2 font-mono text-xs font-bold uppercase tracking-[0.16em] text-[#9E7208]">
+            Director & Co-Founder
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Connector 1: Thin Elegant Gold Vertical Beam */}
+      <div className="relative my-4 h-12 w-px overflow-hidden bg-[#E5E4DE]">
+        <motion.div
+          initial={reduceMotion ? {} : { scaleY: 0 }}
+          whileInView={{ scaleY: 1 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.3, ease: "easeInOut" }}
+          className="origin-top h-full w-full bg-[#B8860B]"
+        />
+      </div>
+
+      {/* Row 2: What They Brought */}
+      <div className="flex w-full flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4">
+        <motion.div
+          initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="group flex-1 rounded-2xl border border-[#E5E4DE] bg-[#FAF9F5] px-7 py-6 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#D4AF37]/60 hover:shadow-md"
+        >
+          <p className="font-serif text-xl sm:text-2xl font-normal tracking-[-0.01em] text-[#0B1F3A] transition-colors group-hover:text-[#B8860B]">
+            Mining Markets
+          </p>
+        </motion.div>
+
+        <motion.span
+          initial={reduceMotion ? {} : { opacity: 0, scale: 0 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.4, delay: 0.45, ease: "backOut" }}
+          aria-hidden="true"
+          className="shrink-0 self-center font-serif text-2xl text-[#B8860B]"
+        >
+          +
+        </motion.span>
+
+        <motion.div
+          initial={reduceMotion ? {} : { opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.6, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="group flex-1 rounded-2xl border border-[#E5E4DE] bg-[#FAF9F5] px-7 py-6 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#D4AF37]/60 hover:shadow-md"
+        >
+          <p className="font-serif text-xl sm:text-2xl font-normal tracking-[-0.01em] text-[#0B1F3A] transition-colors group-hover:text-[#B8860B]">
+            Strategic Communication
+          </p>
+        </motion.div>
+      </div>
+
+      {/* Connector 2: Thin Elegant Gold Vertical Beam */}
+      <div className="relative my-4 h-12 w-px overflow-hidden bg-[#E5E4DE]">
+        <motion.div
+          initial={reduceMotion ? {} : { scaleY: 0 }}
+          whileInView={{ scaleY: 1 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.5, delay: 0.55, ease: "easeInOut" }}
+          className="origin-top h-full w-full bg-[#B8860B]"
+        />
+      </div>
+
+      {/* Row 3: The Pinnacle Outcome — Mining Discovery (Est. 2022) */}
+      <motion.div
+        initial={reduceMotion ? {} : { opacity: 0, y: 20, scale: 0.98 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true, amount: 0.4 }}
+        transition={{ duration: 0.7, delay: 0.65, ease: [0.16, 1, 0.3, 1] }}
+        className="group w-full rounded-2xl border border-[#B8860B]/30 bg-[#FAF5E8] px-8 py-7 text-center shadow-xs transition-all duration-300 hover:-translate-y-1 hover:border-[#B8860B] hover:shadow-md"
+      >
+        <p className="font-serif text-2xl sm:text-3xl font-normal tracking-[-0.01em] text-[#0B1F3A] transition-colors group-hover:text-[#B8860B]">
+          Mining Discovery
+        </p>
+        <p className="mt-2 font-mono text-xs font-bold uppercase tracking-[0.2em] text-[#9E7208]">
+          Est. 2022
+        </p>
+      </motion.div>
+    </div>
   );
 };
 

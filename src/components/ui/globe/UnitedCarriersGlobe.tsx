@@ -222,15 +222,18 @@ export function UnitedCarriersGlobe({
     globeGroup.rotation.z = 0.03;
     scene.add(globeGroup);
 
-    // 1. 3D Ocean Sphere with Continent Land Mask & Holographic Scanlines
+    // 1. 3D Ocean Sphere with Continent Land Mask, Digital Texture & Holographic Scanlines
     const landTex = new THREE.TextureLoader().load("/globe/land-mask.png");
     landTex.colorSpace = THREE.SRGBColorSpace;
+    const digitalGlobeTex = new THREE.TextureLoader().load("/images/digital_mining_globe.jpg");
+    digitalGlobeTex.colorSpace = THREE.SRGBColorSpace;
 
     const oceanGeom = new THREE.SphereGeometry(0.995, 64, 64);
     const oceanMat = new THREE.ShaderMaterial({
       uniforms: {
         uCamPos: { value: camera.position },
         uLandMap: { value: landTex },
+        uDigitalGlobe: { value: digitalGlobeTex },
         uTime: { value: 0 },
       },
       vertexShader: `
@@ -246,6 +249,7 @@ export function UnitedCarriersGlobe({
       `,
       fragmentShader: `
         uniform sampler2D uLandMap;
+        uniform sampler2D uDigitalGlobe;
         uniform vec3 uCamPos;
         uniform float uTime;
         varying vec3 vWorldPos;
@@ -257,14 +261,16 @@ export function UnitedCarriersGlobe({
           float nd = max(0.0, dot(viewDir, norm));
           float fresnel = 1.0 - nd;
 
-          // Sample land mask: rich deep digital midnight sapphire ocean
+          // Sample land mask & digital globe texture
           vec4 mapCol = texture2D(uLandMap, vUv);
+          vec4 digiCol = texture2D(uDigitalGlobe, vUv);
 
           // Subtle sunlit illumination with gold-sapphire tint
           vec3 sunDir = normalize(vec3(0.65, 0.55, 0.45));
           float sunDot = max(0.0, dot(norm, sunDir));
           vec3 deepOcean = vec3(0.025, 0.065, 0.135);
-          vec3 surfaceCol = mix(deepOcean, mapCol.rgb, 0.60) * (0.85 + 0.35 * sunDot);
+          vec3 baseCol = mix(deepOcean, mapCol.rgb, 0.60);
+          vec3 surfaceCol = mix(baseCol, digiCol.rgb * 1.15, 0.45) * (0.85 + 0.35 * sunDot);
 
           // Digital holographic scanlines and telemetry coordinate pulse
           float scanline = sin(vUv.y * 220.0 + uTime * 1.5) * 0.5 + 0.5;

@@ -229,11 +229,11 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
         oreParticles.updateOreTrail(delta, pathTransform.position, false);
       }
 
-      // 2. Camera Director Update - road & camera 100% frozen, ONLY the loader moves down the road
+      // 2. Camera Director Update - loader is always visible and perfectly centered
       if (sp >= 0.84) {
-        camera.position.set(185.0, 56.0, 160.0);
+        camera.position.set(185.0, 56.0, pathTransform.position.z);
         camera.up.set(0, 0, -1);
-        camera.lookAt(185.0, 0.0, 160.0);
+        camera.lookAt(185.0, 0.0, pathTransform.position.z);
         camera.fov = 36;
         camera.updateProjectionMatrix();
       } else {

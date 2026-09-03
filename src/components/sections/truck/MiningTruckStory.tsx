@@ -47,8 +47,8 @@ export const MiningTruckStory: React.FC = () => {
     setTelemetry(state);
   }, []);
 
-  // Opacity fade for scene transition into next section (Stats)
-  const sceneOpacity = useTransform(smoothProgress, [0.96, 0.995], [1, 0]);
+  // Keep scene and loader fully visible throughout the vertical road animation
+  const sceneOpacity = useTransform(smoothProgress, [0.99, 1.0], [1, 1]);
 
   // Stage narrative badges & copy
   const sp = scrollVal;

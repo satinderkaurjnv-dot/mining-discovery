@@ -114,9 +114,9 @@ export class CameraDirector {
           fov: 36,
         };
       } else {
-        // PINNED CAMERA & ROAD: 100% frozen camera framing so ONLY loader travels down
-        this.tempPos.set(185.0, 56.0, 160.0);
-        this.tempLookAt.set(185.0, 0.0, 160.0);
+        // PINNED CAMERA ANGLE: Perfectly centered on loader so it is 100% visible throughout journey
+        this.tempPos.set(185.0, 56.0, truckPos.z);
+        this.tempLookAt.set(185.0, 0.0, truckPos.z);
 
         return {
           position: this.tempPos,

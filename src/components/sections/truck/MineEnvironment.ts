@@ -14,25 +14,44 @@ export interface MineEnvironmentSystem {
  * - Clean solid dark asphalt surface without road lines
  * - Cave base strictly constrained to x <= 40 (zero overlap with loader road)
  */
+/**
+ * Generates an alpha texture across the road width (UV.x) so both outer edges
+ * feather smoothly into 0 opacity, eliminating hard cutoff lines against the page.
+ */
+function createRoadAlphaTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 16;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    const grad = ctx.createLinearGradient(0, 0, 256, 0);
+    grad.addColorStop(0.00, "rgba(255, 255, 255, 0)");
+    grad.addColorStop(0.18, "rgba(255, 255, 255, 1)");
+    grad.addColorStop(0.82, "rgba(255, 255, 255, 1)");
+    grad.addColorStop(1.00, "rgba(255, 255, 255, 0)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 256, 16);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.wrapS = THREE.ClampToEdgeWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.needsUpdate = true;
+  return texture;
+}
+
 export function createMineEnvironment(): MineEnvironmentSystem {
   const group = new THREE.Group();
 
-  // Dark charcoal asphalt material matching reference
+  // Refined industrial haul road material with feathered lateral alpha edges
   const roadMat = new THREE.MeshStandardMaterial({
-    color: "#0E1116",
-    roughness: 0.95,
-    metalness: 0.05,
+    color: "#1E2430",
+    roughness: 0.92,
+    metalness: 0.08,
     side: THREE.DoubleSide,
+    transparent: true,
+    alphaMap: createRoadAlphaTexture(),
+    depthWrite: false,
   });
-
-  // Solid black base for Phase 1 & 2 cave transit (ends at x = 40)
-  const caveRoadBase = new THREE.Mesh(
-    new THREE.BoxGeometry(440, 30, 80),
-    roadMat
-  );
-  caveRoadBase.position.set(-180, -15, 0);
-  caveRoadBase.receiveShadow = false;
-  group.add(caveRoadBase);
 
   // =========================================================================
   // 1. PROCEDURAL CONTINUOUS CLEAN ROAD RIBBON (ZERO SEAMS, ZERO LINES)
@@ -41,7 +60,7 @@ export function createMineEnvironment(): MineEnvironmentSystem {
   const indices: number[] = [];
   const uvs: number[] = [];
 
-  const roadHalfWidth = 8.0; // Total width = 16.0 units
+  const roadHalfWidth = 7.5; // Total width = 15.0 units
 
   const addRibbonPoint = (pos: THREE.Vector3, tangent: THREE.Vector3, u: number) => {
     // Normal vector perpendicular to tangent on X-Z plane
@@ -62,14 +81,14 @@ export function createMineEnvironment(): MineEnvironmentSystem {
 
   let pointCount = 0;
 
-  // Segment 1: Horizontal straight highway (x: 40 -> 140, z: 0)
-  const horizSteps = 60;
+  // Segment 1: Horizontal continuous road from approach straight into turn (x: -80 -> 140, z: 0)
+  const horizSteps = 80;
   for (let i = 0; i <= horizSteps; i++) {
     const t = i / horizSteps;
-    const x = 40.0 + t * 100.0;
+    const x = -80.0 + t * 220.0;
     const pos = new THREE.Vector3(x, 0, 0);
     const tangent = new THREE.Vector3(1, 0, 0);
-    addRibbonPoint(pos, tangent, t * 10);
+    addRibbonPoint(pos, tangent, t * 18);
     pointCount++;
   }
 
@@ -159,76 +178,12 @@ export function createMineEnvironment(): MineEnvironmentSystem {
     group.add(rightPost);
   }
 
-  // =========================================================================
-  // 2. 3 ROADSIDE MINING TYPOGRAPHY MILESTONES (Passing by sequentially)
-  // =========================================================================
-  const roadsideTextures: THREE.CanvasTexture[] = [];
-  const roadsideMaterials: THREE.MeshBasicMaterial[] = [];
-  const roadsideGeoms: THREE.PlaneGeometry[] = [];
-
-  const createRoadsideSign = (line1: string, line2: string, subtitle: string, posZ: number) => {
-    if (typeof document === "undefined") return;
-    const canvas = document.createElement("canvas");
-    canvas.width = 1024;
-    canvas.height = 512;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    ctx.clearRect(0, 0, 1024, 512);
-    
-    // Subtitle badge
-    ctx.fillStyle = "#B8860B";
-    ctx.font = "bold 28px sans-serif";
-    ctx.fillText(subtitle.toUpperCase(), 40, 100);
-
-    // Main giant industrial headlines
-    ctx.fillStyle = "#0F172A";
-    ctx.font = "900 76px sans-serif";
-    ctx.fillText(line1.toUpperCase(), 40, 200);
-    ctx.fillText(line2.toUpperCase(), 40, 290);
-
-    // Subtle accent line
-    ctx.fillStyle = "#CBD5E1";
-    ctx.fillRect(40, 330, 360, 6);
-
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.minFilter = THREE.LinearFilter;
-    texture.magFilter = THREE.LinearFilter;
-    roadsideTextures.push(texture);
-
-    const signMat = new THREE.MeshBasicMaterial({
-      map: texture,
-      transparent: true,
-      opacity: 0.95,
-      depthWrite: false,
-    });
-    roadsideMaterials.push(signMat);
-
-    const signGeom = new THREE.PlaneGeometry(28, 14);
-    roadsideGeoms.push(signGeom);
-
-    const signMesh = new THREE.Mesh(signGeom, signMat);
-    signMesh.rotation.x = -Math.PI / 2;
-    signMesh.position.set(146, 0.03, posZ);
-    group.add(signMesh);
-  };
-
-  // Milestone 1 (sp ~ 0.86)
-  createRoadsideSign("EXTRACTION", "AT EVERY SEAM", "MILESTONE 01 // PRECISION TRAMMING", 120);
-  // Milestone 2 (sp ~ 0.92)
-  createRoadsideSign("AUTONOMOUS", "FLEET DISPATCH", "MILESTONE 02 // HAULAGE LOGISTICS", 280);
-  // Milestone 3 (sp ~ 0.97)
-  createRoadsideSign("SUSTAINABLE", "MINE OF FUTURE", "MILESTONE 03 // ZERO EMISSIONS", 440);
-
   const updateRoadWidth = (_sp: number) => {};
   const updateDust = () => {};
 
   const dispose = () => {
     roadMat.dispose();
     roadGeom.dispose();
-    roadsideTextures.forEach((t) => t.dispose());
-    roadsideMaterials.forEach((m) => m.dispose());
-    roadsideGeoms.forEach((g) => g.dispose());
   };
 
   return { group, updateRoadWidth, updateDust, dispose };

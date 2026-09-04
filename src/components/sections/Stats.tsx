@@ -161,7 +161,7 @@ export const Stats: React.FC = () => {
     <section
       ref={sectionRef}
       id="stats-section"
-      className="relative bg-[#FAF9F6] text-[#0B1F3A] border-b border-[#E5E4DE] font-sans py-16 sm:py-20 lg:py-24 overflow-x-clip"
+      className="relative bg-[#FAF9F6] text-[#0B1F3A] font-sans py-16 sm:py-20 lg:py-24 overflow-x-clip"
     >
       {/* -------------------------------------------------------------------- */}
       {/* 01. TECHNICAL GEOLOGICAL BACKGROUND (EXTREMELY SLOW HORIZONTAL DRIFT) */}
@@ -445,12 +445,11 @@ export const Stats: React.FC = () => {
                 </Link>
               </div>
 
-              {/* Bottom Tagline with Horizontal Divider Line */}
-              <div className="pt-10">
-                <p className="text-sm font-medium text-[#1A1D21] tracking-wide mb-3">
+              {/* Bottom Tagline */}
+              <div className="pt-8">
+                <p className="text-sm font-medium text-[#1A1D21] tracking-wide">
                   From raw discoveries, market clarity emerges
                 </p>
-                <div className="w-full h-px bg-[#E5E4DE]" />
               </div>
             </motion.div>
 

@@ -170,7 +170,7 @@ export function loadMiningLoaderAsset(
         loaderTireTex.offset.y += distance * 0.85;
       };
 
-      // Geometrically center the loader mesh so its origin is at the exact chassis centerline
+      // Geometrically center the loader mesh so its origin is at the exact chassis & wheel centerline
       const wrapper = new THREE.Group();
       wrapper.name = "MiningLoaderWrapper";
 

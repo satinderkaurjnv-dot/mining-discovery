@@ -28,8 +28,8 @@ export class CameraDirector {
     _mouseX: number,
     _mouseY: number
   ): CameraFrame {
-    if (sp < 0.35) {
-      // Phase 1: Straight, level, perpendicular profile view - horizon is 100% level and straight
+    if (sp < 0.20) {
+      // Phase 1: Straight, level, perpendicular profile view locked on establishing view
       this.tempPos.set(
         truckPos.x + 1.0,
         2.4,
@@ -48,10 +48,29 @@ export class CameraDirector {
         up: this.standardUp,
         fov: 38,
       };
-    } else if (sp < 0.70) {
-      // Phase 2: Centered level trailing view behind the truck in the cave (pulled further back)
+    } else if (sp < 0.32) {
+      // Phase 2: Smooth cinematic 3/4 camera arc framing the truck entering the stone arch portal
+      const t = (sp - 0.20) / 0.12;
+      const smoothT = THREE.MathUtils.smoothstep(t, 0, 1);
+
+      const startPos = new THREE.Vector3(truckPos.x + 1.0, 2.4, 38.0);
+      const endPos = new THREE.Vector3(truckPos.x - 42.0, 3.8, 0.0);
+      this.tempPos.lerpVectors(startPos, endPos, smoothT);
+
+      const startLook = new THREE.Vector3(truckPos.x + 1.0, 2.2, 0.0);
+      const endLook = new THREE.Vector3(truckPos.x + 12.0, 2.6, 0.0);
+      this.tempLookAt.lerpVectors(startLook, endLook, smoothT);
+
+      return {
+        position: this.tempPos,
+        lookAt: this.tempLookAt,
+        up: this.standardUp,
+        fov: THREE.MathUtils.lerp(38, 36, smoothT),
+      };
+    } else if (sp < 0.58) {
+      // Phase 3: Centered level trailing view behind the truck in the glowing gold cave
       this.tempPos.set(
-        truckPos.x - 44.0,
+        truckPos.x - 42.0,
         3.8,
         0.0
       );
@@ -66,7 +85,7 @@ export class CameraDirector {
         position: this.tempPos,
         lookAt: this.tempLookAt,
         up: this.standardUp,
-        fov: 38,
+        fov: 36,
       };
     } else if (sp < 0.78) {
       // Phase 3A: Pinned Side Profile Level Highway Tracking (media_1788425794284.png)

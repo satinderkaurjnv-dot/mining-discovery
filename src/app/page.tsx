@@ -3,7 +3,6 @@
 import { GlobeHero } from "@/components/sections/GlobeHero";
 import { Stats } from "@/components/sections/Stats";
 import { MiningTruckStory } from "@/components/sections/truck/MiningTruckStory";
-import { About } from "@/components/sections/About";
 import { TrustedBy } from "@/components/sections/TrustedBy";
 import { ServicesScrollStory } from "@/components/sections/ServicesScrollStory";
 
@@ -21,8 +20,7 @@ export default function Home() {
       {/* SCENE 03: 3D ULTRA-CLASS MINING HAUL TRUCK JOURNEY */}
       <MiningTruckStory />
 
-      {/* SCENE 04: EDITORIAL JOURNEY & TRUSTED COMPANIES */}
-      <About />
+      {/* SCENE 04: TRUSTED COMPANIES */}
       <TrustedBy />
 
       {/* SCENE 05: END-TO-END DELIVERY PIPELINE (SERVICES) */}

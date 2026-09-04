@@ -166,16 +166,17 @@ export class CaveAssetManager {
           model.position.set(36.0, -0.4, 0.0); // Cavern portal entrance at x = 36.0
           model.rotation.y = 0; // Tunnel mouth faces approaching truck
 
-          // --- 3D PROCEDURAL BLACK STONE BOULDER CLUSTERS (OUTER ENTRANCE ARCH ONLY) ---
+          // --- 3D PROCEDURAL NATURAL SUBTERRANEAN ROCK BOULDERS & MOUNTAIN CLIFF FACE ---
+          // Retaining full authentic cave stones framing the portal entrance and mountain flank
           const stoneMat = new THREE.MeshStandardMaterial({
-            color: new THREE.Color("#101215"),
-            roughness: 0.95,
-            metalness: 0.05,
+            color: new THREE.Color("#181513"), // Rich dark subterranean granite
+            roughness: 0.94,
+            metalness: 0.10,
             flatShading: true,
           });
 
           const stoneGroup = new THREE.Group();
-          stoneGroup.name = "BlackStoneBoulders";
+          stoneGroup.name = "CavernRockBoulders";
 
           const geo1 = new THREE.DodecahedronGeometry(1, 1);
           const geo2 = new THREE.IcosahedronGeometry(1, 0);
@@ -186,17 +187,16 @@ export class CaveAssetManager {
             return pseudoSeed / 233280;
           };
 
-          // 1. EARLY ENTRANCE MOUNTAIN CLIFF FACE BOULDERS
-          for (let i = 0; i < 120; i++) {
-            const px = -15.0 + random() * 47.0;
-            const py = random() * 32.0;
-            const pz = (random() - 0.5) * 85.0;
+          // 1. Natural Entrance Arch Boulder Frame (Covering the cavern mouth at x ≈ -9.7)
+          // Surrounds the opening so there is zero straight vertical slice or partition
+          for (let i = 0; i < 70; i++) {
+            const angle = (i / 70) * Math.PI;
+            const radius = 11.2 + random() * 4.8;
+            const px = -9.7 + (random() - 0.5) * 8.0;
+            const py = Math.sin(angle) * radius;
+            const pz = Math.cos(angle) * radius * 1.35;
 
-            if (px < 36.0 && Math.abs(pz) < 11.0 && py < 11.0) {
-              continue;
-            }
-
-            const scale = 3.5 + random() * 6.5;
+            const scale = 2.8 + random() * 4.6;
             const mesh = new THREE.Mesh(random() > 0.5 ? geo1 : geo2, stoneMat);
             mesh.position.set(px, py, pz);
             mesh.scale.set(scale, scale * (0.8 + random() * 0.5), scale);
@@ -204,18 +204,37 @@ export class CaveAssetManager {
             stoneGroup.add(mesh);
           }
 
-          // 2. Entrance Arch Outer Frame Boulders
-          for (let i = 0; i < 50; i++) {
-            const angle = (i / 50) * Math.PI;
-            const radius = 14.0 + random() * 5.0;
-            const px = 36.0 + (random() - 0.5) * 6.0;
-            const py = Math.sin(angle) * radius;
-            const pz = Math.cos(angle) * radius * 1.8;
+          // 2. Mountain Cliff Face & Flank Boulders (Naturally cascading rock face)
+          // Blends the portal seamlessly into the background with rugged organic contours
+          for (let i = 0; i < 90; i++) {
+            const px = -18.0 + random() * 32.0;
+            const py = random() * 26.0;
+            const isNearSide = random() > 0.5;
+            const pz = isNearSide ? (9.5 + random() * 20.0) : -(9.5 + random() * 20.0);
 
-            const scale = 2.5 + random() * 4.5;
+            // Keep clear of truck drive path along the haul road
+            if (px < -8.0 && py < 9.0 && Math.abs(pz) < 9.5) {
+              continue;
+            }
+
+            const scale = 3.2 + random() * 5.8;
             const mesh = new THREE.Mesh(random() > 0.5 ? geo1 : geo2, stoneMat);
             mesh.position.set(px, py, pz);
-            mesh.scale.set(scale, scale * (0.8 + random() * 0.5), scale);
+            mesh.scale.set(scale, scale * (0.85 + random() * 0.4), scale);
+            mesh.rotation.set(random() * Math.PI, random() * Math.PI, random() * Math.PI);
+            stoneGroup.add(mesh);
+          }
+
+          // 3. Interior Drift Rock Outcrops along tunnel walls
+          for (let i = 0; i < 40; i++) {
+            const px = 6.0 + random() * 60.0;
+            const py = random() * 11.0;
+            const pz = (random() > 0.5 ? 1 : -1) * (8.2 + random() * 3.5);
+
+            const scale = 2.0 + random() * 3.4;
+            const mesh = new THREE.Mesh(random() > 0.5 ? geo1 : geo2, stoneMat);
+            mesh.position.set(px, py, pz);
+            mesh.scale.set(scale, scale, scale);
             mesh.rotation.set(random() * Math.PI, random() * Math.PI, random() * Math.PI);
             stoneGroup.add(mesh);
           }
@@ -224,28 +243,34 @@ export class CaveAssetManager {
 
           // Soft Balanced Cavern Illumination
           const caveSun = new THREE.DirectionalLight("#FFF8EE", 1.1);
-          caveSun.position.set(30, 25, 20);
+          caveSun.position.set(10, 28, 20);
           this.caveGroup.add(caveSun);
 
           const caveAmbient = new THREE.AmbientLight("#E6ECF5", 0.85);
           this.caveGroup.add(caveAmbient);
 
-          // Warm industrial interior spotlights along deep cavern tunnel drift
-          const entranceLight = new THREE.PointLight(0xFFB700, 4.5, 50);
-          entranceLight.position.set(36.0, 5.5, 0.0);
+          // Warm golden industrial interior spotlights across full cavern tunnel drift
+          // Portal Entrance Arch Light (x = -9.7)
+          const entranceLight = new THREE.PointLight(0xFFB700, 4.8, 55);
+          entranceLight.position.set(-9.7, 6.0, 0.0);
           this.caveGroup.add(entranceLight);
 
-          const interiorLight1 = new THREE.PointLight(0xFF9900, 4.0, 65);
-          interiorLight1.position.set(52.0, 5.0, 0.0);
+          // Deep Cavern Drift Lights
+          const interiorLight1 = new THREE.PointLight(0xFF9900, 4.2, 65);
+          interiorLight1.position.set(12.0, 5.5, 0.0);
           this.caveGroup.add(interiorLight1);
 
-          const interiorLight2 = new THREE.PointLight(0xFF8800, 3.8, 80);
-          interiorLight2.position.set(68.0, 5.0, 0.0);
+          const interiorLight2 = new THREE.PointLight(0xFF8800, 4.0, 75);
+          interiorLight2.position.set(32.0, 5.5, 0.0);
           this.caveGroup.add(interiorLight2);
 
-          const interiorLight3 = new THREE.PointLight(0xFF7700, 3.5, 95);
-          interiorLight3.position.set(84.0, 5.0, 0.0);
+          const interiorLight3 = new THREE.PointLight(0xFF8800, 3.8, 85);
+          interiorLight3.position.set(52.0, 5.0, 0.0);
           this.caveGroup.add(interiorLight3);
+
+          const interiorLight4 = new THREE.PointLight(0xFF7700, 3.5, 95);
+          interiorLight4.position.set(70.0, 5.0, 0.0);
+          this.caveGroup.add(interiorLight4);
 
           this.caveGroup.add(model);
           this.isLoaded = true;

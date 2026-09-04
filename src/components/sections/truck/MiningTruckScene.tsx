@@ -196,7 +196,7 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
       const pathTransform = truckPath.getTransform(sp);
       const truckGroup = truckManager.getGroup();
 
-      if (sp < 0.70) {
+      if (sp < 0.58) {
         // Inside cave & open road approach: Haul Truck active throughout cave transit
         truckGroup.visible = true;
         caveManager.getGroup().visible = true;
@@ -209,11 +209,12 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
         prevPosition.copy(pathTransform.position);
         truckManager.updateWheelRotation(moveDist);
       } else {
-        // Post-Cave Exit Road & Turn (sp >= 0.70): Wheel Loader on 100% clean pristine road
+        // Post-Cave Exit Road & Turn (sp >= 0.58): Wheel Loader on 100% clean pristine road
         truckGroup.visible = false;
         caveManager.getGroup().visible = false; // Hide cave meshes completely for clean road
         if (loaderGroup) {
           loaderGroup.visible = true;
+
           loaderGroup.position.copy(pathTransform.position);
           if (sp >= 0.84) {
             // Subtle machine vibration for authentic heavy industrial feel
@@ -232,7 +233,7 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
 
       // Dynamic gold sparkles sprinkling from loader as it moves
       const isLoaderMoving = prevPosition.distanceTo(pathTransform.position) > 0.0001;
-      oreParticles.updateLoaderGoldSparkles(delta, pathTransform.position, pathTransform.tangent, sp >= 0.70 && isLoaderMoving);
+      oreParticles.updateLoaderGoldSparkles(delta, pathTransform.position, pathTransform.tangent, sp >= 0.58 && isLoaderMoving);
       oreParticles.group.visible = true;
 
       // 2. Camera Director Update - loader is always visible and perfectly centered
@@ -244,8 +245,8 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
         camera.updateProjectionMatrix();
       } else {
         const dummyVec = new THREE.Vector3();
-        const activeMouseX = sp >= 0.70 ? 0 : mouseX;
-        const activeMouseY = sp >= 0.70 ? 0 : mouseY;
+        const activeMouseX = sp >= 0.58 ? 0 : mouseX;
+        const activeMouseY = sp >= 0.58 ? 0 : mouseY;
         const camFrame = cameraDirector.getFrame(sp, pathTransform.position, dummyVec, activeMouseX, activeMouseY);
         
         const lerpSpeed = Math.min(delta * 6, 1);

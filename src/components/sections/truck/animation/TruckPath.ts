@@ -22,14 +22,20 @@ export class TruckPath {
     let posZ = 0;
     const tangent = new THREE.Vector3(1, 0, 0);
 
-    if (clampedSp < 0.70) {
+    if (clampedSp < 0.14) {
+      // Phase 01: Screen Locked Establishing View Dwell (truck locked at x = -48.0)
+      posX = -48.0;
+      posZ = 0.0;
+      tangent.set(1, 0, 0);
+    } else if (clampedSp < 0.58) {
       // 1. Truck Approach & Cave Transit (x = -48 -> 70, z = 0)
-      posX = -48.0 + (clampedSp / 0.70) * 118.0;
+      const t = (clampedSp - 0.14) / (0.58 - 0.14);
+      posX = -48.0 + t * 118.0;
       posZ = 0.0;
       tangent.set(1, 0, 0);
     } else if (clampedSp < 0.78) {
       // 2. Horizontal Straight Road in Side-Profile View (x = 70 -> 140, z = 0)
-      const t = (clampedSp - 0.70) / 0.08;
+      const t = (clampedSp - 0.58) / (0.78 - 0.58);
       posX = 70.0 + t * 70.0;
       posZ = 0.0;
       tangent.set(1, 0, 0);

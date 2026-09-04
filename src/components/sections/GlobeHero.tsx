@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
-import { HeroBackdrop } from "@/components/sections/hero-layers/HeroBackdrop";
-import { UnitedCarriersGlobe } from "@/components/ui/globe/UnitedCarriersGlobe";
+import { ArrowRight, Globe, Layers, Compass, ChevronRight } from "lucide-react";
+import {
+  UnitedCarriersGlobe,
+  MINING_HUBS,
+  HubNode,
+} from "@/components/ui/globe/UnitedCarriersGlobe";
 
 const HORIZON_OVERRUN = 1.08;
 function horizonDiameter(width: number, height: number) {
@@ -16,8 +19,8 @@ const GLOBE_FIT = 0.9;
 const SILHOUETTE_STOP = GLOBE_FIT * 100;
 const HALO_OUTER_STOP = SILHOUETTE_STOP + 5.5;
 const HALO_HEADROOM = (HALO_OUTER_STOP / 100 - GLOBE_FIT) / 2;
-const STAGE_COUNT = 5;
-const STAGE_VH = 165;
+const STAGE_COUNT = 6;
+const STAGE_VH = 140;
 
 const STATS_WIPE =
   "linear-gradient(to bottom, transparent 0%, rgba(2,8,23,0.12) 16%, rgba(2,8,23,0.72) 48%, #020817 76%, #020817 100%)";
@@ -39,6 +42,7 @@ export const GlobeHero: React.FC = () => {
   const [ready, setReady] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [activeCountryIdx, setActiveCountryIdx] = useState(0);
 
   useEffect(() => {
     const onScroll = () => {
@@ -50,6 +54,17 @@ export const GlobeHero: React.FC = () => {
       const scrolled = -rect.top;
       const p = Math.min(Math.max(scrolled / totalDist, 0), 1);
       setScrollProgress(p);
+
+      // Animate curtain wipe at very end of scroll track (after Western Australia locks)
+      if (curtainRef.current) {
+        if (p > 0.97) {
+          const wipeP = (p - 0.97) / 0.03;
+          const translateY = (1 - Math.min(Math.max(wipeP, 0), 1)) * 100;
+          curtainRef.current.style.transform = `translate3d(0, ${translateY}%, 0)`;
+        } else {
+          curtainRef.current.style.transform = "translate3d(0, 100%, 0)";
+        }
+      }
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -81,6 +96,32 @@ export const GlobeHero: React.FC = () => {
     observer.observe(slot);
     return () => observer.disconnect();
   }, []);
+
+  // Jump to specific country stage on click
+  const scrollToCountry = useCallback((index: number) => {
+    const range = rangeRef.current;
+    if (!range) return;
+    const totalDist = range.offsetHeight - window.innerHeight;
+    if (totalDist <= 0) return;
+
+    const TOUR_START = 0.03;
+    const TOUR_END = 0.95;
+    const numSegments = MINING_HUBS.length - 1;
+    const s = Math.min(Math.max(index / numSegments, 0), 1);
+    const targetP = TOUR_START + s * (TOUR_END - TOUR_START);
+
+    const rangeTop = range.getBoundingClientRect().top + window.scrollY;
+    const targetScrollY = rangeTop + targetP * totalDist;
+
+    window.scrollTo({
+      top: targetScrollY,
+      behavior: "smooth",
+    });
+  }, []);
+
+  const activeHub: HubNode = MINING_HUBS[activeCountryIdx] || MINING_HUBS[0];
+  const isTourActive = scrollProgress >= 0.025 && scrollProgress <= 0.98;
+  const copyOpacity = Math.max(0, 1 - scrollProgress * 14);
 
   return (
     <section className="relative w-full bg-[#DFE7F3] text-[#0B1F3A]">
@@ -115,7 +156,11 @@ export const GlobeHero: React.FC = () => {
       {/* Copy — normal flow with strong visual hierarchy */}
       <div
         ref={copyRef}
-        className="relative z-10 flex flex-col items-center px-4 pb-4 pt-20 sm:pt-24 lg:pt-28 text-center sm:px-10 sm:pb-6"
+        className="relative z-10 flex flex-col items-center px-4 pb-4 pt-20 sm:pt-24 lg:pt-28 text-center sm:px-10 sm:pb-6 transition-opacity duration-300"
+        style={{
+          opacity: copyOpacity,
+          pointerEvents: copyOpacity < 0.15 ? "none" : "auto",
+        }}
       >
         {/* Subtle Live Industrial Status Pill */}
         <div className="hero-rise inline-flex items-center gap-2 rounded-full border border-[#B8860B]/30 bg-white/75 px-4 py-1.5 backdrop-blur-md shadow-xs transition-all duration-300 hover:border-[#B8860B]/50 hover:bg-white/90">
@@ -182,7 +227,7 @@ export const GlobeHero: React.FC = () => {
         </div>
       </div>
 
-      {/* Globe range — exactly as in https://mining-discovery-rho.vercel.app/ */}
+      {/* Globe range — Sticky multi-stage scroll journey */}
       <div
         ref={rangeRef}
         className="relative -mt-5 lg:-mt-6"
@@ -210,9 +255,100 @@ export const GlobeHero: React.FC = () => {
                   top: metrics.boxTop,
                 }}
               >
-                <UnitedCarriersGlobe className="w-full h-full" scrollProgress={scrollProgress} />
+                <UnitedCarriersGlobe
+                  className="w-full h-full"
+                  scrollProgress={scrollProgress}
+                  onActiveCountryChange={setActiveCountryIdx}
+                  onCountryClick={scrollToCountry}
+                />
               </div>
             )}
+
+            {/* FLOATING SCREEN-LOCKED COUNTRY HUD OVERLAY (Positioned top-left to never block the globe circles) */}
+            <div
+              className={`
+                pointer-events-none absolute top-16 sm:top-20 left-4 sm:left-8 lg:left-12 z-20 flex transition-all duration-500 ease-out
+                ${isTourActive ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6 pointer-events-none"}
+              `}
+            >
+              <div className="pointer-events-auto w-full max-w-sm sm:max-w-md rounded-2xl border border-[#B8860B]/45 bg-[#0B1F3A]/92 p-4 sm:p-5 backdrop-blur-xl shadow-2xl shadow-black/70 transition-all duration-300 hover:border-[#FFAE00]/70">
+                {/* Stage Header & Status Bar */}
+                <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="relative flex h-2.5 w-2.5">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FFAE00] opacity-75" />
+                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#FFD700]" />
+                    </span>
+                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[#FFAE00]">
+                      LOCKED JURISDICTION {activeCountryIdx + 1} OF {MINING_HUBS.length}
+                    </span>
+                  </div>
+
+                  <span className="font-mono text-[10.5px] font-semibold text-slate-400">
+                    {activeHub.countryCode}
+                  </span>
+                </div>
+
+                {/* Country Main Info */}
+                <div className="mt-3">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+                    <h2 className="font-geist text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-white">
+                      {activeHub.name}
+                    </h2>
+                    <span className="font-mono text-[10.5px] font-semibold tracking-wider text-[#FFD700]/90">
+                      {activeHub.region}
+                    </span>
+                  </div>
+
+                  {/* Mineral Tag Badges */}
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {activeHub.mineralTags.map((tag, i) => (
+                      <span
+                        key={i}
+                        className="inline-flex items-center rounded-md border border-[#B8860B]/35 bg-[#162E50]/80 px-2 py-0.5 font-mono text-[9.5px] sm:text-[10px] font-medium uppercase tracking-wider text-amber-200 shadow-xs"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Description */}
+                  <p className="mt-2.5 text-[12px] sm:text-[13px] leading-relaxed text-slate-300">
+                    {activeHub.description}
+                  </p>
+                </div>
+
+                {/* Interactive Stage Lock Stepper Navigation Bar */}
+                <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
+                  <div className="flex items-center gap-1 sm:gap-1.5">
+                    {MINING_HUBS.map((hub, idx) => {
+                      const isActive = idx === activeCountryIdx;
+                      return (
+                        <button
+                          key={hub.id}
+                          onClick={() => scrollToCountry(idx)}
+                          className={`group relative flex items-center justify-center rounded-lg transition-all duration-200 px-2 sm:px-2.5 py-1 ${
+                            isActive
+                              ? "bg-[#B8860B] text-white font-bold shadow-md shadow-[#B8860B]/40 scale-105"
+                              : "bg-white/5 text-slate-400 hover:bg-white/15 hover:text-white"
+                          }`}
+                          aria-label={`Jump to ${hub.name}`}
+                        >
+                          <span className="font-mono text-[10px] sm:text-[11px]">
+                            0{idx + 1}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                    <span>Scroll to explore</span>
+                    <ChevronRight className="h-3.5 w-3.5 text-[#FFAE00] animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Layer 5 — stats wipe */}
             <div

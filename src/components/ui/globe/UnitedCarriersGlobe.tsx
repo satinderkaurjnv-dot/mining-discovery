@@ -6,16 +6,109 @@ import {
   CSS2DRenderer,
   CSS2DObject,
 } from "three/examples/jsm/renderers/CSS2DRenderer.js";
-
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
-interface HubNode {
+export interface HubNode {
   id: string;
   name: string;
+  shortName: string;
+  countryCode: string;
   lat: number;
   lng: number;
   size?: number;
+  minerals: string;
+  mineralTags: string[];
+  region: string;
+  description: string;
+  highlights: string[];
 }
+
+export const MINING_HUBS: HubNode[] = [
+  {
+    id: "na",
+    name: "USA & CANADA",
+    shortName: "North America",
+    countryCode: "US / CA",
+    region: "TIER-1 MINING JURISDICTIONS",
+    minerals: "GOLD • COPPER • CRITICAL MINERALS • LITHIUM",
+    mineralTags: ["Gold", "Copper", "Critical Minerals", "Lithium"],
+    description: "Anchor mining districts spanning Nevada's prolific Carlin Trend and Canada's world-class Abitibi Greenstone Belt.",
+    highlights: ["Carlin & Battle Mountain Gold Trends", "Abitibi Greenstone Belt", "Major Exploration Capital"],
+    lat: 41.5,
+    lng: -96.0,
+    size: 1.45,
+  },
+  {
+    id: "sa",
+    name: "CHILE & PERU",
+    shortName: "Andean Belt",
+    countryCode: "CL / PE",
+    region: "GLOBAL COPPER & LITHIUM CORRIDOR",
+    minerals: "COPPER • LITHIUM • SILVER • MOLYBDENUM",
+    mineralTags: ["Copper", "Lithium", "Silver", "Molybdenum"],
+    description: "The world's highest-grade copper-producing belt and the heart of the South American lithium triangle powering global electrification.",
+    highlights: ["Atacama & Escondida Copper", "Salar de Atacama Lithium", "Andean Porphyry Belt"],
+    lat: -22.5,
+    lng: -66.5,
+    size: 1.45,
+  },
+  {
+    id: "eu",
+    name: "SWEDEN & FINLAND",
+    shortName: "Nordic Region",
+    countryCode: "SE / FI",
+    region: "NORDIC CRITICAL RAW MATERIALS",
+    minerals: "IRON ORE • NICKEL • RARE EARTHS • COBALT",
+    mineralTags: ["Iron Ore", "Nickel", "Rare Earths", "Cobalt"],
+    description: "Europe's leading resource frontier with massive Arctic iron ore complexes and strategic critical mineral discoveries.",
+    highlights: ["Kiruna Underground Iron Ore", "Per Geijer Rare Earths", "Nordic Battery Value Chain"],
+    lat: 65.0,
+    lng: 20.0,
+    size: 1.4,
+  },
+  {
+    id: "afr",
+    name: "SOUTH AFRICA",
+    shortName: "South Africa",
+    countryCode: "ZA",
+    region: "STRATEGIC MINERAL BASIN",
+    minerals: "PGM (PLATINUM/PALLADIUM) • MANGANESE • GOLD",
+    mineralTags: ["Platinum Group Metals", "Manganese", "Gold", "Chrome"],
+    description: "Dominant global supplier of Platinum Group Metals and battery-grade manganese, backed by century-deep mining heritage.",
+    highlights: ["Bushveld Igneous Complex", "Kalahari Manganese Field", "Witwatersrand Basin"],
+    lat: -26.0,
+    lng: 28.0,
+    size: 1.4,
+  },
+  {
+    id: "asia",
+    name: "MONGOLIA & CENTRAL ASIA",
+    shortName: "Central Asia",
+    countryCode: "MN / KZ",
+    region: "EURASIAN MEGA-DEPOSIT CORRIDOR",
+    minerals: "COPPER • GOLD • URANIUM • COAL",
+    mineralTags: ["Copper", "Gold", "Uranium", "Rare Metals"],
+    description: "Vast mineral frontier hosting Tier-1 mega-deposits including Oyu Tolgoi's world-scale copper-gold porphyry systems.",
+    highlights: ["Oyu Tolgoi Underground", "South Gobi Copper Belt", "Central Asian Orogenic Belt"],
+    lat: 46.5,
+    lng: 105.0,
+    size: 1.45,
+  },
+  {
+    id: "aus",
+    name: "WESTERN AUSTRALIA",
+    shortName: "Western Australia",
+    countryCode: "AU-WA",
+    region: "PREMIER RESOURCE SUPER-HUB",
+    minerals: "IRON ORE • GOLD • LITHIUM SPODUMENE • NICKEL",
+    mineralTags: ["Iron Ore", "Gold", "Lithium Spodumene", "Nickel"],
+    description: "The global resource superpower in bulk seaborne iron ore, hard-rock lithium spodumene, and premier gold discoveries.",
+    highlights: ["Pilbara Iron Ore Super-Hub", "Greenbushes Lithium", "Kalgoorlie Golden Mile"],
+    lat: -28.0,
+    lng: 121.5,
+    size: 1.45,
+  },
+];
 
 interface CorridorArc {
   from: [number, number];
@@ -24,16 +117,16 @@ interface CorridorArc {
 }
 
 function latLngToVec3(lat: number, lng: number, r = 1): THREE.Vector3 {
-  const phi = (90 - lat) * (Math.PI / 180);
-  const theta = (lng + 180) * (Math.PI / 180);
+  const latRad = (lat * Math.PI) / 180;
+  const lngRad = (lng * Math.PI) / 180;
   return new THREE.Vector3(
-    -r * Math.sin(phi) * Math.cos(theta),
-    r * Math.cos(phi),
-    r * Math.sin(phi) * Math.sin(theta)
+    r * Math.cos(latRad) * Math.sin(lngRad),
+    r * Math.sin(latRad),
+    r * Math.cos(latRad) * Math.cos(lngRad)
   );
 }
 
-// Radiant starburst flare texture for beacon hubs
+// Radiant high-contrast glowing beacon starburst & target flare texture
 function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = size;
@@ -41,17 +134,26 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   const c = size / 2;
   ctx.clearRect(0, 0, size, size);
 
+  // Outer ambient gold halo
   const bloom = ctx.createRadialGradient(c, c, 0, c, c, c);
   bloom.addColorStop(0, "rgba(255, 255, 255, 1)");
-  bloom.addColorStop(0.16, "rgba(255, 235, 150, 0.98)");
-  bloom.addColorStop(0.38, "rgba(255, 165, 0, 0.88)");
-  bloom.addColorStop(0.70, "rgba(255, 95, 0, 0.35)");
+  bloom.addColorStop(0.18, "rgba(255, 235, 140, 1)");
+  bloom.addColorStop(0.40, "rgba(255, 175, 0, 0.92)");
+  bloom.addColorStop(0.72, "rgba(255, 110, 0, 0.45)");
   bloom.addColorStop(1, "rgba(255, 140, 0, 0)");
   ctx.fillStyle = bloom;
   ctx.fillRect(0, 0, size, size);
 
-  ctx.strokeStyle = "rgba(255, 255, 245, 0.98)";
-  ctx.lineWidth = 2.2;
+  // Concentric targeting ring inside flare
+  ctx.strokeStyle = "rgba(255, 255, 220, 0.95)";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.arc(c, c, c * 0.42, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Crosshair laser spikes
+  ctx.strokeStyle = "rgba(255, 255, 245, 1)";
+  ctx.lineWidth = 2.4;
   ctx.beginPath();
   ctx.moveTo(c, 0);
   ctx.lineTo(c, size);
@@ -65,21 +167,34 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   return tex;
 }
 
+export interface UnitedCarriersGlobeProps {
+  className?: string;
+  scrollProgress?: number;
+  onActiveCountryChange?: (index: number) => void;
+  onCountryClick?: (index: number) => void;
+}
+
 export function UnitedCarriersGlobe({
   className = "",
   scrollProgress = 0,
-}: {
-  className?: string;
-  scrollProgress?: number;
-}) {
+  onActiveCountryChange,
+  onCountryClick,
+}: UnitedCarriersGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const labelContainerRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef(scrollProgress);
+  const onActiveCountryChangeRef = useRef(onActiveCountryChange);
+  const onCountryClickRef = useRef(onCountryClick);
 
   useEffect(() => {
     scrollRef.current = scrollProgress;
   }, [scrollProgress]);
+
+  useEffect(() => {
+    onActiveCountryChangeRef.current = onActiveCountryChange;
+    onCountryClickRef.current = onCountryClick;
+  }, [onActiveCountryChange, onCountryClick]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -110,7 +225,7 @@ export function UnitedCarriersGlobe({
     const labelRenderer = new CSS2DRenderer({ element: labelContainer });
     labelRenderer.setSize(width, height);
 
-    // Scene & Camera matching https://mining-discovery-rho.vercel.app/ math
+    // Scene & Camera math
     const FOV = 34;
     const FIT = 0.9;
     const halfFov = THREE.MathUtils.degToRad(FOV) / 2;
@@ -135,10 +250,10 @@ export function UnitedCarriersGlobe({
 
     // Master Globe Group
     const globeGroup = new THREE.Group();
-    // Tilt to show Atlantic, North America, South America, Africa, India, and Australia
-    globeGroup.rotation.x = 0.20;
-    globeGroup.rotation.y = 3.90;
-    globeGroup.rotation.z = 0.03;
+    // Initial camera view of the Americas and Atlantic mining corridor
+    globeGroup.rotation.x = -0.15;
+    globeGroup.rotation.y = 1.70;
+    globeGroup.rotation.z = 0.0;
     scene.add(globeGroup);
 
     let mixer: THREE.AnimationMixer | null = null;
@@ -197,16 +312,6 @@ export function UnitedCarriersGlobe({
       (err) => console.error("earth.glb load error:", err)
     );
 
-    // 2. Highlighted Mining Hub Jurisdictions with mineral metadata & interactive tooltips
-    const HUB_NODES: (HubNode & { minerals: string; region: string })[] = [
-      { id: "na", name: "USA & CANADA", region: "TIER-1 JURISDICTION", minerals: "GOLD • COPPER • CRITICAL MINERALS", lat: 41.5, lng: -116.2, size: 1.4 },
-      { id: "sa", name: "CHILE & PERU", region: "GLOBAL COPPER BELT", minerals: "COPPER • LITHIUM • SILVER", lat: -24.3, lng: -69.1, size: 1.4 },
-      { id: "eu", name: "SWEDEN & FINLAND", region: "NORDIC BATTERY METALS", minerals: "IRON ORE • NICKEL • RARE EARTHS", lat: 67.8, lng: 20.2, size: 1.35 },
-      { id: "afr", name: "SOUTH AFRICA", region: "STRATEGIC MINERAL BASIN", minerals: "PGM • MANGANESE • GOLD", lat: -26.4, lng: 27.4, size: 1.35 },
-      { id: "asia", name: "MONGOLIA & CENTRAL ASIA", region: "OREBELT CORRIDOR", minerals: "COPPER • GOLD • URANIUM", lat: 43.0, lng: 106.8, size: 1.4 },
-      { id: "aus", name: "WESTERN AUSTRALIA", region: "PREMIER RESOURCE HUB", minerals: "IRON ORE • GOLD • LITHIUM", lat: -30.7, lng: 121.5, size: 1.4 },
-    ];
-
     let targetFocusRotY: number | null = null;
     let targetFocusRotX: number | null = null;
 
@@ -219,58 +324,72 @@ export function UnitedCarriersGlobe({
       depthWrite: false,
     });
 
-    const activeRipples: { ring: THREE.Mesh; phaseOffset: number }[] = [];
-    const labelObjects: Array<{ obj: CSS2DObject; pos: THREE.Vector3 }> = [];
+    const activeRipples: { ring: THREE.Mesh; phaseOffset: number; nodeIdx: number }[] = [];
+    const labelObjects: Array<{
+      obj: CSS2DObject;
+      pos: THREE.Vector3;
+      div: HTMLButtonElement;
+      nodeIdx: number;
+    }> = [];
+    const pinSprites: Array<{ sprite: THREE.Sprite; baseSize: number; nodeIdx: number }> = [];
 
-    HUB_NODES.forEach((node) => {
+    // Calibrated pitch offset (+8.5 degrees) placing country highlight circle in the vertical center of the screen
+    const CAMERA_PITCH_OFFSET = 8.5;
+
+    MINING_HUBS.forEach((node, nodeIdx) => {
       const pinGroup = new THREE.Group();
-      const pos = latLngToVec3(node.lat, node.lng, 1.003);
+      // Position raised above the earth & clouds (radius 1.018)
+      const pos = latLngToVec3(node.lat, node.lng, 1.018);
       pinGroup.position.copy(pos);
       pinGroup.quaternion.setFromUnitVectors(
         new THREE.Vector3(0, 0, 1),
         pos.clone().normalize()
       );
 
-      // Starburst glowing sprite
-      const sprite = new THREE.Sprite(beaconMat);
-      const s = (node.size || 1) * 0.062;
+      // 1. Radiant Glowing Starburst Flare Sprite (renders on top)
+      const sprite = new THREE.Sprite(beaconMat.clone());
+      const s = (node.size || 1) * 0.082;
       sprite.scale.set(s, s, 1);
+      sprite.renderOrder = 14;
       pinGroup.add(sprite);
+      pinSprites.push({ sprite, baseSize: s, nodeIdx });
 
-      // 3 Multi-phase animated radar ripple rings
+      // 2. Multi-phase animated golden radar ripple rings
       [0, 0.33, 0.66].forEach((offset) => {
         const ring = new THREE.Mesh(
-          new THREE.RingGeometry(0.90, 1, 32),
+          new THREE.RingGeometry(0.85, 1.0, 36),
           new THREE.MeshBasicMaterial({
             color: new THREE.Color("#FFB81C"),
             transparent: true,
-            opacity: 0.85,
+            opacity: 0.95,
             blending: THREE.AdditiveBlending,
             side: THREE.DoubleSide,
             depthWrite: false,
           })
         );
-        ring.scale.set(0.015, 0.015, 1);
+        ring.scale.set(0.022, 0.022, 1);
+        ring.renderOrder = 15;
         pinGroup.add(ring);
-        activeRipples.push({ ring, phaseOffset: offset });
+        activeRipples.push({ ring, phaseOffset: offset, nodeIdx });
       });
 
-      // Outer static concentric golden halo
+      // 3. Static golden concentric targeting ring
       const outerRing = new THREE.Mesh(
-        new THREE.RingGeometry(0.95, 1, 32),
+        new THREE.RingGeometry(0.92, 1.0, 36),
         new THREE.MeshBasicMaterial({
           color: new THREE.Color("#FF8C00"),
           transparent: true,
-          opacity: 0.40,
+          opacity: 0.85,
           blending: THREE.AdditiveBlending,
           side: THREE.DoubleSide,
           depthWrite: false,
         })
       );
-      outerRing.scale.set(0.035, 0.035, 1);
+      outerRing.scale.set(0.045, 0.045, 1);
+      outerRing.renderOrder = 15;
       pinGroup.add(outerRing);
 
-      // Interactive CSS2D Label badge with rich mineral tooltip and click-to-center
+      // 4. Interactive CSS2D Label badge with rich mineral tooltip and click-to-center
       const labelDiv = document.createElement("button");
       labelDiv.className = "globe-country-badge group";
       labelDiv.setAttribute("aria-label", `${node.name} mining hub`);
@@ -288,28 +407,27 @@ export function UnitedCarriersGlobe({
       // Click to focus and center on this mining capital
       labelDiv.addEventListener("click", (e) => {
         e.stopPropagation();
-        targetFocusRotY = -(node.lng + 90) * (Math.PI / 180);
-        targetFocusRotX = (node.lat - 10) * (Math.PI / 180);
+        onCountryClickRef.current?.(nodeIdx);
+        targetFocusRotY = -(node.lng * Math.PI) / 180;
+        targetFocusRotX = ((node.lat - CAMERA_PITCH_OFFSET) * Math.PI) / 180;
         lastInteractionTime = performance.now();
       });
 
       const labelObj = new CSS2DObject(labelDiv);
       pinGroup.add(labelObj);
-      labelObjects.push({ obj: labelObj, pos });
+      labelObjects.push({ obj: labelObj, pos, div: labelDiv, nodeIdx });
 
       globeGroup.add(pinGroup);
     });
 
-    // 4. Golden Network Arcs & Filaments (#F5A900)
     // 4. Sleek, Elegant Golden Network Arcs (#FFA414)
     const CORRIDORS: CorridorArc[] = [
-      { from: [41.5, -116.2], to: [-24.3, -69.1], alt: 0.05 }, // USA/Canada -> Chile/Peru
-      { from: [41.5, -116.2], to: [67.8, 20.2], alt: 0.06 }, // USA/Canada -> Sweden/Finland
-      { from: [67.8, 20.2], to: [-26.4, 27.4], alt: 0.06 }, // Sweden/Finland -> South Africa
-      { from: [67.8, 20.2], to: [43.0, 106.8], alt: 0.05 }, // Sweden/Finland -> Mongolia
-      { from: [43.0, 106.8], to: [-30.7, 121.5], alt: 0.06 }, // Mongolia -> Western Australia
-      { from: [-26.4, 27.4], to: [-30.7, 121.5], alt: 0.06 }, // South Africa -> Western Australia
-      { from: [-24.3, -69.1], to: [-26.4, 27.4], alt: 0.06 }, // Chile/Peru -> South Africa
+      { from: [41.5, -96.0], to: [-22.5, -66.5], alt: 0.05 },  // USA/Canada -> Chile/Peru
+      { from: [-22.5, -66.5], to: [65.0, 20.0], alt: 0.06 },   // Chile/Peru -> Sweden/Finland
+      { from: [65.0, 20.0], to: [-26.0, 28.0], alt: 0.06 },    // Sweden/Finland -> South Africa
+      { from: [-26.0, 28.0], to: [46.5, 105.0], alt: 0.06 },   // South Africa -> Mongolia
+      { from: [46.5, 105.0], to: [-28.0, 121.5], alt: 0.05 },  // Mongolia -> Western Australia
+      { from: [-28.0, 121.5], to: [41.5, -96.0], alt: 0.06 },  // Western Australia -> USA/Canada
     ];
 
     const timeUniform = { uTime: { value: 2.5 } };
@@ -366,7 +484,6 @@ export function UnitedCarriersGlobe({
       }
 
       const curve = new THREE.CatmullRomCurve3(pts);
-      // Delicate thin filament (0.0008) instead of thick bulging tube (0.0018)
       const geom = new THREE.TubeGeometry(curve, 36, 0.0008, 4, false);
       const count = geom.attributes.position.count;
       const offset = (idx * 0.6180339887) % 1;
@@ -424,19 +541,17 @@ export function UnitedCarriersGlobe({
       previousPointerX = e.clientX;
       previousPointerY = e.clientY;
 
-      // On touch, allow native vertical scroll if vertical motion dominates
       if (e.pointerType === "touch" && Math.abs(deltaY) > Math.abs(deltaX) * 1.5) {
         return;
       }
 
       const sensitivity = 0.0055;
       globeGroup.rotation.y += deltaX * sensitivity;
-      globeGroup.rotation.x += deltaY * sensitivity;
+      globeGroup.rotation.x -= deltaY * sensitivity;
 
-      // Clamp vertical pitch so the globe doesn't invert
-      globeGroup.rotation.x = Math.max(-0.80, Math.min(0.80, globeGroup.rotation.x));
+      // Allow wide pitch range so country circles in all jurisdictions are fully centered
+      globeGroup.rotation.x = Math.max(-1.25, Math.min(1.25, globeGroup.rotation.x));
 
-      // Momentum velocity for smooth gliding
       velocityX = deltaX * sensitivity;
       velocityY = deltaY * sensitivity;
       lastInteractionTime = performance.now();
@@ -474,6 +589,8 @@ export function UnitedCarriersGlobe({
 
     // Render Animation Loop
     let lastTime = performance.now();
+    let lastReportedCountryIdx = -1;
+    let currentLockedCountryIdx = 0;
     const tempWorldPos = new THREE.Vector3();
 
     const animate = () => {
@@ -484,9 +601,15 @@ export function UnitedCarriersGlobe({
       const delta = (now - lastTime) / 1000;
       lastTime = now;
 
-      // Hand Dragging, Target Focus Navigation, Scroll Tour, or Ambient Kinetic Glide
+      const p = scrollRef.current;
+      const TOUR_START = 0.025;
+      const TOUR_END = 0.94;
+      const numHubs = MINING_HUBS.length;
+      const numSegments = numHubs - 1;
+
+      // Hand Dragging, Target Focus Navigation, Stepped Screen-Locked Tour, or Ambient Glide
       if (isDragging) {
-        // Direct hand dragging
+        // Direct manual dragging
       } else if (targetFocusRotY !== null && targetFocusRotX !== null) {
         // Smooth cinematic ease directly to clicked mining jurisdiction
         let diffY = targetFocusRotY - globeGroup.rotation.y;
@@ -496,57 +619,79 @@ export function UnitedCarriersGlobe({
         globeGroup.rotation.y += diffY * 0.09;
         globeGroup.rotation.x = THREE.MathUtils.lerp(globeGroup.rotation.x, targetFocusRotX, 0.09);
 
-        const targetScale = 1.28;
+        const targetScale = 1.22;
         globeGroup.scale.setScalar(THREE.MathUtils.lerp(globeGroup.scale.x, targetScale, 0.08));
 
         if (Math.abs(diffY) < 0.005 && Math.abs(targetFocusRotX - globeGroup.rotation.x) < 0.005) {
           targetFocusRotY = null;
           targetFocusRotX = null;
         }
-      } else if (scrollRef.current > 0.003) {
-        // Scroll-driven tour: smoothly rotate and zoom into each highlighted country one by one
-        const p = scrollRef.current;
-        const totalSegments = HUB_NODES.length - 1;
-        const s = Math.min(Math.max(p * totalSegments, 0), totalSegments);
-        const idx = Math.min(Math.floor(s), totalSegments - 1);
-        const nextIdx = idx + 1;
-        const localT = s - idx;
-        const easeT = localT * localT * (3 - 2 * localT);
+      } else if (p >= TOUR_START) {
+        // SYMMETRIC 6-STAGE SCREEN-LOCKED TOUR (ALL 6 COUNTRIES GET EQUAL SOLID LOCK)
+        const normP = Math.min(Math.max((p - TOUR_START) / (TOUR_END - TOUR_START), 0), 1);
+        const s = normP * numSegments; // 0 to 5
+        const k = Math.min(Math.floor(s), numSegments - 1); // 0, 1, 2, 3, 4
+        const f = s - k; // 0 to 1
 
-        const targetLat = THREE.MathUtils.lerp(HUB_NODES[idx].lat, HUB_NODES[nextIdx].lat, easeT);
-        let dLng = HUB_NODES[nextIdx].lng - HUB_NODES[idx].lng;
+        // Transit window in the middle of each step: [0.35, 0.65] (70% dwell, 30% transition)
+        const TRANSIT_START = 0.35;
+        const TRANSIT_END = 0.65;
+
+        let easeT = 0;
+        let transitFactor = 0;
+
+        if (f <= TRANSIT_START) {
+          easeT = 0;
+          transitFactor = 0;
+          currentLockedCountryIdx = k;
+        } else if (f >= TRANSIT_END) {
+          easeT = 1;
+          transitFactor = 0;
+          currentLockedCountryIdx = k + 1;
+        } else {
+          const tau = (f - TRANSIT_START) / (TRANSIT_END - TRANSIT_START);
+          // Quintic smoothstep
+          easeT = tau * tau * tau * (tau * (tau * 6 - 15) + 10);
+          transitFactor = Math.sin(tau * Math.PI);
+          currentLockedCountryIdx = tau < 0.5 ? k : k + 1;
+        }
+
+        // Target coordinates along the orbital corridor
+        const targetLat = THREE.MathUtils.lerp(MINING_HUBS[k].lat, MINING_HUBS[k + 1].lat, easeT);
+        let dLng = MINING_HUBS[k + 1].lng - MINING_HUBS[k].lng;
         while (dLng > 180) dLng -= 360;
         while (dLng < -180) dLng += 360;
-        const targetLng = HUB_NODES[idx].lng + dLng * easeT;
+        const targetLng = MINING_HUBS[k].lng + dLng * easeT;
 
-        // Desired rotation bringing the target country to front center
-        const desiredRotY = -(targetLng + 90) * (Math.PI / 180);
-        const desiredRotX = (targetLat - 10) * (Math.PI / 180);
+        // Desired rotation placing target country perfectly in center view
+        const desiredRotY = -(targetLng * Math.PI) / 180;
+        const desiredRotX = ((targetLat - CAMERA_PITCH_OFFSET) * Math.PI) / 180;
 
-        // Zoom scale: zooms in deep on each country (1.38x), slight pullback during transit (1.15x)
-        const targetZoom = 1.38 - 0.23 * Math.sin(localT * Math.PI);
+        // Balanced Zoom: 1.12x locked zoom (clearly centered and framed without cutting off edges), 1.05x during transit
+        const targetZoom = 1.12 - 0.07 * transitFactor;
 
         let diffY = desiredRotY - globeGroup.rotation.y;
         while (diffY > Math.PI) diffY -= Math.PI * 2;
         while (diffY < -Math.PI) diffY += Math.PI * 2;
 
-        globeGroup.rotation.y += diffY * 0.08;
-        globeGroup.rotation.x = THREE.MathUtils.lerp(globeGroup.rotation.x, desiredRotX, 0.08);
+        globeGroup.rotation.y += diffY * 0.16;
+        globeGroup.rotation.x = THREE.MathUtils.lerp(globeGroup.rotation.x, desiredRotX, 0.16);
 
         const curScale = globeGroup.scale.x;
-        const nextScale = THREE.MathUtils.lerp(curScale, targetZoom, 0.08);
+        const nextScale = THREE.MathUtils.lerp(curScale, targetZoom, 0.12);
         globeGroup.scale.set(nextScale, nextScale, nextScale);
 
-        timeUniform.uTime.value += 0.002;
+        timeUniform.uTime.value += 0.003;
       } else {
         // At rest / top: smooth inertia friction + subtle auto-rotation + magnetic cursor tilt
+        currentLockedCountryIdx = -1;
         globeGroup.rotation.y += velocityX;
         globeGroup.rotation.x += velocityY;
-        globeGroup.rotation.x = Math.max(-0.80, Math.min(0.80, globeGroup.rotation.x));
+        globeGroup.rotation.x = Math.max(-1.25, Math.min(1.25, globeGroup.rotation.x));
         velocityX *= 0.92;
         velocityY *= 0.92;
 
-        // Auto-rotation resumes gently when not interacting
+        // Gentle ambient auto-rotation
         if (now - lastInteractionTime > 1200) {
           const turn = 0.0014 * (delta / 0.0166);
           globeGroup.rotation.y += turn;
@@ -554,15 +699,37 @@ export function UnitedCarriersGlobe({
         }
 
         const curScale = globeGroup.scale.x;
-        const nextScale = THREE.MathUtils.lerp(curScale, 1.0, 0.05);
+        const nextScale = THREE.MathUtils.lerp(curScale, 1.0, 0.06);
         globeGroup.scale.set(nextScale, nextScale, nextScale);
       }
 
+      // Notify parent when active locked country changes
+      if (currentLockedCountryIdx !== lastReportedCountryIdx) {
+        lastReportedCountryIdx = currentLockedCountryIdx;
+        if (currentLockedCountryIdx >= 0) {
+          onActiveCountryChangeRef.current?.(currentLockedCountryIdx);
+        }
+      }
+
+      // Dynamic Highlight & Ripple animation for active vs background beacons
+      pinSprites.forEach(({ sprite, baseSize, nodeIdx }) => {
+        const isActive = p >= TOUR_START && nodeIdx === currentLockedCountryIdx;
+        const targetSpriteScale = isActive ? baseSize * 1.65 : baseSize;
+        sprite.scale.set(
+          THREE.MathUtils.lerp(sprite.scale.x, targetSpriteScale, 0.12),
+          THREE.MathUtils.lerp(sprite.scale.y, targetSpriteScale, 0.12),
+          1
+        );
+      });
+
       // Multi-phase pulse radar ripple rings
-      activeRipples.forEach(({ ring, phaseOffset }) => {
-        const pulseCycle = (now * 0.0016 + phaseOffset) % 1;
-        const ringScale = 0.012 + pulseCycle * 0.038;
-        const ringOpacity = (1 - pulseCycle) * 0.85;
+      activeRipples.forEach(({ ring, phaseOffset, nodeIdx }) => {
+        const isActive = p >= TOUR_START && nodeIdx === currentLockedCountryIdx;
+        const speed = isActive ? 0.0028 : 0.0018;
+        const pulseCycle = (now * speed + phaseOffset) % 1;
+        const baseRing = isActive ? 0.026 : 0.016;
+        const ringScale = baseRing + pulseCycle * (isActive ? 0.078 : 0.048);
+        const ringOpacity = (1 - pulseCycle) * (isActive ? 1.0 : 0.75);
         ring.scale.set(ringScale, ringScale, 1);
         (ring.material as THREE.MeshBasicMaterial).opacity = ringOpacity;
       });
@@ -572,12 +739,20 @@ export function UnitedCarriersGlobe({
         mixer.update(delta);
       }
 
-      // Occlude labels when on the back side of the Earth
-      labelObjects.forEach(({ obj, pos }) => {
+      // Occlude labels when on the back side of the Earth & update active badge states
+      labelObjects.forEach(({ obj, pos, div, nodeIdx }) => {
         tempWorldPos.copy(pos).applyMatrix4(globeGroup.matrixWorld);
         const dot = tempWorldPos.dot(camera.position);
-        obj.element.style.opacity = dot > 0.12 ? "1" : "0";
-        obj.element.style.pointerEvents = dot > 0.12 ? "auto" : "none";
+        const isVisible = dot > 0.12;
+        obj.element.style.opacity = isVisible ? "1" : "0";
+        obj.element.style.pointerEvents = isVisible ? "auto" : "none";
+
+        const isActive = p >= TOUR_START && nodeIdx === currentLockedCountryIdx;
+        if (isActive && isVisible) {
+          div.classList.add("is-active");
+        } else {
+          div.classList.remove("is-active");
+        }
       });
 
       renderer.render(scene, camera);
@@ -599,23 +774,16 @@ export function UnitedCarriersGlobe({
       renderer.dispose();
       beaconTex.dispose();
       beaconMat.dispose();
-      arcMat.dispose();
     };
   }, []);
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full aspect-square select-none overflow-visible cursor-grab active:cursor-grabbing touch-pan-y ${className}`}
-      style={{ isolation: "isolate" }}
+      className={`relative select-none touch-pan-y ${className}`}
+      style={{ cursor: "grab" }}
     >
-      {/* 3D WebGL Canvas */}
-      <canvas
-        ref={canvasRef}
-        className="relative z-10 w-full h-full pointer-events-none block"
-      />
-
-      {/* CSS2D Label Layer */}
+      <canvas ref={canvasRef} className="block w-full h-full" />
       <div
         ref={labelContainerRef}
         className="absolute inset-0 z-20 pointer-events-none overflow-visible"
@@ -631,38 +799,51 @@ export function UnitedCarriersGlobe({
           pointer-events: auto;
           cursor: pointer;
           font-family: var(--font-geist-mono, monospace), monospace;
-          background: rgba(11, 31, 58, 0.88);
+          background: rgba(11, 31, 58, 0.90);
           backdrop-filter: blur(8px);
           -webkit-backdrop-filter: blur(8px);
-          border: 1px solid rgba(184, 134, 11, 0.55);
-          border-radius: 4px;
-          padding: 2.5px 7px;
-          transform: translate(-50%, -145%);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55), 0 0 10px rgba(184, 134, 11, 0.25);
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          border: 1px solid rgba(184, 134, 11, 0.60);
+          border-radius: 6px;
+          padding: 3px 8px;
+          transform: translate(-50%, -150%);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.60), 0 0 12px rgba(184, 134, 11, 0.35);
+          transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
           user-select: none;
         }
 
-        .globe-country-badge:hover {
-          background: rgba(11, 31, 58, 0.96);
+        .globe-country-badge:hover,
+        .globe-country-badge.is-active {
+          background: rgba(11, 31, 58, 0.98);
           border-color: #FFAE00;
-          transform: translate(-50%, -155%) scale(1.12);
-          box-shadow: 0 6px 22px rgba(0, 0, 0, 0.75), 0 0 16px rgba(255, 174, 0, 0.5);
-          z-index: 50;
+          border-width: 1.5px;
+          transform: translate(-50%, -160%) scale(1.18);
+          box-shadow: 0 8px 28px rgba(0, 0, 0, 0.85), 0 0 24px rgba(255, 174, 0, 0.75);
+          z-index: 60;
         }
 
         .badge-header {
           display: flex;
           align-items: center;
-          gap: 4.5px;
+          gap: 5px;
         }
 
         .badge-dot {
-          width: 5px;
-          height: 5px;
+          width: 6px;
+          height: 6px;
           border-radius: 50%;
           background: #FFAE00;
-          box-shadow: 0 0 6px #FFAE00;
+          box-shadow: 0 0 8px #FFAE00;
+        }
+
+        .globe-country-badge.is-active .badge-dot {
+          background: #FFD700;
+          box-shadow: 0 0 12px #FFD700;
+          animation: pulseDot 1.4s infinite ease-in-out;
+        }
+
+        @keyframes pulseDot {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.45); opacity: 0.85; }
         }
 
         .badge-title {
@@ -673,6 +854,11 @@ export function UnitedCarriersGlobe({
           color: #ffffff;
         }
 
+        .globe-country-badge.is-active .badge-title {
+          color: #FFF2C6;
+          text-shadow: 0 0 10px rgba(255, 215, 0, 0.75);
+        }
+
         .badge-tooltip {
           max-height: 0;
           opacity: 0;
@@ -681,13 +867,14 @@ export function UnitedCarriersGlobe({
           flex-direction: column;
           align-items: center;
           gap: 1.5px;
-          transition: max-height 0.25s ease, opacity 0.25s ease, margin-top 0.25s ease;
+          transition: max-height 0.28s ease, opacity 0.28s ease, margin-top 0.28s ease;
         }
 
-        .globe-country-badge:hover .badge-tooltip {
-          max-height: 40px;
+        .globe-country-badge:hover .badge-tooltip,
+        .globe-country-badge.is-active .badge-tooltip {
+          max-height: 48px;
           opacity: 1;
-          margin-top: 3px;
+          margin-top: 3.5px;
         }
 
         .tooltip-region {
@@ -701,21 +888,21 @@ export function UnitedCarriersGlobe({
           font-size: 6.5px;
           font-weight: 500;
           letter-spacing: 0.04em;
-          color: #94A3B8;
+          color: #CBD5E1;
         }
 
         @media (min-width: 640px) {
           .globe-country-badge {
-            padding: 3px 9px;
+            padding: 3.5px 10px;
           }
           .badge-title {
             font-size: 9.5px;
           }
           .tooltip-region {
-            font-size: 7.5px;
+            font-size: 8px;
           }
           .tooltip-minerals {
-            font-size: 7px;
+            font-size: 7.5px;
           }
         }
       `}</style>

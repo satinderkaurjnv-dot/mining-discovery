@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
 import { TRUSTED_BRANDS, type TrustedBrand } from "@/data/trustedBrands";
 
 const BrandLogo: React.FC<{ brand: TrustedBrand }> = ({ brand }) => {
@@ -9,7 +8,7 @@ const BrandLogo: React.FC<{ brand: TrustedBrand }> = ({ brand }) => {
 
   if (!available) {
     return (
-      <span className="px-3 text-center font-sans text-xs font-semibold tracking-tight text-[#57595E]">
+      <span className="px-3 text-center font-sans text-xs font-bold tracking-tight text-[#0B1F3A]">
         {brand.name}
       </span>
     );
@@ -20,7 +19,7 @@ const BrandLogo: React.FC<{ brand: TrustedBrand }> = ({ brand }) => {
     <img
       src={brand.logo}
       alt={`${brand.name} logo`}
-      className="h-auto w-full max-w-[130px] sm:max-w-[145px] object-contain opacity-65 grayscale transition-all duration-300 ease-out group-hover:opacity-100 group-hover:grayscale-0 group-hover:scale-105"
+      className="h-[3.8rem] w-auto max-w-full object-contain sm:h-[4.4rem] lg:h-[5rem] transition-all duration-300 group-hover:scale-105"
       style={{ mixBlendMode: "multiply" }}
       referrerPolicy="no-referrer"
       loading="lazy"
@@ -30,45 +29,46 @@ const BrandLogo: React.FC<{ brand: TrustedBrand }> = ({ brand }) => {
 };
 
 export const AboutTrustedBrands: React.FC = () => {
-  const reduceMotion = useReducedMotion();
-
   return (
-    <section className="relative border-b border-[#E5E4DE] bg-white py-16 md:py-24 overflow-hidden">
-      <div className="container-editorial relative z-10">
-        {/* Section Header */}
-        <div className="max-w-3xl mb-10 md:mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="h-0.5 w-10 bg-[#B8860B]" />
-            <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[#9E7208]">
-              Trusted Brands
-            </span>
-          </div>
-
-          <h2 className="font-serif text-[clamp(2.25rem,4.5vw,3.75rem)] font-normal leading-[1.08] tracking-[-0.025em] text-[#0B1F3A]">
-            The companies we work with.
+    <section className="w-full border-t border-gray-200 bg-white py-12 sm:py-16 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
+        <div className="mb-6">
+          <h2 className="text-[#0B1F3A] text-2xl sm:text-3xl font-bold tracking-tight">
+            Our Trusted <span className="text-[#B8860B]">Brands</span>
           </h2>
+          <div className="mt-3 flex items-center">
+            <div className="size-2.5 shrink-0 rounded-full bg-[#B8860B]" />
+            <div className="h-px w-40 bg-gradient-to-r from-[#0B1F3A] to-transparent" />
+          </div>
         </div>
+      </div>
 
-        {/* ------------------------------------------------------------------ */}
-        {/* EDITORIAL ASYMMETRIC LOGO WALL (No Marquee)                        */}
-        {/* ------------------------------------------------------------------ */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
-          {TRUSTED_BRANDS.map((brand, index) => (
-            <motion.div
-              key={brand.name}
-              initial={reduceMotion ? {} : { opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true, amount: 0.15 }}
-              transition={{
-                duration: 0.5,
-                delay: (index % 6) * 0.06,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="group flex h-[105px] sm:h-[120px] items-center justify-center rounded-xl border border-[#E5E4DE] bg-[#FAF9F5] p-4 transition-all duration-300 hover:bg-white hover:border-[#B8860B]/40 hover:shadow-sm"
-            >
-              <BrandLogo brand={brand} />
-            </motion.div>
-          ))}
+      {/* Marquee Row 1 */}
+      <div className="relative flex w-full flex-col overflow-hidden">
+        <div className="group flex flex-row overflow-hidden p-2 gap-4">
+          <div className="animate-marquee flex shrink-0 flex-row justify-around gap-4 group-hover:[animation-play-state:paused]">
+            {TRUSTED_BRANDS.map((brand) => (
+              <div
+                key={`b1-${brand.name}`}
+                className="group relative flex h-24 sm:h-28 lg:h-32 w-40 sm:w-48 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50/50 p-4 transition-colors hover:bg-gray-100/80 hover:border-[#B8860B]/40"
+              >
+                <BrandLogo brand={brand} />
+              </div>
+            ))}
+          </div>
+          <div
+            aria-hidden="true"
+            className="animate-marquee flex shrink-0 flex-row justify-around gap-4 group-hover:[animation-play-state:paused]"
+          >
+            {TRUSTED_BRANDS.map((brand) => (
+              <div
+                key={`b2-${brand.name}`}
+                className="group relative flex h-24 sm:h-28 lg:h-32 w-40 sm:w-48 items-center justify-center overflow-hidden rounded-xl border border-gray-100 bg-gray-50/50 p-4 transition-colors hover:bg-gray-100/80 hover:border-[#B8860B]/40"
+              >
+                <BrandLogo brand={brand} />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

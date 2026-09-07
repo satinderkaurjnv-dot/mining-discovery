@@ -1,98 +1,69 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import React from "react";
 
-const DIFFERENTIATORS = [
+const UNIQUE_ITEMS = [
   {
-    num: "01",
-    title: "Industry-Focused Journalism",
-    description: "Mining-focused coverage with depth, context, and consistency.",
+    feature: "Industry-Focused Journalism",
+    why: "We specialize in mining for depth, context, and consistency.",
   },
   {
-    num: "02",
-    title: "Integrated Approach",
-    description: "Reporting, data, and branding connected as part of one story.",
+    feature: "Integrated Approach",
+    why: "We connect reporting, data, and branding — treating them as a single story.",
   },
   {
-    num: "03",
-    title: "Dual Perspective",
-    description: "Serving both industry professionals and community stakeholders.",
+    feature: "Dual Perspective",
+    why: "We address both industry professionals and community stakeholders.",
   },
   {
-    num: "04",
-    title: "Media & Digital Strength",
-    description: "Editorial work combined with SEO, visual storytelling, and syndication.",
+    feature: "Media & Digital Strength",
+    why: "Editorial excellence meets SEO, visual storytelling, and syndication.",
   },
   {
-    num: "05",
-    title: "Founder-Driven Vision",
-    description: "A vision guided by the founders' commitment to purpose-driven growth.",
+    feature: "Founder-Driven Vision",
+    why: "Guided by the personal commitment of our founders for purpose-driven growth.",
   },
 ];
 
 export const AboutUnique: React.FC = () => {
-  const reduceMotion = useReducedMotion();
-  const [activeIdx, setActiveIdx] = useState<number>(0);
-
   return (
-    <section className="relative border-b border-[#E5E4DE] bg-white py-16 md:py-24 overflow-hidden">
-      <div className="container-editorial relative z-10">
-        {/* Section Header */}
-        <div className="max-w-3xl mb-10 md:mb-12">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="h-0.5 w-10 bg-[#B8860B]" />
-            <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[#9E7208]">
-              What Makes Us Unique
-            </span>
-          </div>
-
-          <h2 className="font-serif text-[clamp(2.25rem,4.5vw,3.75rem)] font-normal leading-[1.08] tracking-[-0.025em] text-[#0B1F3A]">
-            Five things that set us apart.
+    <section className="py-12 sm:py-16 bg-[#FAFAF9]/60">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <h2 className="text-[#0B1F3A] text-2xl sm:text-3xl font-bold tracking-tight">
+            What Makes Us <span className="text-[#B8860B]">Unique</span>
           </h2>
+          <div className="mt-3 flex items-center">
+            <div className="size-2.5 shrink-0 rounded-full bg-[#B8860B]" />
+            <div className="h-px w-40 bg-gradient-to-r from-[#0B1F3A] to-transparent" />
+          </div>
         </div>
 
-        {/* Stacked Magnetic Panels */}
-        <div className="flex flex-col gap-4 max-w-4xl mx-auto">
-          {DIFFERENTIATORS.map((item, index) => {
-            const isActive = activeIdx === index;
-
-            return (
-              <motion.div
-                key={item.num}
-                layout
-                onMouseEnter={() => setActiveIdx(index)}
-                className={`relative rounded-2xl border transition-all duration-300 cursor-pointer overflow-hidden p-6 sm:p-8 ${
-                  isActive
-                    ? "bg-[#FAF9F5] border-[#B8860B] shadow-md -translate-y-1 z-20 opacity-100"
-                    : "bg-white border-[#E5E4DE] hover:border-[#B8860B]/40 hover:-translate-y-0.5 shadow-2xs z-10 opacity-100"
-                }`}
-              >
-                <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4">
-                  <div className="flex items-baseline gap-4">
-                    <span
-                      className={`font-mono text-sm font-bold transition-colors ${
-                        isActive ? "text-[#B8860B]" : "text-[#888A8E]"
-                      }`}
-                    >
-                      {item.num}
-                    </span>
-                    <h3 className="font-serif text-2xl sm:text-3xl font-normal text-[#0B1F3A]">
-                      {item.title}
-                    </h3>
-                  </div>
-
-                  <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#9E7208] shrink-0">
-                    Advantage {item.num}
-                  </span>
-                </div>
-
-                <p className="mt-3 text-base sm:text-lg leading-relaxed text-[#57595E] sm:pl-9">
-                  {item.description}
-                </p>
-              </motion.div>
-            );
-          })}
+        <div className="mt-8 mx-auto max-w-5xl overflow-x-auto rounded-3xl border border-gray-100 bg-white shadow-xl">
+          <table className="min-w-[600px] w-full border-collapse text-left">
+            <thead>
+              <tr className="bg-[#0B1F3A] text-white">
+                <th className="p-6 sm:p-8 text-xs sm:text-sm font-black tracking-widest uppercase">
+                  Feature
+                </th>
+                <th className="border-l border-white/10 p-6 sm:p-8 text-xs sm:text-sm font-black tracking-widest uppercase">
+                  Why It Matters
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {UNIQUE_ITEMS.map((item) => (
+                <tr key={item.feature} className="transition-colors hover:bg-gray-50/80">
+                  <td className="text-[#0B1F3A] border-r border-gray-100 p-6 sm:p-8 font-black tracking-tighter uppercase text-sm sm:text-base">
+                    {item.feature}
+                  </td>
+                  <td className="p-6 sm:p-8 font-medium text-gray-600 text-sm sm:text-base">
+                    {item.why}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </section>

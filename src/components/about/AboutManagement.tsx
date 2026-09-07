@@ -1,162 +1,95 @@
 "use client";
 
 import React from "react";
-import { motion, useReducedMotion } from "framer-motion";
-
-interface Person {
-  name: string;
-  initials: string;
-  role: string;
-  bio: string;
-  focus: string[];
-}
-
-const MANAGEMENT: Person[] = [
-  {
-    name: "Gaurav Sharma",
-    initials: "GS",
-    role: "Founder, Mining Discovery",
-    bio: "Gaurav Sharma established Mining Discovery to change how the global mining industry communicates. Focusing on the U.S. and Canadian mining markets, he directs content strategy, digital marketing, and platform outreach. His expertise spans advertising, PR, eCommerce, and web development — the range behind Mining Discovery's development as a media and marketing platform connecting mining companies, investors, and professionals.",
-    focus: [
-      "Content Strategy",
-      "Digital Marketing",
-      "Platform Outreach",
-      "Advertising",
-      "PR",
-      "eCommerce",
-      "Web Development",
-    ],
-  },
-  {
-    name: "Sagar Bakshi",
-    initials: "SB",
-    role: "Director & Co-Founder, Mining Discovery",
-    bio: "Sagar Bakshi helps build and develop the Mining Discovery platform, connecting the global mining community with a focus on U.S. and Canadian mining activities. He manages company messaging across industry news, corporate updates, and event promotions, working through advertising, public relations, brand marketing, and web development. His earlier work supported eCommerce startups through Shopify, Amazon, dropshipping, and digital marketing.",
-    focus: [
-      "Industry News",
-      "Corporate Updates",
-      "Event Promotions",
-      "Advertising",
-      "Public Relations",
-      "Brand Marketing",
-      "Web Development",
-    ],
-  },
-];
 
 export const AboutManagement: React.FC = () => {
-  const reduceMotion = useReducedMotion();
-
   return (
-    <section className="relative border-b border-[#E5E4DE] bg-white py-16 md:py-24 overflow-hidden">
-      <div className="container-editorial relative z-10">
-        {/* Section Heading */}
-        <div className="max-w-3xl mb-12 md:mb-16">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="h-0.5 w-10 bg-[#B8860B]" />
-            <span className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[#9E7208]">
-              Management
-            </span>
-          </div>
-
-          <h2 className="font-serif text-[clamp(2.25rem,4.5vw,3.75rem)] font-normal leading-[1.08] tracking-[-0.025em] text-[#0B1F3A]">
-            The people behind the platform.
+    <section className="py-12 sm:py-16 bg-[#FAFAF9]/60">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6">
+          <h2 className="text-[#0B1F3A] text-2xl sm:text-3xl font-bold tracking-tight">
+            Management <span className="text-[#B8860B]">Team</span>
           </h2>
+          <div className="mt-3 flex items-center">
+            <div className="size-2.5 shrink-0 rounded-full bg-[#B8860B]" />
+            <div className="h-px w-40 bg-gradient-to-r from-[#0B1F3A] to-transparent" />
+          </div>
         </div>
 
-        {/* Editorial Profiles with Alternating Composition */}
-        <div className="flex flex-col gap-16 md:gap-20">
-          {MANAGEMENT.map((person, index) => {
-            const isEven = index % 2 === 0;
-
-            return (
-              <div
-                key={person.name}
-                className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center"
-              >
-                {/* Visual / Monogram Architectural Block */}
-                <motion.div
-                  initial={reduceMotion ? {} : { clipPath: "inset(0 100% 0 0)", opacity: 0 }}
-                  whileInView={{ clipPath: "inset(0 0% 0 0)", opacity: 1 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
-                  className={`lg:col-span-4 ${isEven ? "lg:order-1" : "lg:order-2"}`}
-                >
-                  <div className="relative aspect-square w-full max-w-[340px] mx-auto rounded-2xl border border-[#E5E4DE] bg-[#FAF9F5] p-8 flex flex-col justify-between shadow-sm overflow-hidden group hover:border-[#B8860B]/50 transition-colors duration-300">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-[radial-gradient(#B8860B_1px,transparent_1px)] opacity-15 [background-size:12px_12px]" />
-                    <div className="flex justify-between items-start">
-                      <span className="font-mono text-xs font-bold uppercase tracking-widest text-[#9E7208]">
-                        Leadership
-                      </span>
-                      <span className="font-mono text-xs text-[#888A8E]">
-                        REF #{String(index + 1).padStart(2, "0")}
-                      </span>
-                    </div>
-
-                    <div className="my-auto text-center py-6">
-                      <span className="font-geist text-6xl md:text-7xl font-bold tracking-tight text-[#0B1F3A] group-hover:text-[#B8860B] transition-colors">
-                        {person.initials}
-                      </span>
-                    </div>
-
-                    <div className="border-t border-[#E5E4DE] pt-3">
-                      <p className="font-mono text-[11px] font-semibold text-[#0B1F3A]">
-                        {person.name}
-                      </p>
-                      <p className="text-[10.5px] font-mono text-[#57595E] truncate">
-                        {person.role}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-
-                {/* Narrative & Focus Remit */}
-                <motion.div
-                  initial={reduceMotion ? {} : { opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.75, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-                  className={`lg:col-span-8 flex flex-col gap-6 ${
-                    isEven ? "lg:order-2" : "lg:order-1"
-                  }`}
-                >
-                  <div>
-                    <h3 className="font-serif text-3xl sm:text-4xl font-normal text-[#0B1F3A] tracking-tight">
-                      {person.name}
-                    </h3>
-                    <p className="mt-2 font-mono text-xs font-bold uppercase tracking-[0.16em] text-[#9E7208]">
-                      {person.role}
-                    </p>
-                  </div>
-
-                  <p className="text-lg leading-relaxed text-[#3A3D42]">
-                    {person.bio}
-                  </p>
-
-                  {/* Sequential Focus Tags */}
-                  <div className="pt-4 border-t border-[#E5E4DE]">
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#0B1F3A] block mb-3">
-                      Core Strategic Focus:
-                    </span>
-                    <div className="flex flex-wrap gap-2">
-                      {person.focus.map((item, fIdx) => (
-                        <motion.span
-                          key={item}
-                          initial={reduceMotion ? {} : { opacity: 0, scale: 0.9 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          viewport={{ once: true }}
-                          transition={{ duration: 0.4, delay: 0.04 * fIdx }}
-                          className="px-3 py-1.5 rounded-lg border border-[#E5E4DE] bg-[#FAF9F5] font-mono text-xs text-[#3A3D42] hover:border-[#B8860B]/40 hover:bg-white transition-colors"
-                        >
-                          {item}
-                        </motion.span>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
+        <div className="mt-8 flex flex-col gap-10">
+          {/* Gaurav Sharma */}
+          <div className="group hover:shadow-[#B8860B]/10 relative flex w-full flex-col items-start gap-8 overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:flex-row sm:items-center sm:p-10">
+            <div className="bg-[#B8860B]/5 group-hover:bg-[#B8860B]/10 absolute top-0 right-0 -mt-16 -mr-16 h-32 w-32 rounded-bl-full transition-colors" />
+            <div className="relative z-10 flex w-full items-start gap-4 sm:w-auto">
+              <div className="bg-[#0B1F3A] flex size-20 shrink-0 items-center justify-center rounded-2xl text-2xl font-black text-white shadow-lg sm:size-32 sm:text-4xl">
+                GS
               </div>
-            );
-          })}
+              <div className="min-w-0 flex-1 sm:hidden">
+                <h3 className="text-[#0B1F3A] text-2xl font-black tracking-tighter uppercase">
+                  Gaurav Sharma
+                </h3>
+                <p className="text-[#B8860B] mt-2 text-[10px] font-black tracking-[0.3em] uppercase">
+                  Founder, Mining Discovery
+                </p>
+              </div>
+            </div>
+            <div className="flex-1 text-left">
+              <h3 className="text-[#0B1F3A] mb-2 hidden text-3xl font-black tracking-tighter uppercase sm:block">
+                Gaurav Sharma
+              </h3>
+              <p className="text-[#B8860B] mb-6 hidden text-[11px] font-black tracking-[0.4em] uppercase sm:block">
+                Founder, Mining Discovery
+              </p>
+              <p className="text-sm leading-relaxed font-medium text-gray-600">
+                Gaurav Sharma, who established Mining Discovery, is at the forefront with an idea that the global
+                mining industry should communicate via innovation. He concentrates on the U.S. and Canada practices
+                and thus directs the content strategy, digital marketing, and outreach of the platform. Mining
+                Discovery has matured into a vibrant media and marketing centre under his guidance, where mining
+                firms, investors, and professionals exchange knowledge and grow their footprint. His speciality covers
+                the areas of advertising, PR, eCommerce, and web development, which result in the creation of scalable
+                solutions applicable to both the technology and the storytelling sides. His progressive approach is
+                very much a part of Mining Discovery, which has already earned the reputation of a trustworthy partner
+                in the industry&apos;s growth.
+              </p>
+            </div>
+          </div>
+
+          {/* Sagar Bakshi */}
+          <div className="group hover:shadow-[#B8860B]/10 relative flex w-full flex-col items-start gap-8 overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl sm:flex-row sm:items-center sm:p-10 sm:flex-row-reverse">
+            <div className="bg-[#B8860B]/5 group-hover:bg-[#B8860B]/10 absolute top-0 right-0 -mt-16 -mr-16 h-32 w-32 rounded-bl-full transition-colors" />
+            <div className="relative z-10 flex w-full items-start gap-4 sm:w-auto">
+              <div className="bg-[#0B1F3A] flex size-20 shrink-0 items-center justify-center rounded-2xl text-2xl font-black text-white shadow-lg sm:size-32 sm:text-4xl">
+                SB
+              </div>
+              <div className="min-w-0 flex-1 sm:hidden">
+                <h3 className="text-[#0B1F3A] text-2xl font-black tracking-tighter uppercase">
+                  Sagar Bakshi
+                </h3>
+                <p className="text-[#B8860B] mt-2 text-[10px] font-black tracking-[0.3em] uppercase">
+                  Director &amp; Co-Founder, Mining Discovery
+                </p>
+              </div>
+            </div>
+            <div className="flex-1 text-left">
+              <h3 className="text-[#0B1F3A] mb-2 hidden text-3xl font-black tracking-tighter uppercase sm:block">
+                Sagar Bakshi
+              </h3>
+              <p className="text-[#B8860B] mb-6 hidden text-[11px] font-black tracking-[0.4em] uppercase sm:block">
+                Director &amp; Co-Founder, Mining Discovery
+              </p>
+              <p className="text-sm leading-relaxed font-medium text-gray-600">
+                The platform of Mining Discovery, masterminded by Sagar Bakshi, connects the global mining community
+                and also empowers it. He is mainly focusing on U.S. and Canadian mining activities and is the one that
+                helps the companies put out their messages regarding industry news, corporate updates, and event
+                promotions. Mining Discovery, under his leadership, has grown into a total growth partner and is
+                providing services like advertising, public relations, brand marketing, and web development. Apart
+                from this, Sagar is also working with eCommerce startups on Shopify and Amazon by giving them
+                dropshipping and digital marketing support. His strategic planning, coupled with his innovative
+                methods, will continue to play a significant role in the measurable growth of the mining and digital
+                marketing industries.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>

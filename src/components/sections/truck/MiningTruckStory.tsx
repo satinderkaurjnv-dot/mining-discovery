@@ -331,7 +331,7 @@ export const MiningTruckStory: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                className="pointer-events-none absolute z-20 flex flex-col justify-center gap-3 sm:gap-5 left-4 sm:left-10 lg:left-14 right-4 sm:right-auto top-12 sm:top-10 bottom-auto lg:bottom-10 max-lg:bg-white/95 max-lg:p-4 sm:max-lg:p-5 max-lg:rounded-xl max-lg:shadow-lg max-lg:border max-lg:border-[#E5E4DE] max-lg:backdrop-blur-md w-auto lg:w-[420px] xl:w-[460px] 2xl:w-[480px]"
+                className="pointer-events-none absolute z-20 flex flex-col justify-center gap-3 sm:gap-5 left-4 sm:left-10 lg:left-14 right-4 sm:right-auto top-20 sm:top-20 lg:top-10 bottom-auto lg:bottom-10 max-lg:bg-white/95 max-lg:p-4 sm:max-lg:p-5 max-lg:rounded-xl max-lg:shadow-lg max-lg:border max-lg:border-[#E5E4DE] max-lg:backdrop-blur-md w-auto lg:w-[420px] xl:w-[460px] 2xl:w-[480px]"
               >
                 {/* Eyebrow with gold hairline */}
                 <div className="flex flex-col items-start gap-1.5 sm:gap-2">
@@ -424,7 +424,7 @@ export const MiningTruckStory: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                className="pointer-events-none absolute z-20 flex flex-col justify-center gap-3 sm:gap-5 left-4 sm:left-10 lg:left-14 right-4 sm:right-auto top-12 sm:top-10 bottom-auto lg:bottom-10 max-lg:bg-white/95 max-lg:p-4 sm:max-lg:p-5 max-lg:rounded-xl max-lg:shadow-lg max-lg:border max-lg:border-[#E5E4DE] max-lg:backdrop-blur-md w-auto lg:w-[420px] xl:w-[460px] 2xl:w-[480px]"
+                className="pointer-events-none absolute z-20 flex flex-col justify-center gap-3 sm:gap-5 left-4 sm:left-10 lg:left-14 right-4 sm:right-auto top-20 sm:top-20 lg:top-10 bottom-auto lg:bottom-10 max-lg:bg-white/95 max-lg:p-4 sm:max-lg:p-5 max-lg:rounded-xl max-lg:shadow-lg max-lg:border max-lg:border-[#E5E4DE] max-lg:backdrop-blur-md w-auto lg:w-[420px] xl:w-[460px] 2xl:w-[480px]"
               >
                 {/* Eyebrow / Stage tag */}
                 <div className="flex flex-col items-start gap-1.5 sm:gap-2">

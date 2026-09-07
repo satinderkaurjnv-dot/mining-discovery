@@ -267,7 +267,7 @@ export const GlobeHero: React.FC = () => {
             {/* FLOATING SCREEN-LOCKED COUNTRY HUD OVERLAY (Positioned top-left to never block the globe circles) */}
             <div
               className={`
-                pointer-events-none absolute top-12 sm:top-16 lg:top-20 left-3 sm:left-8 lg:left-12 right-3 sm:right-auto z-20 flex transition-all duration-500 ease-out
+                pointer-events-none absolute top-20 sm:top-20 lg:top-20 left-3 sm:left-8 lg:left-12 right-3 sm:right-auto z-20 flex transition-all duration-500 ease-out
                 ${isTourActive ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6 pointer-events-none"}
               `}
             >

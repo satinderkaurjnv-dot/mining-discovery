@@ -395,7 +395,7 @@ export const TrustedBy: React.FC = () => {
               transition={{ duration: 1.2, delay: 0.9, ease: "easeOut" }}
               className="w-1.5 h-1.5 rounded-full bg-[#B8860B]"
             />
-            <span>GLOBAL NETWORK COVERAGE // 27 TIER-1 & JUNIOR PRODUCERS</span>
+            <span>GLOBAL NETWORK COVERAGE // 26 TIER-1 & JUNIOR PRODUCERS</span>
           </div>
           <span className="text-[#9E7208]">CONTINUOUS SURVEILLANCE & MARKET INTELLIGENCE</span>
         </div>

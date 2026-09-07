@@ -15,7 +15,7 @@ export const ContactInformation: React.FC = () => {
   };
 
   return (
-    <section className="pt-8 pb-8 sm:pt-12 sm:pb-10">
+    <section className="pt-4 pb-6 sm:pt-6 sm:pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-2xl bg-white shadow-[0_0_60px_30px_rgba(0,0,0,0.04)] lg:grid lg:grid-cols-[360px_1fr]">
           {/* Left Column (360px): Navy card */}

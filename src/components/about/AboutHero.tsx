@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useRef, useState, useEffect } from "react";
-import { Volume2, VolumeX } from "lucide-react";
 
 export const AboutHero: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [isMuted, setIsMuted] = useState(true);
   const [videoLoaded, setVideoLoaded] = useState(false);
 
   useEffect(() => {
@@ -15,13 +13,6 @@ export const AboutHero: React.FC = () => {
       });
     }
   }, []);
-
-  const toggleSound = () => {
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-    }
-  };
 
   return (
     <section className="relative w-full overflow-hidden bg-[#081121] min-h-[75vh] sm:min-h-[82vh] lg:min-h-[88vh] flex items-end select-none">
@@ -33,7 +24,7 @@ export const AboutHero: React.FC = () => {
           ref={videoRef}
           autoPlay
           loop
-          muted={isMuted}
+          muted
           playsInline
           preload="auto"
           poster="/about/open-pit-golden-hour.png"
@@ -85,28 +76,6 @@ export const AboutHero: React.FC = () => {
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Subtle Audio Toggle Control at Bottom Right */}
-        <div className="mt-8 flex justify-end">
-          <button
-            onClick={toggleSound}
-            type="button"
-            className="inline-flex items-center gap-2 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white/80 hover:text-white transition-all backdrop-blur-md"
-            aria-label={isMuted ? "Unmute video" : "Mute video"}
-          >
-            {isMuted ? (
-              <>
-                <VolumeX className="size-3.5 text-[#B8860B]" />
-                <span>Sound Off</span>
-              </>
-            ) : (
-              <>
-                <Volume2 className="size-3.5 text-[#B8860B]" />
-                <span>Sound On</span>
-              </>
-            )}
-          </button>
         </div>
       </div>
     </section>

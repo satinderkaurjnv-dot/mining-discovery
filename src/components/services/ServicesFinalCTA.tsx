@@ -269,7 +269,7 @@ export const ServicesFinalCTA: React.FC = () => {
         {/* Stage 5: Primary Call to Action */}
         <div data-about-reveal className={`mt-10 md:mt-14 ${HIDDEN_RISE}`}>
           <Link
-            href="/#contact"
+            href="/contact"
             className="group relative inline-flex items-center gap-3 font-sans text-sm font-semibold tracking-[0.18em] uppercase text-[#F7F5EF] transition-colors duration-300 hover:text-[#D4AF37] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0B1F3A] sm:text-base"
           >
             <span>START A CONVERSATION</span>

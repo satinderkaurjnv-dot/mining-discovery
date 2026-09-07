@@ -33,7 +33,7 @@ export const AboutLookingAhead: React.FC = () => {
                 Explore Services
               </Link>
               <Link
-                href="/#contact"
+                href="/contact"
                 className="inline-flex items-center justify-center rounded-xl border-2 border-white/20 hover:border-[#B8860B] hover:bg-white/5 px-8 sm:px-12 py-4 text-xs sm:text-sm font-black tracking-widest text-white uppercase transition-all duration-200 hover:scale-105 active:scale-95"
               >
                 Get in Touch

@@ -19,7 +19,7 @@ const navLinks = [
   { name: "Services", href: "/services" },
   { name: "Companies", href: "/#trusted-by" },
   { name: "Submit News", href: "/#submit-news" },
-  { name: "Contact", href: "/#contact" },
+  { name: "Contact", href: "/contact" },
 ];
 
 export const Header: React.FC = () => {

@@ -67,7 +67,7 @@ export const Header: React.FC = () => {
             height={85}
             priority
             loading="eager"
-            className="h-9 sm:h-11 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-102"
+            className="h-[44px] sm:h-[48px] md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-102"
           />
         </Link>
 
@@ -129,10 +129,10 @@ export const Header: React.FC = () => {
                   <Image
                     src="/logo.png"
                     alt="Mining Discovery"
-                    width={160}
-                    height={60}
+                    width={180}
+                    height={70}
                     loading="eager"
-                    className="h-8 w-auto object-contain"
+                    className="h-10 sm:h-11 w-auto object-contain"
                   />
                 </Link>
                 <button

@@ -313,7 +313,7 @@ export const ServicesScrollStory: React.FC = () => {
       {/* -------------------------------------------------------------------- */}
       {/* SECTION HEADER (EDITORIAL INTRODUCTION)                              */}
       {/* -------------------------------------------------------------------- */}
-      <div className="container-editorial relative z-10 pt-20 lg:pt-28 pb-10 lg:pb-14">
+      <div className="container-editorial relative z-10 pt-6 lg:pt-8 pb-3 lg:pb-4">
         <div className="max-w-3xl">
           <motion.div
             initial={reduceMotion ? {} : { opacity: 0, y: 15 }}
@@ -333,7 +333,7 @@ export const ServicesScrollStory: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-4 font-serif text-3xl sm:text-4xl lg:text-5xl font-normal leading-[1.1] text-[#0B1F3A]"
+            className="mt-3 font-serif text-3xl sm:text-4xl lg:text-5xl font-normal leading-[1.1] text-[#0B1F3A]"
           >
             From initial ground discovery to global capital markets.
           </motion.h2>
@@ -343,7 +343,7 @@ export const ServicesScrollStory: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-4 text-base sm:text-lg leading-relaxed text-[#57595E]"
+            className="mt-3 text-base sm:text-lg leading-relaxed text-[#57595E]"
           >
             We provide full-lifecycle media, branding, public relations, and enterprise digital solutions designed specifically for junior explorers, developers, and global mining producers.
           </motion.p>
@@ -357,7 +357,7 @@ export const ServicesScrollStory: React.FC = () => {
         ref={containerRef}
         className="hidden lg:block relative h-[700vh]"
       >
-        <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden z-20 pt-16 lg:pt-20">
+        <div className="sticky top-0 h-screen w-full flex items-center overflow-hidden z-20 pt-4 lg:pt-6">
           <div className="container-editorial w-full relative">
             {/* Interactive Vertical Stage Indicator & Prev/Next Controls */}
             <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-end gap-5 z-40 bg-white/70 backdrop-blur-xs p-2 rounded-xl border border-[#E5E5E3] shadow-xs">

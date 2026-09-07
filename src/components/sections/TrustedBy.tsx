@@ -144,7 +144,7 @@ export const TrustedBy: React.FC = () => {
       id="trusted-by"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      className="relative pt-12 pb-16 sm:pt-14 sm:pb-20 lg:pt-16 lg:pb-22 bg-[#F4F4F2] border-b border-[#E5E5E3] overflow-x-clip font-sans select-none"
+      className="relative pt-12 pb-8 sm:pt-14 sm:pb-10 lg:pt-14 lg:pb-12 bg-[#F4F4F2] border-b border-[#E5E5E3] overflow-x-clip font-sans select-none"
     >
       {/* -------------------------------------------------------------------- */}
       {/* CSS KEYFRAMES: 3-ROW CONVEYOR STREAMS & HOVER BEHAVIORS              */}

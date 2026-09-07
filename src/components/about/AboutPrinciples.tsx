@@ -39,13 +39,13 @@ export const AboutPrinciples: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {PRINCIPLES.map((principle) => (
             <div
               key={principle.title}
-              className="hover:border-[#B8860B] rounded-2xl border border-gray-100 bg-gray-50/40 p-6 sm:p-8 transition-colors duration-300 hover:shadow-md"
+              className="hover:border-[#B8860B] rounded-2xl border border-gray-100 bg-gray-50/40 p-5 sm:p-7 transition-colors duration-300 hover:shadow-md"
             >
-              <h4 className="text-[#081121] mb-3 text-lg font-black tracking-tighter uppercase">
+              <h4 className="text-[#081121] mb-2 sm:mb-3 text-base sm:text-lg font-black tracking-tighter uppercase">
                 {principle.title}
               </h4>
               <p className="text-xs leading-relaxed font-bold text-gray-600">

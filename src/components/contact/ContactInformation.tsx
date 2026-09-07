@@ -30,38 +30,38 @@ export const ContactInformation: React.FC = () => {
 
         <div className="overflow-hidden rounded-2xl bg-white shadow-[0_0_60px_30px_rgba(0,0,0,0.04)] lg:grid lg:grid-cols-[360px_1fr]">
           {/* Left Column (360px): Navy card */}
-          <div className="relative overflow-hidden bg-[#081121] px-10 py-12">
+          <div className="relative overflow-hidden bg-[#081121] p-6 sm:p-8 lg:px-10 lg:py-12">
             <div className="pointer-events-none absolute -bottom-16 -right-16 size-64 rounded-full bg-white/5" />
             <div className="pointer-events-none absolute -bottom-8 -right-8 size-44 rounded-full bg-white/5" />
 
             <div className="relative z-10 flex h-full flex-col">
-              <div className="mb-10">
+              <div className="mb-6 sm:mb-10">
                 <h2 className="text-xl font-semibold text-white">Contact Information</h2>
                 <p className="mt-2 text-sm text-white/50">Say something to start a live chat!</p>
               </div>
 
-              <div className="flex flex-col gap-7">
+              <div className="flex flex-col gap-6 sm:gap-7">
                 {/* Email */}
-                <div className="flex items-start gap-5">
+                <div className="flex items-start gap-4 sm:gap-5">
                   <Mail className="mt-0.5 size-5 shrink-0 text-[#B8860B]" />
                   <a
                     href="mailto:info@miningdiscovery.com"
-                    className="text-sm text-white transition-colors hover:text-[#B8860B]"
+                    className="text-sm text-white transition-colors hover:text-[#B8860B] break-all"
                   >
                     info@miningdiscovery.com
                   </a>
                 </div>
 
                 {/* Address */}
-                <div className="flex items-start gap-5">
+                <div className="flex items-start gap-4 sm:gap-5">
                   <MapPin className="mt-0.5 size-5 shrink-0 text-[#B8860B]" />
-                  <p className="text-sm text-white">180 Layfatte street Passaic New Jersey 07055</p>
+                  <p className="text-sm text-white leading-relaxed">180 Layfatte street Passaic New Jersey 07055</p>
                 </div>
               </div>
 
               {/* Social Icons */}
-              <div className="mt-auto pt-16">
-                <div className="flex items-center gap-3">
+              <div className="mt-8 lg:mt-auto pt-6 lg:pt-16 border-t border-white/10 lg:border-t-0">
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
                   <a
                     href="https://www.facebook.com/share/17woBUaJqG/?mibextid=wwXIfr"
                     target="_blank"
@@ -134,7 +134,7 @@ export const ContactInformation: React.FC = () => {
           </div>
 
           {/* Right Column: Form */}
-          <div className="flex items-center px-10 py-12 lg:px-14">
+          <div className="flex items-center p-6 sm:p-10 lg:px-14 lg:py-12">
             <div className="w-full">
               {submitted ? (
                 <div className="text-center py-8">

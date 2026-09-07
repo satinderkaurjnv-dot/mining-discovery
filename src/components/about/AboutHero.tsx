@@ -15,7 +15,7 @@ export const AboutHero: React.FC = () => {
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#081121] min-h-[75vh] sm:min-h-[82vh] lg:min-h-[88vh] flex items-end select-none">
+    <section className="relative w-full overflow-hidden bg-[#081121] min-h-[70vh] sm:min-h-[82vh] lg:min-h-[88vh] flex items-end select-none">
       {/* -------------------------------------------------------------------- */}
       {/* 01. FULL-BLEED CINEMATIC BACKGROUND VIDEO                           */}
       {/* -------------------------------------------------------------------- */}
@@ -53,15 +53,15 @@ export const AboutHero: React.FC = () => {
       {/* -------------------------------------------------------------------- */}
       {/* 02. HERO CONTENT OVERLAY (MATCHING UNITED CARRIERS EDITORIAL STYLE)   */}
       {/* -------------------------------------------------------------------- */}
-      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-14 sm:pb-16 lg:pb-20">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-end">
+      <div className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 pb-10 sm:pb-16 lg:pb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-12 items-end">
           {/* Left Column: Big Bold Typography */}
           <div className="lg:col-span-8">
-            <p className="text-sm sm:text-base md:text-lg font-medium text-white/90 mb-3 tracking-wide">
+            <p className="text-xs sm:text-base md:text-lg font-medium text-white/90 mb-2 sm:mb-3 tracking-wide">
               Your trusted partner for
             </p>
 
-            <h1 className="font-sans text-[clamp(2.5rem,6.2vw,5.5rem)] font-black uppercase leading-[0.94] tracking-tighter text-white">
+            <h1 className="font-sans text-[clamp(2.1rem,7.4vw,5.5rem)] font-black uppercase leading-[0.94] tracking-tighter text-white">
               <span className="block">GLOBAL MINING</span>
               <span className="block text-white">MEDIA &amp;</span>
               <span className="block text-[#B8860B]">INTELLIGENCE</span>
@@ -70,8 +70,8 @@ export const AboutHero: React.FC = () => {
 
           {/* Right Column: Narrative Summary with Gold Border Line */}
           <div className="lg:col-span-4 lg:pb-2">
-            <div className="border-l-2 border-[#B8860B] pl-5 sm:pl-6 backdrop-blur-xs">
-              <p className="text-sm sm:text-base leading-relaxed font-medium text-white/85">
+            <div className="border-l-2 border-[#B8860B] pl-4 sm:pl-6 backdrop-blur-xs">
+              <p className="text-xs sm:text-base leading-relaxed font-medium text-white/85">
                 Your trusted partner in global mining intelligence, exploration news, and corporate storytelling — combining deep industry reach with powerful digital marketing to deliver visibility across the resources sector.
               </p>
             </div>

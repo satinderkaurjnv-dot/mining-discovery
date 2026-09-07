@@ -39,8 +39,31 @@ export const AboutUnique: React.FC = () => {
           </div>
         </div>
 
-        <div className="mt-8 mx-auto max-w-5xl overflow-x-auto rounded-3xl border border-gray-100 bg-white shadow-xl">
-          <table className="min-w-[600px] w-full border-collapse text-left">
+        {/* Mobile View: Stacked Responsive Cards (< sm) */}
+        <div className="mt-6 flex flex-col gap-4 sm:hidden">
+          {UNIQUE_ITEMS.map((item, idx) => (
+            <div
+              key={item.feature}
+              className="rounded-2xl border border-gray-100 bg-white p-5 shadow-md"
+            >
+              <div className="flex items-center gap-2 mb-2">
+                <span className="font-mono text-[10px] font-bold text-[#B8860B] bg-[#B8860B]/10 px-2 py-0.5 rounded-full">
+                  0{idx + 1}
+                </span>
+                <h3 className="text-[#081121] font-black uppercase text-sm tracking-tight">
+                  {item.feature}
+                </h3>
+              </div>
+              <p className="text-xs leading-relaxed font-medium text-gray-600 pl-7">
+                {item.why}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Tablet & Desktop View: Clean Table (sm+) */}
+        <div className="mt-8 mx-auto max-w-5xl hidden sm:block overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-xl">
+          <table className="w-full border-collapse text-left">
             <thead>
               <tr className="bg-[#081121] text-white">
                 <th className="p-6 sm:p-8 text-xs sm:text-sm font-black tracking-widest uppercase">

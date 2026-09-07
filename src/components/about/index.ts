@@ -7,3 +7,4 @@ export { AboutPrinciples } from "./AboutPrinciples";
 export { AboutUnique } from "./AboutUnique";
 export { AboutLookingAhead } from "./AboutLookingAhead";
 export { AboutTrustedBrands } from "./AboutTrustedBrands";
+export * from "./reveal";

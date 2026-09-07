@@ -48,11 +48,8 @@ export const SmoothScroll: React.FC<SmoothScrollProps> = ({ children }) => {
       lerp: 0.085,
       smoothWheel: true,
       wheelMultiplier: 1,
-      // Touch is left on the platform's own momentum. Lenis only synthesises touch
-      // scrolling when syncTouch is on, and a synthesised curve competes with iOS's
-      // native rubber-banding rather than replacing it — reliably worse than leaving it.
       syncTouch: false,
-      touchMultiplier: 1.5,
+      touchMultiplier: 1,
     });
 
     lenisRef.current = lenis;
@@ -68,7 +65,7 @@ export const SmoothScroll: React.FC<SmoothScrollProps> = ({ children }) => {
     };
 
     gsap.ticker.add(updateGSAP);
-    gsap.ticker.lagSmoothing(0);
+    gsap.ticker.lagSmoothing(500, 33);
 
     return () => {
       gsap.ticker.remove(updateGSAP);

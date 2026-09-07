@@ -207,15 +207,16 @@ export function UnitedCarriersGlobe({
 
     const width = container.clientWidth || 700;
     const height = container.clientHeight || 700;
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
     // WebGL Renderer
     const renderer = new THREE.WebGLRenderer({
       canvas,
       alpha: true,
-      antialias: true,
+      antialias: !isMobile, // Disable MSAA on mobile for massive fillrate speedup
       powerPreference: "high-performance",
     });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.75));
     renderer.setSize(width, height, false);
     renderer.setClearColor(0x000000, 0);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -587,15 +588,30 @@ export function UnitedCarriersGlobe({
     };
     container.addEventListener("pointermove", onContainerPointerMove, { passive: true });
 
-    // Render Animation Loop
+    // Render Animation Loop with Viewport Visibility Observer
     let lastTime = performance.now();
     let lastReportedCountryIdx = -1;
     let currentLockedCountryIdx = 0;
     const tempWorldPos = new THREE.Vector3();
 
+    let isVisible = true;
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible && !isDisposed) {
+          lastTime = performance.now();
+        }
+      },
+      { rootMargin: "150px" }
+    );
+    visibilityObserver.observe(container);
+
     const animate = () => {
       if (isDisposed) return;
       animId = requestAnimationFrame(animate);
+
+      // Skip GPU draw calls completely when offscreen!
+      if (!isVisible) return;
 
       const now = performance.now();
       const delta = (now - lastTime) / 1000;
@@ -766,6 +782,7 @@ export function UnitedCarriersGlobe({
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", handleResize);
       resizeObserver.disconnect();
+      visibilityObserver.disconnect();
       container.removeEventListener("pointerdown", onPointerDown);
       container.removeEventListener("pointermove", onPointerMove);
       container.removeEventListener("pointermove", onContainerPointerMove);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from "framer-motion";
@@ -40,11 +40,25 @@ export const MiningTruckStory: React.FC = () => {
 
   const [scrollVal, setScrollVal] = useState(0);
 
-  smoothProgress.on("change", (latest) => {
-    setScrollVal(latest);
-  });
+  useEffect(() => {
+    let lastTime = 0;
+    let lastSp = 0;
+
+    const unsubscribe = smoothProgress.on("change", (latest) => {
+      const now = performance.now();
+      // Only trigger React state re-render if value moved significantly or at max 24fps
+      if (Math.abs(latest - lastSp) > 0.008 || now - lastTime > 40) {
+        lastTime = now;
+        lastSp = latest;
+        setScrollVal(latest);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [smoothProgress]);
 
   const handleTelemetry = useCallback((state: TelemetryState) => {
+    // Light telemetry update without heavy state thrashing
     setTelemetry(state);
   }, []);
 

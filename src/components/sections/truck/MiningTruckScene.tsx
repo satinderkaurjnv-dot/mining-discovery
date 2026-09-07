@@ -51,16 +51,17 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
       targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
       targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
     };
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+    const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
 
     // --- WebGL Renderer Setup ------------------------------------------------
     const renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
+      antialias: !isMobile,
       alpha: true,
       powerPreference: "high-performance",
     });
 
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 1.75));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
@@ -169,6 +170,19 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
     let prevTime = performance.now();
     let prevPosition = new THREE.Vector3();
     const bucketScoopPos = new THREE.Vector3();
+    let lastReportedSp = -1;
+
+    let isVisible = true;
+    const visibilityObserver = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible && isRunning) {
+          prevTime = performance.now();
+        }
+      },
+      { rootMargin: "150px" }
+    );
+    visibilityObserver.observe(canvas);
 
     // =======================================================================
     // RENDER LOOP — VEHICLE SWAP AT CAVE EXIT (sp = 0.45) & TOP-DOWN CAMERA LERP (sp >= 0.65)
@@ -180,6 +194,9 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
       }
 
       animId = requestAnimationFrame(renderFrame);
+
+      // Skip GPU rendering completely when offscreen!
+      if (!isVisible) return;
 
       const delta = Math.min((timestamp - prevTime) / 1000, 0.1);
       prevTime = timestamp;
@@ -257,32 +274,35 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
         camera.updateProjectionMatrix();
       }
 
-      // 3. Timeline Phase Sync & Telemetry
-      const phase = MiningTimeline.getPhase(sp);
+      // 3. Timeline Phase Sync & Telemetry (throttled to avoid state spam)
+      if (Math.abs(sp - lastReportedSp) > 0.008) {
+        lastReportedSp = sp;
+        const phase = MiningTimeline.getPhase(sp);
 
-      telemetryRef.current?.({
-        progress: sp,
-        speedKmh: phase.speedKmh,
-        gear: phase.gear,
-        payloadTons: Math.round(320 + sp * 80),
-        heading: "NORTH-WEST 314°",
-        coordinates: {
-          lat: "52° 21' 44\" N",
-          lng: "121° 54' 18\" W",
-          elevation: `${Math.round(1420 - sp * 180)}m EL`,
-        },
-        scanningActive: phase.isScanning,
-        discoveryActive: phase.isDiscovered,
-        scanDepthMeters: phase.isScanning ? 580 : 0,
-        detectedDeposit: phase.isDiscovered
-          ? {
-              mineral: "Native Gold-Quartz Seam",
-              grade: "42.8 g/t Au (High-Grade)",
-              width: "18.5m True Thickness",
-              confidence: "99.4% Verified",
-            }
-          : undefined,
-      });
+        telemetryRef.current?.({
+          progress: sp,
+          speedKmh: phase.speedKmh,
+          gear: phase.gear,
+          payloadTons: Math.round(320 + sp * 80),
+          heading: "NORTH-WEST 314°",
+          coordinates: {
+            lat: "52° 21' 44\" N",
+            lng: "121° 54' 18\" W",
+            elevation: `${Math.round(1420 - sp * 180)}m EL`,
+          },
+          scanningActive: phase.isScanning,
+          discoveryActive: phase.isDiscovered,
+          scanDepthMeters: phase.isScanning ? 580 : 0,
+          detectedDeposit: phase.isDiscovered
+            ? {
+                mineral: "Native Gold-Quartz Seam",
+                grade: "42.8 g/t Au (High-Grade)",
+                width: "18.5m True Thickness",
+                confidence: "99.4% Verified",
+              }
+            : undefined,
+        });
+      }
 
       renderer.render(scene, camera);
     };
@@ -292,6 +312,7 @@ export const MiningTruckScene: React.FC<MiningTruckSceneProps> = ({
     return () => {
       isRunning = false;
       if (animId) cancelAnimationFrame(animId);
+      visibilityObserver.disconnect();
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("resize", handleResize);
 

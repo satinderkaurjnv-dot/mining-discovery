@@ -94,7 +94,7 @@ export const OrbitTooltips: React.FC<OrbitTooltipsProps> = ({
 
             {/* Hover Tooltip Popup */}
             <div
-              className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-[#0B1F3A]/95 text-white border border-[#D4AF37]/50 rounded-lg shadow-xl backdrop-blur-md whitespace-nowrap transition-all duration-200 pointer-events-none ${
+              className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-[#081121]/95 text-white border border-[#D4AF37]/50 rounded-lg shadow-xl backdrop-blur-md whitespace-nowrap transition-all duration-200 pointer-events-none ${
                 isHovered
                   ? "opacity-100 translate-y-0 scale-100"
                   : "opacity-0 translate-y-1 scale-95"
@@ -112,7 +112,7 @@ export const OrbitTooltips: React.FC<OrbitTooltipsProps> = ({
               </div>
               
               {/* Tooltip Down Arrow */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#0B1F3A]" />
+              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-[#081121]" />
             </div>
           </div>
         );

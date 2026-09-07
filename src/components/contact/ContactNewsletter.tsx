@@ -27,7 +27,7 @@ export const ContactNewsletter: React.FC = () => {
   };
 
   return (
-    <section id="newsletter" className="bg-[#0B1F3A] relative w-full overflow-hidden py-20 text-white">
+    <section id="newsletter" className="bg-[#081121] relative w-full overflow-hidden py-20 text-white">
       {/* Background radial gold glow effect */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute top-0 left-1/2 aspect-square w-[200%] max-w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,#B8860B1F_0%,transparent_70%)]" />
@@ -100,7 +100,7 @@ export const ContactNewsletter: React.FC = () => {
 
               {/* Subscribe Now Button */}
               <button
-                className="inline-flex items-center justify-center font-bold uppercase transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 bg-[#B8860B] text-[#0B1F3A] hover:bg-[#A88848] hover:scale-105 active:scale-95 h-14 px-8 text-sm sm:text-base rounded-lg w-full shrink-0 sm:w-auto shadow-lg"
+                className="inline-flex items-center justify-center font-bold uppercase transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 bg-[#B8860B] text-[#081121] hover:bg-[#A88848] hover:scale-105 active:scale-95 h-14 px-8 text-sm sm:text-base rounded-lg w-full shrink-0 sm:w-auto shadow-lg"
                 type="submit"
               >
                 Subscribe Now

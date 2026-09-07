@@ -215,7 +215,7 @@ export const ServicesTrustedBrands: React.FC = () => {
             Trusted by the Industry
           </span>
 
-          <h2 className="mt-8 text-balance font-geist text-[clamp(1.875rem,4.2vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.03em] text-[#0B1F3A]">
+          <h2 className="mt-8 text-balance font-geist text-[clamp(1.875rem,4.2vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.03em] text-[#081121]">
             {HEADING_LINES.map((line) => (
               <span key={line} className="block">
                 <MaskedWords text={line} />
@@ -340,7 +340,7 @@ export const ServicesTrustedBrands: React.FC = () => {
             {CATEGORIES.map((word) => (
               <span
                 key={word}
-                className="text-xs font-semibold uppercase tracking-[0.2em] text-[#0B1F3A]/35"
+                className="text-xs font-semibold uppercase tracking-[0.2em] text-[#081121]/35"
               >
                 {word}
               </span>
@@ -352,7 +352,7 @@ export const ServicesTrustedBrands: React.FC = () => {
               <div key={copy} aria-hidden={copy === 1} className="flex items-center">
                 {CATEGORIES.map((word) => (
                   <span key={word} className="flex items-center">
-                    <span className="whitespace-nowrap px-8 text-xs font-semibold uppercase tracking-[0.2em] text-[#0B1F3A]/35">
+                    <span className="whitespace-nowrap px-8 text-xs font-semibold uppercase tracking-[0.2em] text-[#081121]/35">
                       {word}
                     </span>
                     <span aria-hidden="true" className="h-1 w-1 rounded-full bg-[#B8860B]/50" />

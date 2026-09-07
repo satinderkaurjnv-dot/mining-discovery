@@ -187,7 +187,7 @@ const CardPhoto: React.FC<{
       sizes="(min-width: 1024px) 26rem, (min-width: 640px) 28rem, 100vw"
       className="object-cover object-center"
     />
-    <span aria-hidden="true" className="absolute inset-0 bg-[#0B1F3A]/15" />
+    <span aria-hidden="true" className="absolute inset-0 bg-[#081121]/15" />
     <span
       aria-hidden="true"
       className="absolute inset-x-0 bottom-0 h-14"
@@ -430,7 +430,7 @@ export const ServicesShowcase: React.FC = () => {
        * overflow-x-clip, NOT overflow-hidden — see the note at the top of this file. This is
        * an ancestor of the sticky stage, and `hidden` here would silently stop it pinning.
        */
-      className="relative overflow-x-clip bg-[#0B1F3A] text-white"
+      className="relative overflow-x-clip bg-[#081121] text-white"
     >
       {/* The same dot grain the other sections carry, inverted for a dark ground. */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(#FFF_1px,transparent_1px)] opacity-[0.035] [background-size:16px_16px]" />
@@ -535,7 +535,7 @@ export const ServicesShowcase: React.FC = () => {
                         <span className="h-px w-12 bg-[#B8860B]/50" />
                       </div>
 
-                      <h3 className="font-geist text-[3.25rem] font-black uppercase leading-[0.92] tracking-[-0.035em] text-[#0B1F3A]">
+                      <h3 className="font-geist text-[3.25rem] font-black uppercase leading-[0.92] tracking-[-0.035em] text-[#081121]">
                         {group.name}
                       </h3>
 
@@ -543,7 +543,7 @@ export const ServicesShowcase: React.FC = () => {
                         {group.front.map((item) => (
                           <li
                             key={item}
-                            className="border-t border-[#0B1F3A]/12 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#3A3D42]"
+                            className="border-t border-[#081121]/12 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#3A3D42]"
                           >
                             {item}
                           </li>
@@ -590,7 +590,7 @@ export const ServicesShowcase: React.FC = () => {
                         {group.name}
                       </h3>
 
-                      <p className="mt-5 font-serif text-[clamp(1.5rem,2.4vw,2rem)] font-normal leading-[1.15] tracking-[-0.015em] text-[#0B1F3A]">
+                      <p className="mt-5 font-serif text-[clamp(1.5rem,2.4vw,2rem)] font-normal leading-[1.15] tracking-[-0.015em] text-[#081121]">
                         {group.description}
                       </p>
                     </div>
@@ -599,7 +599,7 @@ export const ServicesShowcase: React.FC = () => {
                         {group.back.map((item) => (
                           <li
                             key={item}
-                            className="border-t border-[#0B1F3A]/12 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#3A3D42]"
+                            className="border-t border-[#081121]/12 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#3A3D42]"
                           >
                             {item}
                           </li>

@@ -119,7 +119,7 @@ export const Hero: React.FC<HeroProps> = ({
           <StarfieldBackground disabled={!enableStarfield} />
 
           {/* CLEAN BASE BACKGROUND GRADIENT (NO OBSTRUCTING SHAPE ARTIFACTS) */}
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0B1220] via-[#0B1F3A] to-[#061224] -z-20" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0B1220] via-[#081121] to-[#061224] -z-20" />
 
           {/* AMBIENT GOLD GLOW PULSE WITH CURSOR PARALLAX */}
           <div
@@ -239,7 +239,7 @@ export const Hero: React.FC<HeroProps> = ({
                         variant="gold"
                         size="lg"
                         fullWidth
-                        className="font-sans font-semibold tracking-wide text-[#0B1F3A] bg-[#B8860B] hover:bg-[#D4AF37] shadow-[0_0_25px_rgba(184,134,11,0.35)] hover:shadow-[0_0_35px_rgba(212,175,55,0.5)] transition-all group cursor-pointer px-6 sm:px-7 py-3 sm:py-3.5 text-sm sm:text-base justify-center"
+                        className="font-sans font-semibold tracking-wide text-[#081121] bg-[#B8860B] hover:bg-[#D4AF37] shadow-[0_0_25px_rgba(184,134,11,0.35)] hover:shadow-[0_0_35px_rgba(212,175,55,0.5)] transition-all group cursor-pointer px-6 sm:px-7 py-3 sm:py-3.5 text-sm sm:text-base justify-center"
                       >
                         Submit Your News
                         <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />

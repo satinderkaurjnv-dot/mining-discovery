@@ -55,7 +55,7 @@ const CompanyLogo: React.FC<{ company: Company; nodeIndex: number }> = ({ compan
 
   if (!logoAvailable) {
     return (
-      <span className="text-center font-sans text-xs sm:text-sm font-bold tracking-tight text-[#0B1F3A] uppercase px-3">
+      <span className="text-center font-sans text-xs sm:text-sm font-bold tracking-tight text-[#081121] uppercase px-3">
         {company.name}
       </span>
     );
@@ -292,10 +292,10 @@ export const TrustedBy: React.FC = () => {
               initial={reduceMotion ? {} : { y: 40, opacity: 0 }}
               animate={isInView ? { y: 0, opacity: 1 } : {}}
               transition={{ duration: 0.8, delay: 0.25, ease: "easeOut" }}
-              className="font-geist text-[clamp(1.85rem,3.8vw,3.25rem)] font-black uppercase leading-[0.94] tracking-[-0.03em] text-[#0B1F3A]"
+              className="font-geist text-[clamp(1.85rem,3.8vw,3.25rem)] font-black uppercase leading-[0.94] tracking-[-0.03em] text-[#081121]"
             >
               <span className="inline-block">Featured</span>
-              <span className="inline-block ml-2.5 sm:ml-3 text-[#0B1F3A]">Companies</span>
+              <span className="inline-block ml-2.5 sm:ml-3 text-[#081121]">Companies</span>
             </motion.h2>
 
             {/* Down-left Arrow: translate(-15px, -15px) -> (0,0) */}
@@ -307,11 +307,11 @@ export const TrustedBy: React.FC = () => {
               focusable="false"
               viewBox="0 0 48 48"
               fill="none"
-              stroke="#0B1F3A"
+              stroke="#081121"
               strokeWidth="4"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="mb-1 h-[clamp(1.3rem,2.4vw,2.1rem)] w-auto shrink-0 text-[#0B1F3A]"
+              className="mb-1 h-[clamp(1.3rem,2.4vw,2.1rem)] w-auto shrink-0 text-[#081121]"
             >
               <path d="M40 8 10 38" />
               <path d="M10 14.5V38h23.5" />

@@ -36,7 +36,7 @@ import {
  * - Primary CTA:
  *     START A CONVERSATION → (linking to /#contact)
  * - Visual style:
- *     Dark navy (#0B1F3A) with subtle topographic/geological contour SVG background,
+ *     Dark navy (#081121) with subtle topographic/geological contour SVG background,
  *     staggered masked-text reveal timeline, and gentle mouse parallax when enabled.
  */
 
@@ -128,7 +128,7 @@ export const ServicesFinalCTA: React.FC = () => {
     <section
       ref={sectionRef}
       aria-label="Final Call to Action"
-      className="relative w-full overflow-hidden bg-[#0B1F3A] py-28 text-white md:py-40 lg:py-48"
+      className="relative w-full overflow-hidden bg-[#081121] py-28 text-white md:py-40 lg:py-48"
     >
       {/* --- GEOLOGICAL / TOPOGRAPHIC BACKGROUND VISUAL --- */}
       <div
@@ -270,7 +270,7 @@ export const ServicesFinalCTA: React.FC = () => {
         <div data-about-reveal className={`mt-10 md:mt-14 ${HIDDEN_RISE}`}>
           <Link
             href="/contact"
-            className="group relative inline-flex items-center gap-3 font-sans text-sm font-semibold tracking-[0.18em] uppercase text-[#F7F5EF] transition-colors duration-300 hover:text-[#D4AF37] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-4 focus-visible:ring-offset-[#0B1F3A] sm:text-base"
+            className="group relative inline-flex items-center gap-3 font-sans text-sm font-semibold tracking-[0.18em] uppercase text-[#F7F5EF] transition-colors duration-300 hover:text-[#D4AF37] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-4 focus-visible:ring-offset-[#081121] sm:text-base"
           >
             <span>START A CONVERSATION</span>
             <ArrowRight className="h-5 w-5 text-[#B8860B] transition-transform duration-300 group-hover:translate-x-1.5 group-hover:text-[#D4AF37]" />

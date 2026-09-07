@@ -4,7 +4,7 @@
   --color-background: #FAFAF9;
   --color-foreground: #1A1D21;
   
-  --color-navy: #0B1F3A;
+  --color-navy: #081121;
   --color-navy-dark: #061224;
   --color-navy-light: #162E50;
   --color-navy-subtle: #F0F4F8;
@@ -230,7 +230,7 @@ nextjs-portal,
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #0B1F3A;
+  background: #081121;
 }
 
 

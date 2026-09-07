@@ -124,7 +124,7 @@ export const GlobeHero: React.FC = () => {
   const copyOpacity = Math.max(0, 1 - scrollProgress * 14);
 
   return (
-    <section className="relative w-full bg-[#DFE7F3] text-[#0B1F3A]">
+    <section className="relative w-full bg-[#DFE7F3] text-[#081121]">
       {/* Soft Blurry Atmospheric Background Image */}
       <div
         aria-hidden="true"
@@ -174,11 +174,11 @@ export const GlobeHero: React.FC = () => {
         </div>
 
         {/* Main Headline */}
-        <h1 className="hero-rise [animation-delay:160ms] mt-4 sm:mt-5 max-w-[1140px] font-geist text-[clamp(2.05rem,7.4vw,5.6rem)] font-extrabold uppercase leading-[0.98] tracking-[-0.03em] text-[#0B1F3A] break-words">
+        <h1 className="hero-rise [animation-delay:160ms] mt-4 sm:mt-5 max-w-[1140px] font-geist text-[clamp(2.05rem,7.4vw,5.6rem)] font-extrabold uppercase leading-[0.98] tracking-[-0.03em] text-[#081121] break-words">
           MAKE YOUR MINING<br />
-          <span className="text-[#0B1F3A]">STORY IMPOSSIBLE TO</span><br />
+          <span className="text-[#081121]">STORY IMPOSSIBLE TO</span><br />
           <span className="relative inline-block">
-            <span className="bg-gradient-to-r from-[#0B1F3A] via-[#8C6507] to-[#0B1F3A] bg-clip-text text-transparent">IGNORE.</span>
+            <span className="bg-gradient-to-r from-[#081121] via-[#8C6507] to-[#081121] bg-clip-text text-transparent">IGNORE.</span>
             <span className="absolute -bottom-1 left-0 right-0 h-[2.5px] rounded-full bg-gradient-to-r from-transparent via-[#B8860B]/50 to-transparent" />
           </span>
         </h1>
@@ -201,10 +201,10 @@ export const GlobeHero: React.FC = () => {
 
           <Link
             href="/#services"
-            className="group relative inline-flex items-center justify-center gap-2.5 rounded-lg border border-[#0B1F3A]/25 bg-white/60 backdrop-blur-md px-6 py-3.5 sm:px-8 sm:py-4 font-sans text-[12.5px] sm:text-[13px] font-semibold uppercase tracking-[0.09em] text-[#0B1F3A] shadow-xs transition-all duration-300 hover:border-[#B8860B] hover:bg-white/90 hover:text-[#0B1F3A] hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 min-h-[46px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0B1F3A] focus-visible:ring-offset-2"
+            className="group relative inline-flex items-center justify-center gap-2.5 rounded-lg border border-[#081121]/25 bg-white/60 backdrop-blur-md px-6 py-3.5 sm:px-8 sm:py-4 font-sans text-[12.5px] sm:text-[13px] font-semibold uppercase tracking-[0.09em] text-[#081121] shadow-xs transition-all duration-300 hover:border-[#B8860B] hover:bg-white/90 hover:text-[#081121] hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 min-h-[46px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#081121] focus-visible:ring-offset-2"
           >
             <span className="relative z-10">EXPLORE OUR SERVICES</span>
-            <ArrowRight className="relative z-10 h-4 w-4 text-[#0B1F3A] transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[#B8860B]" />
+            <ArrowRight className="relative z-10 h-4 w-4 text-[#081121] transition-transform duration-300 group-hover:translate-x-1 group-hover:text-[#B8860B]" />
           </Link>
         </div>
 
@@ -271,7 +271,7 @@ export const GlobeHero: React.FC = () => {
                 ${isTourActive ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6 pointer-events-none"}
               `}
             >
-              <div className="pointer-events-auto w-full max-w-[calc(100vw-1.5rem)] sm:max-w-md rounded-2xl border border-[#B8860B]/45 bg-[#0B1F3A]/92 p-3.5 sm:p-5 backdrop-blur-xl shadow-2xl shadow-black/70 transition-all duration-300 hover:border-[#FFAE00]/70">
+              <div className="pointer-events-auto w-full max-w-[calc(100vw-1.5rem)] sm:max-w-md rounded-2xl border border-[#B8860B]/45 bg-[#081121]/92 p-3.5 sm:p-5 backdrop-blur-xl shadow-2xl shadow-black/70 transition-all duration-300 hover:border-[#FFAE00]/70">
                 {/* Stage Header & Status Bar */}
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <div className="flex items-center gap-1.5 sm:gap-2">

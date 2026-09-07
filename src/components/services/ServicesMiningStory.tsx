@@ -67,9 +67,9 @@ const FRAGMENTS: Array<{
 ];
 
 const TONE: Record<string, string> = {
-  strong: "text-[clamp(1.05rem,2.2vw,1.9rem)] text-[#0B1F3A]",
-  mid: "text-[clamp(0.9rem,1.7vw,1.45rem)] text-[#0B1F3A]/75",
-  quiet: "text-[clamp(0.8rem,1.35vw,1.15rem)] text-[#0B1F3A]/50",
+  strong: "text-[clamp(1.05rem,2.2vw,1.9rem)] text-[#081121]",
+  mid: "text-[clamp(0.9rem,1.7vw,1.45rem)] text-[#081121]/75",
+  quiet: "text-[clamp(0.8rem,1.35vw,1.15rem)] text-[#081121]/50",
 };
 
 const STORY_ATTRIBUTES = ["Brand", "Message", "Audience", "Purpose"];
@@ -132,7 +132,7 @@ const SystemDiagram: React.FC = () => (
       ))}
     </g>
 
-    <g className="font-geist" fill="#0B1F3A" textAnchor="middle">
+    <g className="font-geist" fill="#081121" textAnchor="middle">
       <text x="260" y="28" fontSize="22" fontWeight="800" letterSpacing="1.6">
         YOUR STORY
       </text>
@@ -410,7 +410,7 @@ export const ServicesMiningStory: React.FC = () => {
         preserveAspectRatio="xMidYMid slice"
         className="pointer-events-none absolute left-1/2 top-1/2 h-[120%] w-[120%] -translate-x-1/2 -translate-y-1/2 opacity-[0.035]"
       >
-        <g fill="none" stroke="#0B1F3A" strokeWidth="1.5">
+        <g fill="none" stroke="#081121" strokeWidth="1.5">
           {[1, 0.82, 0.64, 0.46, 0.28].map((scale) => (
             <path
               key={scale}
@@ -433,7 +433,7 @@ export const ServicesMiningStory: React.FC = () => {
             Our Approach
           </span>
 
-          <h2 className="mt-8 text-balance font-geist text-[clamp(1.875rem,4.2vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.03em] text-[#0B1F3A]">
+          <h2 className="mt-8 text-balance font-geist text-[clamp(1.875rem,4.2vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.03em] text-[#081121]">
             {HEADING_LINES.map((line) => (
               <span key={line} className="block">
                 <MaskedWords text={line} />
@@ -491,7 +491,7 @@ export const ServicesMiningStory: React.FC = () => {
 
             {/* --- Stage 3: the story ------------------------------------------- */}
             <div ref={storyRef} data-about-reveal className={`${layerClass()} ${HIDDEN_RISE}`}>
-              <p className="font-geist text-[clamp(2.25rem,5vw,4rem)] font-black uppercase leading-[0.95] tracking-[-0.035em] text-[#0B1F3A]">
+              <p className="font-geist text-[clamp(2.25rem,5vw,4rem)] font-black uppercase leading-[0.95] tracking-[-0.035em] text-[#081121]">
                 <span className="block">Your</span>
                 <span className="block">Story</span>
               </p>
@@ -532,7 +532,7 @@ export const ServicesMiningStory: React.FC = () => {
                     className={`font-geist font-black uppercase leading-none tracking-[-0.02em] ${
                       index === CLARITY_CHAIN.length - 1
                         ? "text-[clamp(2rem,4.4vw,3.5rem)] text-[#B8860B]"
-                        : "text-[clamp(1.5rem,3.2vw,2.5rem)] text-[#0B1F3A]"
+                        : "text-[clamp(1.5rem,3.2vw,2.5rem)] text-[#081121]"
                     }`}
                   >
                     {step}
@@ -547,7 +547,7 @@ export const ServicesMiningStory: React.FC = () => {
               data-about-reveal
               className={`${layerClass("pointer-events-none")} ${HIDDEN_RISE}`}
             >
-              <p className="max-w-[18ch] text-balance font-geist text-[clamp(1.75rem,4.6vw,3.75rem)] font-black uppercase leading-[1] tracking-[-0.035em] text-[#0B1F3A]">
+              <p className="max-w-[18ch] text-balance font-geist text-[clamp(1.75rem,4.6vw,3.75rem)] font-black uppercase leading-[1] tracking-[-0.035em] text-[#081121]">
                 {STATEMENT_LINES.map((line) => (
                   <span key={line} className="block">
                     <MaskedWords text={line} />

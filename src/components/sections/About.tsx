@@ -112,7 +112,7 @@ export const About: React.FC = () => {
   return (
     <section
       id="about-journey"
-      className="relative bg-[#FAF9F6] text-[#0B1F3A] border-b border-[#E5E4DE] font-sans py-20 sm:py-24 lg:py-28 overflow-x-clip"
+      className="relative bg-[#FAF9F6] text-[#081121] border-b border-[#E5E4DE] font-sans py-20 sm:py-24 lg:py-28 overflow-x-clip"
     >
       {/* Subtle Geological Background Strata */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
@@ -141,7 +141,7 @@ export const About: React.FC = () => {
 
             {/* Section Headline & Intro Subtitle */}
             <div>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] font-normal leading-[1.12] tracking-[-0.018em] text-[#0B1F3A]">
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] font-normal leading-[1.12] tracking-[-0.018em] text-[#081121]">
                 The beats that define modern mining.
               </h2>
               <p className="mt-4 text-base sm:text-lg leading-relaxed text-[#57595E] max-w-lg">
@@ -201,8 +201,8 @@ export const About: React.FC = () => {
                         <span
                           className={`tracking-tight ${
                             isActive
-                              ? "text-[#0B1F3A] font-bold"
-                              : "text-[#57595E] group-hover:text-[#0B1F3A]"
+                              ? "text-[#081121] font-bold"
+                              : "text-[#57595E] group-hover:text-[#081121]"
                           }`}
                         >
                           {p.label}
@@ -258,11 +258,11 @@ export const About: React.FC = () => {
                       priority={index === 0}
                       className="object-cover transition-all duration-500 group-hover:contrast-[1.03]"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/30 via-transparent to-transparent opacity-40 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#081121]/30 via-transparent to-transparent opacity-40 pointer-events-none" />
                   </motion.div>
 
                   {/* Stage Telemetry Badge */}
-                  <div className="absolute bottom-3 left-3.5 right-3.5 z-20 flex items-center justify-between font-mono text-[9.5px] text-white/95 bg-[#0B1F3A]/80 backdrop-blur-xs px-3 py-1.5 rounded-sm">
+                  <div className="absolute bottom-3 left-3.5 right-3.5 z-20 flex items-center justify-between font-mono text-[9.5px] text-white/95 bg-[#081121]/80 backdrop-blur-xs px-3 py-1.5 rounded-sm">
                     <span className="uppercase tracking-wider font-bold">
                       STAGE 0{index + 1} // {panel.label}
                     </span>
@@ -278,7 +278,7 @@ export const About: React.FC = () => {
                   transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
                   className="pt-6 sm:pt-8"
                 >
-                  <h3 className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#0B1F3A]">
+                  <h3 className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#081121]">
                     {panel.heading}
                   </h3>
 
@@ -297,7 +297,7 @@ export const About: React.FC = () => {
                           <span className="font-mono text-[11px] tabular-nums font-bold text-[#9E7208]">
                             {String(itemIndex + 1).padStart(2, "0")}
                           </span>
-                          <span className="font-sans text-sm font-medium tracking-tight text-[#0B1F3A]">
+                          <span className="font-sans text-sm font-medium tracking-tight text-[#081121]">
                             {item}
                           </span>
                         </li>
@@ -310,7 +310,7 @@ export const About: React.FC = () => {
                     <div className="mt-7">
                       <Link
                         href={panel.cta.href}
-                        className="group inline-flex items-center gap-2 rounded-lg bg-[#B8860B] px-6 py-3 font-sans text-xs font-semibold uppercase tracking-wider text-[#0B1F3A] shadow-sm transition-all duration-300 hover:bg-[#D4AF37] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
+                        className="group inline-flex items-center gap-2 rounded-lg bg-[#B8860B] px-6 py-3 font-sans text-xs font-semibold uppercase tracking-wider text-[#081121] shadow-sm transition-all duration-300 hover:bg-[#D4AF37] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
                       >
                         {panel.cta.label}
                         <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />

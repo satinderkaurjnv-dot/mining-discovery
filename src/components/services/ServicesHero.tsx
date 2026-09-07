@@ -163,7 +163,7 @@ export const ServicesHero: React.FC = () => {
             the desktop composition is untouched, and browsers without it simply wrap the
             way they did before.
           */
-          className="mt-8 text-balance font-geist text-[clamp(2.5rem,6.5vw,5.5rem)] font-black uppercase leading-[0.94] tracking-[-0.035em] text-[#0B1F3A]"
+          className="mt-8 text-balance font-geist text-[clamp(2.5rem,6.5vw,5.5rem)] font-black uppercase leading-[0.94] tracking-[-0.035em] text-[#081121]"
         >
           {HEADLINE_LINES.map((line) => (
             <span key={line} className="block">
@@ -192,7 +192,7 @@ export const ServicesHero: React.FC = () => {
             onClick={handleCtaClick}
             className="group inline-flex flex-col items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-4 focus-visible:ring-offset-[#F7F5EF]"
           >
-            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#0B1F3A] transition-colors duration-300 group-hover:text-[#B8860B]">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#081121] transition-colors duration-300 group-hover:text-[#B8860B]">
               Explore our capabilities
             </span>
 

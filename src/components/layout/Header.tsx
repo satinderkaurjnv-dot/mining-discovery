@@ -51,7 +51,7 @@ export const Header: React.FC = () => {
   }, [mobileMenuOpen]);
 
   return (
-    <header className="fixed top-0 z-50 w-full font-sans bg-[#0B1F3A] backdrop-blur-md border-b border-white/10 shadow-lg py-2.5 transition-all duration-300">
+    <header className="fixed top-0 z-50 w-full font-sans bg-[#081121] backdrop-blur-md border-b border-white/10 shadow-lg py-2.5 transition-all duration-300">
       {/* Full-width container */}
       <div className="w-full px-4 sm:px-8 lg:px-16 flex items-center justify-between">
         {/* Original Brand Logo Left */}
@@ -89,7 +89,7 @@ export const Header: React.FC = () => {
           <Button
             variant="gold"
             size="sm"
-            className="font-sans font-semibold tracking-wide text-[#0B1F3A] bg-[#B8860B] hover:bg-[#D4AF37] shadow-[0_0_20px_rgba(184,134,11,0.35)] hover:shadow-[0_0_25px_rgba(212,175,55,0.5)] transition-shadow text-xs py-1.5 px-4"
+            className="font-sans font-semibold tracking-wide text-[#081121] bg-[#B8860B] hover:bg-[#D4AF37] shadow-[0_0_20px_rgba(184,134,11,0.35)] hover:shadow-[0_0_25px_rgba(212,175,55,0.5)] transition-shadow text-xs py-1.5 px-4"
           >
             Get Featured
             <ArrowRight className="w-3.5 h-3.5 ml-0.5" />
@@ -117,7 +117,7 @@ export const Header: React.FC = () => {
           />
 
           {/* Drawer Content */}
-          <div className="fixed inset-y-0 right-0 w-full max-w-[280px] sm:max-w-xs h-[100dvh] bg-[#0B1F3A] text-white shadow-2xl p-5 sm:p-6 flex flex-col justify-between transform transition-transform duration-300 ease-out border-l border-white/15 font-sans overflow-y-auto">
+          <div className="fixed inset-y-0 right-0 w-full max-w-[280px] sm:max-w-xs h-[100dvh] bg-[#081121] text-white shadow-2xl p-5 sm:p-6 flex flex-col justify-between transform transition-transform duration-300 ease-out border-l border-white/15 font-sans overflow-y-auto">
             <div>
               {/* Drawer Header */}
               <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-5">
@@ -168,7 +168,7 @@ export const Header: React.FC = () => {
                 size="md"
                 fullWidth
                 onClick={() => setMobileMenuOpen(false)}
-                className="font-sans font-semibold tracking-wide text-[#0B1F3A] bg-[#B8860B] hover:bg-[#D4AF37] shadow-md py-3 text-xs"
+                className="font-sans font-semibold tracking-wide text-[#081121] bg-[#B8860B] hover:bg-[#D4AF37] shadow-md py-3 text-xs"
               >
                 Get Featured
                 <ArrowRight className="w-4 h-4 ml-1" />

@@ -333,7 +333,7 @@ export const ServicesScrollStory: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-3 font-serif text-3xl sm:text-4xl lg:text-5xl font-normal leading-[1.1] text-[#0B1F3A]"
+            className="mt-3 font-serif text-3xl sm:text-4xl lg:text-5xl font-normal leading-[1.1] text-[#081121]"
           >
             From initial ground discovery to global capital markets.
           </motion.h2>
@@ -374,7 +374,7 @@ export const ServicesScrollStory: React.FC = () => {
                     >
                       <span
                         className={`font-mono text-[11px] transition-colors duration-300 ${
-                          isActive ? "text-[#0B1F3A] font-bold" : "text-[#888A8E] group-hover:text-[#0B1F3A]"
+                          isActive ? "text-[#081121] font-bold" : "text-[#888A8E] group-hover:text-[#081121]"
                         }`}
                       >
                         {s.num}
@@ -397,7 +397,7 @@ export const ServicesScrollStory: React.FC = () => {
                   type="button"
                   disabled={activeStage === 0}
                   onClick={() => scrollToStage(Math.max(0, activeStage - 1))}
-                  className="p-1 text-[#888A8E] hover:text-[#0B1F3A] disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  className="p-1 text-[#888A8E] hover:text-[#081121] disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   aria-label="Previous Chapter"
                 >
                   <ChevronUp className="w-4 h-4" />
@@ -406,7 +406,7 @@ export const ServicesScrollStory: React.FC = () => {
                   type="button"
                   disabled={activeStage === STAGES.length - 1}
                   onClick={() => scrollToStage(Math.min(STAGES.length - 1, activeStage + 1))}
-                  className="p-1 text-[#888A8E] hover:text-[#0B1F3A] disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                  className="p-1 text-[#888A8E] hover:text-[#081121] disabled:opacity-25 disabled:cursor-not-allowed cursor-pointer transition-colors"
                   aria-label="Next Chapter"
                 >
                   <ChevronDown className="w-4 h-4" />
@@ -454,7 +454,7 @@ export const ServicesScrollStory: React.FC = () => {
                         className="object-cover transition-all duration-700 hover:scale-[1.025]"
                         sizes="58vw"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/70 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#081121]/70 via-transparent to-transparent pointer-events-none" />
                       <div className="absolute bottom-4 left-5 right-5 flex items-center justify-between font-mono text-[11px] text-white uppercase tracking-wider font-medium">
                         <span>{currentStage.imageAlt}</span>
                         <span className="text-[#D4AF37]">CHAPTER #{currentStage.num}</span>
@@ -476,7 +476,7 @@ export const ServicesScrollStory: React.FC = () => {
                     <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-[#E5E5E3]">
                       <div className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B]" />
-                        <h4 className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#0B1F3A]">
+                        <h4 className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#081121]">
                           Stage {currentStage.num} Core Deliverables:
                         </h4>
                       </div>
@@ -536,7 +536,7 @@ export const ServicesScrollStory: React.FC = () => {
                           animate={{ y: 0, opacity: 1 }}
                           exit={{ y: -25, opacity: 0 }}
                           transition={{ duration: 0.5, ease: "easeOut" }}
-                          className="font-geist text-3xl font-black text-[#0B1F3A] leading-none"
+                          className="font-geist text-3xl font-black text-[#081121] leading-none"
                         >
                           {currentStage.num}
                         </motion.span>
@@ -551,7 +551,7 @@ export const ServicesScrollStory: React.FC = () => {
                       <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#57595E] block mb-1">
                         {currentStage.badge}
                       </span>
-                      <h3 className="font-serif text-2xl sm:text-3xl font-normal text-[#0B1F3A] leading-tight">
+                      <h3 className="font-serif text-2xl sm:text-3xl font-normal text-[#081121] leading-tight">
                         {currentStage.title}
                       </h3>
                       <p className="mt-1.5 text-sm font-medium text-[#9E7208]">
@@ -582,12 +582,12 @@ export const ServicesScrollStory: React.FC = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center justify-between">
-                                    <h4 className="font-serif text-sm font-normal text-[#0B1F3A] group-hover:text-[#B8860B] transition-colors truncate">
+                                    <h4 className="font-serif text-sm font-normal text-[#081121] group-hover:text-[#B8860B] transition-colors truncate">
                                       {card.title}
                                     </h4>
                                     <Link
                                       href={card.href}
-                                      className="inline-flex items-center gap-1 text-[10.5px] font-mono font-semibold uppercase tracking-wider text-[#9E7208] hover:text-[#0B1F3A] transition-colors shrink-0 ml-2"
+                                      className="inline-flex items-center gap-1 text-[10.5px] font-mono font-semibold uppercase tracking-wider text-[#9E7208] hover:text-[#081121] transition-colors shrink-0 ml-2"
                                     >
                                       <span>Explore</span>
                                       <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
@@ -619,7 +619,7 @@ export const ServicesScrollStory: React.FC = () => {
           <div key={stage.id} className="flex flex-col gap-5">
             {/* Stage Number & Badge */}
             <div className="flex items-center gap-2">
-              <span className="font-geist text-2xl font-black text-[#0B1F3A]">
+              <span className="font-geist text-2xl font-black text-[#081121]">
                 {stage.num}
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B]" />
@@ -637,7 +637,7 @@ export const ServicesScrollStory: React.FC = () => {
                 className="object-cover"
                 sizes="100vw"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/70 via-transparent to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#081121]/70 via-transparent to-transparent pointer-events-none" />
               <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between font-mono text-[10px] text-white uppercase font-medium">
                 <span>{stage.imageAlt}</span>
                 <span className="text-[#D4AF37]">CHAPTER #{stage.num}</span>
@@ -649,7 +649,7 @@ export const ServicesScrollStory: React.FC = () => {
               <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-[#57595E] block mb-1">
                 {stage.badge}
               </span>
-              <h3 className="font-serif text-2xl font-normal text-[#0B1F3A]">
+              <h3 className="font-serif text-2xl font-normal text-[#081121]">
                 {stage.title}
               </h3>
               <p className="mt-1.5 text-sm font-medium text-[#9E7208]">
@@ -677,7 +677,7 @@ export const ServicesScrollStory: React.FC = () => {
                         <span className="font-mono text-[9px] font-semibold uppercase tracking-wider text-[#9E7208]">
                           {card.category}
                         </span>
-                        <h4 className="font-serif text-base font-normal text-[#0B1F3A]">
+                        <h4 className="font-serif text-base font-normal text-[#081121]">
                           {card.title}
                         </h4>
                       </div>
@@ -699,7 +699,7 @@ export const ServicesScrollStory: React.FC = () => {
 
             {/* Core Deliverables */}
             <div className="rounded-xl border border-[#E5E5E3] bg-white p-4 shadow-2xs">
-              <h4 className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#0B1F3A] mb-2.5">
+              <h4 className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#081121] mb-2.5">
                 Stage {stage.num} Deliverables:
               </h4>
               <ul className="space-y-2">
@@ -731,7 +731,7 @@ export const ServicesScrollStory: React.FC = () => {
           </div>
           <Link
             href="/contact"
-            className="group inline-flex items-center gap-2 rounded-xl bg-[#0B1F3A] px-5 py-3 text-xs font-mono font-bold uppercase tracking-wider text-white transition-all hover:bg-[#B8860B] shrink-0"
+            className="group inline-flex items-center gap-2 rounded-xl bg-[#081121] px-5 py-3 text-xs font-mono font-bold uppercase tracking-wider text-white transition-all hover:bg-[#B8860B] shrink-0"
           >
             <span>Request Consultation</span>
             <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />

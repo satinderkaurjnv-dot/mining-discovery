@@ -19,7 +19,7 @@ export const ContactInformation: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-2xl bg-white shadow-[0_0_60px_30px_rgba(0,0,0,0.04)] lg:grid lg:grid-cols-[360px_1fr]">
           {/* Left Column (360px): Navy card */}
-          <div className="relative overflow-hidden bg-[#0B1F3A] px-10 py-12">
+          <div className="relative overflow-hidden bg-[#081121] px-10 py-12">
             <div className="pointer-events-none absolute -bottom-16 -right-16 size-64 rounded-full bg-white/5" />
             <div className="pointer-events-none absolute -bottom-8 -right-8 size-44 rounded-full bg-white/5" />
 
@@ -138,13 +138,13 @@ export const ContactInformation: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold text-[#0B1F3A]">Message Sent Successfully!</h3>
+                  <h3 className="text-xl font-bold text-[#081121]">Message Sent Successfully!</h3>
                   <p className="mt-2 text-sm text-gray-500">
                     Thank you for reaching out. We will get back to you shortly.
                   </p>
                   <button
                     onClick={() => setSubmitted(false)}
-                    className="mt-6 inline-flex items-center justify-center font-bold uppercase transition-colors bg-[#B8860B] text-[#0B1F3A] hover:bg-[#A88848] h-11 px-6 text-xs rounded-lg tracking-wider"
+                    className="mt-6 inline-flex items-center justify-center font-bold uppercase transition-colors bg-[#B8860B] text-[#081121] hover:bg-[#A88848] h-11 px-6 text-xs rounded-lg tracking-wider"
                   >
                     Send Another Message
                   </button>
@@ -159,7 +159,7 @@ export const ContactInformation: React.FC = () => {
                       </label>
                       <div className="flex flex-col gap-1">
                         <input
-                          className="w-full bg-transparent transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 border-b border-gray-300 pb-3 text-[#0B1F3A] placeholder:text-gray-400 focus:border-[#B8860B] h-12 text-base"
+                          className="w-full bg-transparent transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 border-b border-gray-300 pb-3 text-[#081121] placeholder:text-gray-400 focus:border-[#B8860B] h-12 text-base"
                           type="text"
                           id="fullName"
                           placeholder="full name"
@@ -178,7 +178,7 @@ export const ContactInformation: React.FC = () => {
                       </label>
                       <div className="flex flex-col gap-1">
                         <input
-                          className="w-full bg-transparent transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 border-b border-gray-300 pb-3 text-[#0B1F3A] placeholder:text-gray-400 focus:border-[#B8860B] h-12 text-base"
+                          className="w-full bg-transparent transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 border-b border-gray-300 pb-3 text-[#081121] placeholder:text-gray-400 focus:border-[#B8860B] h-12 text-base"
                           type="email"
                           id="email"
                           placeholder="email address"
@@ -198,7 +198,7 @@ export const ContactInformation: React.FC = () => {
                     </label>
                     <div className="flex flex-col gap-1">
                       <textarea
-                        className="w-full bg-transparent transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 resize-none border-b border-gray-300 pb-3 text-[#0B1F3A] placeholder:text-gray-400 focus:border-[#B8860B]"
+                        className="w-full bg-transparent transition-colors focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 resize-none border-b border-gray-300 pb-3 text-[#081121] placeholder:text-gray-400 focus:border-[#B8860B]"
                         id="message"
                         name="message"
                         placeholder="Write your message..."
@@ -213,7 +213,7 @@ export const ContactInformation: React.FC = () => {
                   {/* Submit Button */}
                   <div className="flex justify-end">
                     <button
-                      className="inline-flex items-center justify-center font-bold uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A88848] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 bg-[#B8860B] text-[#0B1F3A] hover:bg-[#A88848] h-12 px-6 text-sm rounded-lg min-w-40 tracking-wider shadow-md hover:shadow-lg transition-all"
+                      className="inline-flex items-center justify-center font-bold uppercase transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#A88848] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-60 bg-[#B8860B] text-[#081121] hover:bg-[#A88848] h-12 px-6 text-sm rounded-lg min-w-40 tracking-wider shadow-md hover:shadow-lg transition-all"
                       type="submit"
                     >
                       Send Message

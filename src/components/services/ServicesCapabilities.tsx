@@ -143,7 +143,7 @@ export const ServicesCapabilities: React.FC = () => {
             a section heading that matched it would leave the page with two openings and no
             hierarchy between them.
           */}
-          <h2 className="mt-8 text-balance font-geist text-[clamp(1.875rem,4.2vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.03em] text-[#0B1F3A]">
+          <h2 className="mt-8 text-balance font-geist text-[clamp(1.875rem,4.2vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.03em] text-[#081121]">
             {HEADING_LINES.map((line) => (
               <span key={line} className="block">
                 <MaskedWords text={line} />
@@ -191,7 +191,7 @@ export const ServicesCapabilities: React.FC = () => {
                       */}
                       <span
                         className={`font-geist text-[clamp(2.5rem,3.6vw,3.5rem)] font-black leading-none tabular-nums transition-colors duration-500 ${
-                          isActive ? "text-[#0B1F3A]" : "text-[#0B1F3A]/20"
+                          isActive ? "text-[#081121]" : "text-[#081121]/20"
                         }`}
                       >
                         {String(index + 1).padStart(2, "0")}
@@ -247,13 +247,13 @@ export const ServicesCapabilities: React.FC = () => {
                       {String(index + 1).padStart(2, "0")}
                     </span>
 
-                    <h3 className="mt-5 font-geist text-[clamp(2.5rem,5.5vw,4.5rem)] font-black uppercase leading-[0.95] tracking-[-0.035em] text-[#0B1F3A] lg:mt-0">
+                    <h3 className="mt-5 font-geist text-[clamp(2.5rem,5.5vw,4.5rem)] font-black uppercase leading-[0.95] tracking-[-0.035em] text-[#081121] lg:mt-0">
                       <MaskedWords text={capability.name} />
                     </h3>
 
                     <p
                       data-about-reveal
-                      className={`mt-6 max-w-[22ch] text-balance font-serif text-[clamp(1.5rem,2.6vw,2.125rem)] font-normal leading-[1.15] tracking-[-0.015em] text-[#0B1F3A] ${HIDDEN_RISE}`}
+                      className={`mt-6 max-w-[22ch] text-balance font-serif text-[clamp(1.5rem,2.6vw,2.125rem)] font-normal leading-[1.15] tracking-[-0.015em] text-[#081121] ${HIDDEN_RISE}`}
                     >
                       {capability.statement}
                     </p>
@@ -273,7 +273,7 @@ export const ServicesCapabilities: React.FC = () => {
                            */
                           className={`group/service flex items-center justify-between gap-6 border-b border-[#E5E4DE] px-2 py-4 transition-colors duration-300 hover:bg-[#F7F5EF] ${HIDDEN_RISE}`}
                         >
-                          <span className="text-sm font-semibold uppercase tracking-[0.08em] text-[#0B1F3A] transition-transform duration-300 group-hover/service:translate-x-1 sm:text-base">
+                          <span className="text-sm font-semibold uppercase tracking-[0.08em] text-[#081121] transition-transform duration-300 group-hover/service:translate-x-1 sm:text-base">
                             {service}
                           </span>
 

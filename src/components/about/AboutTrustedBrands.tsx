@@ -8,7 +8,7 @@ const BrandLogo: React.FC<{ brand: TrustedBrand }> = ({ brand }) => {
 
   if (!available) {
     return (
-      <span className="px-3 text-center font-sans text-xs font-bold tracking-tight text-[#0B1F3A]">
+      <span className="px-3 text-center font-sans text-xs font-bold tracking-tight text-[#081121]">
         {brand.name}
       </span>
     );
@@ -33,12 +33,12 @@ export const AboutTrustedBrands: React.FC = () => {
     <section className="w-full border-t border-gray-200 bg-white py-12 sm:py-16 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8">
         <div className="mb-6">
-          <h2 className="text-[#0B1F3A] text-2xl sm:text-3xl font-bold tracking-tight">
+          <h2 className="text-[#081121] text-2xl sm:text-3xl font-bold tracking-tight">
             Our Trusted <span className="text-[#B8860B]">Brands</span>
           </h2>
           <div className="mt-3 flex items-center">
             <div className="size-2.5 shrink-0 rounded-full bg-[#B8860B]" />
-            <div className="h-px w-40 bg-gradient-to-r from-[#0B1F3A] to-transparent" />
+            <div className="h-px w-40 bg-gradient-to-r from-[#081121] to-transparent" />
           </div>
         </div>
       </div>

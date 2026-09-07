@@ -73,7 +73,7 @@ export const Services: React.FC = () => {
           <Badge variant="gold" size="md" className="mb-3 font-sans uppercase tracking-[0.05em] text-[11px]">
             Mining Media Services
           </Badge>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal tracking-tight text-[#0B1F3A] mb-4">
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal tracking-tight text-[#081121] mb-4">
             Mining Communications & Media
           </h2>
           <p className="font-sans text-base text-[#57595E] leading-relaxed font-normal">
@@ -88,12 +88,12 @@ export const Services: React.FC = () => {
             return (
               <div
                 key={index}
-                className="group relative bg-white border border-[#E5E5E3] rounded-lg p-7 sm:p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#0B1F3A]/30 font-sans"
+                className="group relative bg-white border border-[#E5E5E3] rounded-lg p-7 sm:p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:border-[#081121]/30 font-sans"
               >
                 <div>
                   {/* Top Bar with Icon & Technical Category Badge */}
                   <div className="flex items-center justify-between mb-6">
-                    <div className="p-3 bg-[#F0F4F8] text-[#0B1F3A] rounded-md transition-colors duration-300 group-hover:bg-[#0B1F3A] group-hover:text-[#B8860B]">
+                    <div className="p-3 bg-[#F0F4F8] text-[#081121] rounded-md transition-colors duration-300 group-hover:bg-[#081121] group-hover:text-[#B8860B]">
                       <IconComponent className="w-6 h-6" />
                     </div>
                     {/* Category Label in IBM Plex Mono */}
@@ -103,7 +103,7 @@ export const Services: React.FC = () => {
                   </div>
 
                   {/* Title in DM Serif Display */}
-                  <h3 className="font-serif text-xl font-normal text-[#0B1F3A] mb-3 group-hover:text-[#162E50] transition-colors leading-snug">
+                  <h3 className="font-serif text-xl font-normal text-[#081121] mb-3 group-hover:text-[#162E50] transition-colors leading-snug">
                     {service.title}
                   </h3>
 
@@ -114,7 +114,7 @@ export const Services: React.FC = () => {
                 </div>
 
                 {/* Specific Action CTA in Inter 600 */}
-                <div className="pt-4 border-t border-[#E5E5E3]/60 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#0B1F3A] group-hover:text-[#B8860B] transition-colors">
+                <div className="pt-4 border-t border-[#E5E5E3]/60 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-[#081121] group-hover:text-[#B8860B] transition-colors">
                   <span>{service.cta}</span>
                   <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
                 </div>

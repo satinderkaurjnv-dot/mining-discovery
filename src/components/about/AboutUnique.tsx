@@ -30,19 +30,19 @@ export const AboutUnique: React.FC = () => {
     <section className="py-12 sm:py-16 bg-[#FAFAF9]/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-6">
-          <h2 className="text-[#0B1F3A] text-2xl sm:text-3xl font-bold tracking-tight">
+          <h2 className="text-[#081121] text-2xl sm:text-3xl font-bold tracking-tight">
             What Makes Us <span className="text-[#B8860B]">Unique</span>
           </h2>
           <div className="mt-3 flex items-center">
             <div className="size-2.5 shrink-0 rounded-full bg-[#B8860B]" />
-            <div className="h-px w-40 bg-gradient-to-r from-[#0B1F3A] to-transparent" />
+            <div className="h-px w-40 bg-gradient-to-r from-[#081121] to-transparent" />
           </div>
         </div>
 
         <div className="mt-8 mx-auto max-w-5xl overflow-x-auto rounded-3xl border border-gray-100 bg-white shadow-xl">
           <table className="min-w-[600px] w-full border-collapse text-left">
             <thead>
-              <tr className="bg-[#0B1F3A] text-white">
+              <tr className="bg-[#081121] text-white">
                 <th className="p-6 sm:p-8 text-xs sm:text-sm font-black tracking-widest uppercase">
                   Feature
                 </th>
@@ -54,7 +54,7 @@ export const AboutUnique: React.FC = () => {
             <tbody className="divide-y divide-gray-100">
               {UNIQUE_ITEMS.map((item) => (
                 <tr key={item.feature} className="transition-colors hover:bg-gray-50/80">
-                  <td className="text-[#0B1F3A] border-r border-gray-100 p-6 sm:p-8 font-black tracking-tighter uppercase text-sm sm:text-base">
+                  <td className="text-[#081121] border-r border-gray-100 p-6 sm:p-8 font-black tracking-tighter uppercase text-sm sm:text-base">
                     {item.feature}
                   </td>
                   <td className="p-6 sm:p-8 font-medium text-gray-600 text-sm sm:text-base">

@@ -128,7 +128,7 @@ const dotPercent = (index: number) => 10 + index * 20;
  * ---------------------------------------------------------------------------------- */
 
 const GOLD = "#B8860B";
-const NAVY = "#0B1F3A";
+const NAVY = "#081121";
 
 const StageVisual: React.FC<{ id: string }> = ({ id }) => {
   const common = {
@@ -356,7 +356,7 @@ export const ServicesProcess: React.FC = () => {
             How We Work
           </span>
 
-          <h2 className="mt-8 text-balance font-geist text-[clamp(1.875rem,4.2vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.03em] text-[#0B1F3A]">
+          <h2 className="mt-8 text-balance font-geist text-[clamp(1.875rem,4.2vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.03em] text-[#081121]">
             {HEADING_LINES.map((line) => (
               <span key={line} className="block">
                 <MaskedWords text={line} />
@@ -446,7 +446,7 @@ export const ServicesProcess: React.FC = () => {
                 <span
                   key={stage.id}
                   className={`text-center font-geist text-sm font-bold uppercase tracking-[0.12em] transition-colors duration-500 ${
-                    index === active ? "text-[#0B1F3A]" : "text-[#0B1F3A]/30"
+                    index === active ? "text-[#081121]" : "text-[#081121]/30"
                   }`}
                 >
                   {stage.label}
@@ -518,7 +518,7 @@ export const ServicesProcess: React.FC = () => {
 
                         <h3
                           data-stage-item
-                          className="mt-3 font-geist text-[clamp(2rem,4.5vw,3.5rem)] font-black uppercase leading-[0.98] tracking-[-0.03em] text-[#0B1F3A] lg:mt-0"
+                          className="mt-3 font-geist text-[clamp(2rem,4.5vw,3.5rem)] font-black uppercase leading-[0.98] tracking-[-0.03em] text-[#081121] lg:mt-0"
                         >
                           {stage.label}
                         </h3>

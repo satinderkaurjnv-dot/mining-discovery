@@ -430,9 +430,9 @@ export const Globe: React.FC<GlobeProps> = ({
 
                   {/* Connector Line & Location Label Pill */}
                   <div
-                    className={`absolute left-1/2 -translate-x-1/2 top-3.5 sm:top-4.5 flex items-center gap-1 sm:gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#0B1F3A]/95 border shadow-lg backdrop-blur-md transition-all duration-200 whitespace-nowrap ${
+                    className={`absolute left-1/2 -translate-x-1/2 top-3.5 sm:top-4.5 flex items-center gap-1 sm:gap-1.5 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#081121]/95 border shadow-lg backdrop-blur-md transition-all duration-200 whitespace-nowrap ${
                       isHovered
-                        ? "border-[#D4AF37] bg-[#0B1F3A] shadow-[0_0_16px_rgba(212,175,55,0.5)] scale-105"
+                        ? "border-[#D4AF37] bg-[#081121] shadow-[0_0_16px_rgba(212,175,55,0.5)] scale-105"
                         : "border-[#D4AF37]/40 hover:border-[#D4AF37]/80"
                     }`}
                   >

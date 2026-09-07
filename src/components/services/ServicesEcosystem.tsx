@@ -272,7 +272,7 @@ export const ServicesEcosystem: React.FC = () => {
         preserveAspectRatio="xMidYMid slice"
         className="pointer-events-none absolute left-1/2 top-1/2 h-[130%] w-[130%] -translate-x-1/2 -translate-y-1/2 opacity-[0.04]"
       >
-        <g fill="none" stroke="#0B1F3A" strokeWidth="1.5">
+        <g fill="none" stroke="#081121" strokeWidth="1.5">
           {[1, 0.82, 0.64, 0.46, 0.28].map((scale) => (
             <path
               key={scale}
@@ -288,7 +288,7 @@ export const ServicesEcosystem: React.FC = () => {
         <div ref={headerRef}>
           <div data-about-rule-x className={`h-0.5 w-12 bg-[#B8860B] ${HIDDEN_RULE_X}`} />
 
-          <h2 className="mt-8 text-balance font-geist text-[clamp(1.875rem,4.2vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.03em] text-[#0B1F3A]">
+          <h2 className="mt-8 text-balance font-geist text-[clamp(1.875rem,4.2vw,3.5rem)] font-bold uppercase leading-[1.02] tracking-[-0.03em] text-[#081121]">
             {HEADING_LINES.map((line) => (
               <span key={line} className="block">
                 <MaskedWords text={line} />
@@ -341,7 +341,7 @@ export const ServicesEcosystem: React.FC = () => {
                   <div
                     className={`rounded-xl border px-5 py-4 text-center transition-colors duration-700 sm:px-6 sm:py-5 ${
                       node.variant === "core"
-                        ? `bg-[#0B1F3A] ${isActive ? "border-[#B8860B]" : "border-[#0B1F3A]"}`
+                        ? `bg-[#081121] ${isActive ? "border-[#B8860B]" : "border-[#081121]"}`
                         : node.variant === "outcome"
                           ? `bg-[#FAF5E8] ${isActive ? "border-[#B8860B]" : "border-[#B8860B]/35"}`
                           : `bg-white ${
@@ -359,8 +359,8 @@ export const ServicesEcosystem: React.FC = () => {
                         node.variant === "core"
                           ? `text-base sm:text-lg ${isActive ? "text-[#D4AF37]" : "text-white"}`
                           : node.variant === "outcome"
-                            ? `text-base sm:text-lg ${isActive ? "text-[#B8860B]" : "text-[#0B1F3A]"}`
-                            : `text-sm ${isActive ? "text-[#B8860B]" : "text-[#0B1F3A]"}`
+                            ? `text-base sm:text-lg ${isActive ? "text-[#B8860B]" : "text-[#081121]"}`
+                            : `text-sm ${isActive ? "text-[#B8860B]" : "text-[#081121]"}`
                       }`}
                     >
                       {node.label}

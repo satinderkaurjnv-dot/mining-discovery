@@ -95,7 +95,7 @@ export const Footer: React.FC = () => {
             <div key={col.heading} className="lg:col-span-2">
               <div className="mb-6">
                 <div className="bg-[#B8860B] mb-2 h-1 w-8 rounded-full" />
-                <h3 className="text-[#0B1F3A] text-xl font-extrabold capitalize">
+                <h3 className="text-[#081121] text-xl font-extrabold capitalize">
                   {col.heading}
                 </h3>
               </div>
@@ -118,7 +118,7 @@ export const Footer: React.FC = () => {
           <div className="lg:col-span-2">
             <div className="mb-6">
               <div className="bg-[#B8860B] mb-2 h-1 w-8 rounded-full" />
-              <h3 className="text-[#0B1F3A] text-xl font-extrabold capitalize">
+              <h3 className="text-[#081121] text-xl font-extrabold capitalize">
                 Follow Us
               </h3>
             </div>

@@ -48,7 +48,7 @@ export default function RootLayout({
       <head>
         <link rel="preload" href="/assets/mining/earth.glb" as="fetch" crossOrigin="anonymous" />
       </head>
-      <body className="min-h-screen flex flex-col bg-[#FAFAF9] text-[#1A1D21] antialiased selection:bg-[#B8860B]/20 selection:text-[#0B1F3A]">
+      <body className="min-h-screen flex flex-col bg-[#FAFAF9] text-[#1A1D21] antialiased selection:bg-[#B8860B]/20 selection:text-[#081121]">
         <SmoothScroll>
           <Header />
           <main className="flex-1">{children}</main>

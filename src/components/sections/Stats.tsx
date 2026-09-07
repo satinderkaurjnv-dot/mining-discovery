@@ -161,7 +161,7 @@ export const Stats: React.FC = () => {
     <section
       ref={sectionRef}
       id="stats-section"
-      className="relative bg-[#FAF9F6] text-[#0B1F3A] font-sans py-16 sm:py-20 lg:py-24 overflow-x-clip"
+      className="relative bg-[#FAF9F6] text-[#081121] font-sans py-16 sm:py-20 lg:py-24 overflow-x-clip"
     >
       {/* -------------------------------------------------------------------- */}
       {/* 01. TECHNICAL GEOLOGICAL BACKGROUND (EXTREMELY SLOW HORIZONTAL DRIFT) */}
@@ -209,7 +209,7 @@ export const Stats: React.FC = () => {
 
           {/* Subtle gold survey coordinate nodes */}
           <circle cx="860" cy="170" r="2.2" fill="#B8860B" opacity="0.35" />
-          <circle cx="920" cy="360" r="2" fill="#0B1F3A" opacity="0.2" />
+          <circle cx="920" cy="360" r="2" fill="#081121" opacity="0.2" />
           <circle cx="840" cy="560" r="2.2" fill="#B8860B" opacity="0.3" />
         </motion.svg>
       </div>
@@ -255,7 +255,7 @@ export const Stats: React.FC = () => {
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 style={{ y: quoteScrollY }}
                 transition={{ duration: 0.8, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-                className="font-serif text-3xl sm:text-4xl lg:text-[42px] font-normal text-[#0B1F3A] leading-[1.14] tracking-[-0.015em]"
+                className="font-serif text-3xl sm:text-4xl lg:text-[42px] font-normal text-[#081121] leading-[1.14] tracking-[-0.015em]"
               >
                 &ldquo;One platform. Every major mining audience.&rdquo;
               </motion.h2>
@@ -293,10 +293,10 @@ export const Stats: React.FC = () => {
                     />
                   </motion.div>
                 ))}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0B1F3A]/25 via-transparent to-transparent opacity-40 pointer-events-none z-10" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#081121]/25 via-transparent to-transparent opacity-40 pointer-events-none z-10" />
 
                 {/* Sub-label displaying active metric status */}
-                <div className="absolute bottom-2.5 left-3 right-3 z-20 flex items-center justify-between font-mono text-[9px] text-white/90 bg-[#0B1F3A]/75 backdrop-blur-xs px-2.5 py-1 rounded-sm">
+                <div className="absolute bottom-2.5 left-3 right-3 z-20 flex items-center justify-between font-mono text-[9px] text-white/90 bg-[#081121]/75 backdrop-blur-xs px-2.5 py-1 rounded-sm">
                   <span className="uppercase tracking-wider truncate">
                     {STATS_DATA[activeIndex].label}
                   </span>
@@ -439,7 +439,7 @@ export const Stats: React.FC = () => {
               <div className="pt-2">
                 <Link
                   href="#about"
-                  className="inline-flex items-center justify-center rounded-full border border-[#1A1D21]/30 hover:border-[#0B1F3A] hover:bg-[#0B1F3A] hover:text-white px-7 py-3 text-[11px] font-mono font-semibold tracking-wider uppercase text-[#1A1D21] transition-all duration-300 shadow-xs"
+                  className="inline-flex items-center justify-center rounded-full border border-[#1A1D21]/30 hover:border-[#081121] hover:bg-[#081121] hover:text-white px-7 py-3 text-[11px] font-mono font-semibold tracking-wider uppercase text-[#1A1D21] transition-all duration-300 shadow-xs"
                 >
                   LEARN MORE ABOUT US
                 </Link>
@@ -474,7 +474,7 @@ const PrimaryCounter: React.FC<{ target: number; isInView: boolean }> = ({
     <motion.div
       whileHover={{ scale: 1.015 }}
       transition={{ duration: 0.2 }}
-      className="font-serif text-[clamp(2.5rem,8.5vw,6rem)] sm:text-7xl lg:text-8xl font-normal text-[#0B1F3A] tracking-tight leading-none group-hover:text-[#B8860B] transition-colors duration-300 will-change-transform"
+      className="font-serif text-[clamp(2.5rem,8.5vw,6rem)] sm:text-7xl lg:text-8xl font-normal text-[#081121] tracking-tight leading-none group-hover:text-[#B8860B] transition-colors duration-300 will-change-transform"
     >
       {count.toLocaleString()}+
     </motion.div>
@@ -520,7 +520,7 @@ const SecondaryStatCard: React.FC<{
       <motion.div
         whileHover={{ scale: 1.015 }}
         transition={{ duration: 0.2 }}
-        className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[#0B1F3A] tracking-tight leading-none group-hover:text-[#B8860B] transition-colors duration-300 will-change-transform"
+        className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[#081121] tracking-tight leading-none group-hover:text-[#B8860B] transition-colors duration-300 will-change-transform"
       >
         {count.toLocaleString()}+
       </motion.div>

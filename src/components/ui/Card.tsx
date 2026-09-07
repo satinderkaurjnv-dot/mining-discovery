@@ -14,7 +14,7 @@ export const Card: React.FC<CardProps> & {
 } = ({ children, className = "", hoverEffect = false, bordered = true }) => {
   const borderStyle = bordered ? "border border-[#E5E5E3]" : "";
   const hoverStyle = hoverEffect
-    ? "transition-all duration-300 hover:shadow-md hover:border-[#0B1F3A]/30 hover:-translate-y-0.5"
+    ? "transition-all duration-300 hover:shadow-md hover:border-[#081121]/30 hover:-translate-y-0.5"
     : "";
 
   return (

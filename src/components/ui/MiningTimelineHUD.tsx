@@ -76,7 +76,7 @@ export const MiningTimelineHUD: React.FC = () => {
           transition={{ duration: 0.4 }}
           className="fixed right-4 top-1/2 z-40 -translate-y-1/2 hidden md:flex flex-col items-end pointer-events-auto"
         >
-          <div className="flex flex-col items-end rounded-2xl border border-white/15 bg-[#0B1F3A]/85 p-3.5 backdrop-blur-xl shadow-[0_12px_40px_rgba(11,31,58,0.4)]">
+          <div className="flex flex-col items-end rounded-2xl border border-white/15 bg-[#081121]/85 p-3.5 backdrop-blur-xl shadow-[0_12px_40px_rgba(11,31,58,0.4)]">
             <div className="mb-2.5 px-2 text-right">
               <span className="font-mono text-[9.5px] font-bold uppercase tracking-[0.16em] text-[#D4AF37]">
                 Mining Story HUD

@@ -7,7 +7,7 @@ export const AboutLookingAhead: React.FC = () => {
   return (
     <section className="py-12 sm:py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#0B1F3A] relative overflow-hidden rounded-3xl p-8 sm:p-14 lg:p-20 shadow-2xl text-left">
+        <div className="bg-[#081121] relative overflow-hidden rounded-3xl p-8 sm:p-14 lg:p-20 shadow-2xl text-left">
           <div className="mb-6">
             <h2 className="text-white text-2xl sm:text-3xl font-bold tracking-tight">
               Looking <span className="text-[#B8860B]">Ahead</span>

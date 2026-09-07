@@ -148,7 +148,7 @@ export const MiningTruckStory: React.FC = () => {
               transition={{ duration: 0.35, ease: "easeOut" }}
               className="pointer-events-none absolute left-0 right-[34%] sm:right-[38%] top-[19%] sm:top-[20%] -translate-y-1/2 z-[1] flex items-center justify-center select-none overflow-hidden px-4"
             >
-              <span className="font-serif text-[clamp(1.35rem,3.1vw,3.3rem)] font-bold uppercase tracking-[0.18em] text-[#0B1F3A]/[0.16] whitespace-nowrap text-center">
+              <span className="font-serif text-[clamp(1.35rem,3.1vw,3.3rem)] font-bold uppercase tracking-[0.18em] text-[#081121]/[0.16] whitespace-nowrap text-center">
                 MINING DISCOVERY
               </span>
             </motion.div>
@@ -173,7 +173,7 @@ export const MiningTruckStory: React.FC = () => {
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, x: -50, scale: 0.94 }}
                   transition={{ duration: 0.32, ease: "easeOut" }}
-                  className={`font-serif font-bold uppercase text-[#0B1F3A]/[0.18] text-center whitespace-nowrap ${
+                  className={`font-serif font-bold uppercase text-[#081121]/[0.18] text-center whitespace-nowrap ${
                     watermarkText === "ABOUT MINING DISCOVERY"
                       ? "text-[clamp(2.4rem,6.8vw,7.2rem)] tracking-[0.08em]"
                       : "text-[clamp(3.8rem,11.5vw,11rem)] tracking-[0.14em]"
@@ -224,7 +224,7 @@ export const MiningTruckStory: React.FC = () => {
                 </div>
 
                 {/* Editorial Headline */}
-                <h3 className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#0B1F3A]">
+                <h3 className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#081121]">
                   From deep extraction to global market intelligence.
                 </h3>
 
@@ -237,21 +237,21 @@ export const MiningTruckStory: React.FC = () => {
                 <div className="mt-4 sm:mt-5 flex flex-wrap items-center justify-center gap-4 sm:gap-8 border-t border-[#E5E4DE]/60 pt-3">
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-[11px] font-bold text-[#9E7208]">01</span>
-                    <span className="font-sans text-xs sm:text-sm font-semibold text-[#0B1F3A]">
+                    <span className="font-sans text-xs sm:text-sm font-semibold text-[#081121]">
                       Heavy Surface Haulage
                     </span>
                   </div>
                   <span className="text-[#E5E4DE] hidden sm:inline">•</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-[11px] font-bold text-[#9E7208]">02</span>
-                    <span className="font-sans text-xs sm:text-sm font-semibold text-[#0B1F3A]">
+                    <span className="font-sans text-xs sm:text-sm font-semibold text-[#081121]">
                       Subsurface Drift Transit
                     </span>
                   </div>
                   <span className="text-[#E5E4DE] hidden sm:inline">•</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-[11px] font-bold text-[#9E7208]">03</span>
-                    <span className="font-sans text-xs sm:text-sm font-semibold text-[#0B1F3A]">
+                    <span className="font-sans text-xs sm:text-sm font-semibold text-[#081121]">
                       Institutional Market Reach
                     </span>
                   </div>
@@ -274,7 +274,7 @@ export const MiningTruckStory: React.FC = () => {
             >
               <div className="w-full max-w-4xl flex flex-col items-center text-center pointer-events-auto">
                 {/* Editorial Heading & Subtitle */}
-                <h3 className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#0B1F3A] text-center">
+                <h3 className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#081121] text-center">
                   Four ways the story reaches you.
                 </h3>
                 <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm lg:text-[15px] font-normal leading-relaxed text-[#57595E] max-w-2xl text-center mx-auto">
@@ -287,13 +287,13 @@ export const MiningTruckStory: React.FC = () => {
                   <div className="border-l-2 border-[#B8860B]/60 pl-3.5 flex flex-col">
                     <div className="flex items-baseline gap-3 border-b border-[#E5E4DE] py-2">
                       <span className="font-mono text-[11px] font-bold text-[#9E7208]">01</span>
-                      <span className="font-sans text-xs sm:text-sm font-semibold tracking-tight text-[#0B1F3A]">
+                      <span className="font-sans text-xs sm:text-sm font-semibold tracking-tight text-[#081121]">
                         Daily Mining News
                       </span>
                     </div>
                     <div className="flex items-baseline gap-3 border-b border-[#E5E4DE] py-2">
                       <span className="font-mono text-[11px] font-bold text-[#9E7208]">03</span>
-                      <span className="font-sans text-xs sm:text-sm font-semibold tracking-tight text-[#0B1F3A]">
+                      <span className="font-sans text-xs sm:text-sm font-semibold tracking-tight text-[#081121]">
                         Monthly Magazine
                       </span>
                     </div>
@@ -303,13 +303,13 @@ export const MiningTruckStory: React.FC = () => {
                   <div className="flex flex-col pl-3.5 sm:pl-0">
                     <div className="flex items-baseline gap-3 border-b border-[#E5E4DE] py-2">
                       <span className="font-mono text-[11px] font-bold text-[#9E7208]">02</span>
-                      <span className="font-sans text-xs sm:text-sm font-semibold tracking-tight text-[#0B1F3A]">
+                      <span className="font-sans text-xs sm:text-sm font-semibold tracking-tight text-[#081121]">
                         Weekly Newsletter
                       </span>
                     </div>
                     <div className="flex items-baseline gap-3 border-b border-[#E5E4DE] py-2">
                       <span className="font-mono text-[11px] font-bold text-[#9E7208]">04</span>
-                      <span className="font-sans text-xs sm:text-sm font-semibold tracking-tight text-[#0B1F3A]">
+                      <span className="font-sans text-xs sm:text-sm font-semibold tracking-tight text-[#081121]">
                         Interactive Platform
                       </span>
                     </div>
@@ -346,7 +346,7 @@ export const MiningTruckStory: React.FC = () => {
 
                 {/* WHO WE ARE Editorial Block */}
                 <div className="w-full flex flex-col pt-0.5 sm:pt-1">
-                  <h3 className="font-serif text-lg sm:text-2xl lg:text-[26px] font-normal leading-[1.18] tracking-[-0.015em] text-[#0B1F3A]">
+                  <h3 className="font-serif text-lg sm:text-2xl lg:text-[26px] font-normal leading-[1.18] tracking-[-0.015em] text-[#081121]">
                     Clarity in an industry crowded with noise.
                   </h3>
                   <p className="mt-1.5 sm:mt-2.5 text-xs sm:text-sm font-normal leading-relaxed text-[#57595E] line-clamp-3 sm:line-clamp-none">
@@ -377,7 +377,7 @@ export const MiningTruckStory: React.FC = () => {
 
                 {/* Headline & Body */}
                 <div className="w-full flex flex-col">
-                  <h3 className="font-serif text-lg sm:text-2xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#0B1F3A]">
+                  <h3 className="font-serif text-lg sm:text-2xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#081121]">
                     The beats that actually move markets.
                   </h3>
                   <p className="mt-1 sm:mt-3 text-xs sm:text-sm font-normal leading-relaxed text-[#57595E] hidden sm:block">
@@ -401,7 +401,7 @@ export const MiningTruckStory: React.FC = () => {
                         <span className="font-mono text-[9.5px] sm:text-[11px] tabular-nums font-bold text-[#9E7208]">
                           {String(itemIndex + 1).padStart(2, "0")}
                         </span>
-                        <span className="font-sans text-[11px] sm:text-sm font-medium tracking-tight text-[#0B1F3A] truncate">
+                        <span className="font-sans text-[11px] sm:text-sm font-medium tracking-tight text-[#081121] truncate">
                           {item}
                         </span>
                       </li>
@@ -439,7 +439,7 @@ export const MiningTruckStory: React.FC = () => {
 
                 {/* Large Distinct Heading */}
                 <div className="w-full flex flex-col">
-                  <h3 className="font-serif text-lg sm:text-2xl lg:text-[38px] font-normal leading-[1.14] tracking-[-0.018em] text-[#0B1F3A]">
+                  <h3 className="font-serif text-lg sm:text-2xl lg:text-[38px] font-normal leading-[1.14] tracking-[-0.018em] text-[#081121]">
                     We don&apos;t just report the ground. We understand what&apos;s beneath it.
                   </h3>
                 </div>
@@ -463,7 +463,7 @@ export const MiningTruckStory: React.FC = () => {
                   <div className="mt-4 sm:mt-7 pointer-events-auto">
                     <Link
                       href="/about"
-                      className="group inline-flex items-center gap-2 sm:gap-2.5 rounded-lg bg-[#B8860B] px-5 py-2.5 sm:px-6 sm:py-3 font-sans text-xs font-semibold uppercase tracking-wider text-[#0B1F3A] shadow-sm transition-all duration-300 hover:bg-[#D4AF37] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
+                      className="group inline-flex items-center gap-2 sm:gap-2.5 rounded-lg bg-[#B8860B] px-5 py-2.5 sm:px-6 sm:py-3 font-sans text-xs font-semibold uppercase tracking-wider text-[#081121] shadow-sm transition-all duration-300 hover:bg-[#D4AF37] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
                     >
                       <span>Learn More About Us</span>
                       <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />

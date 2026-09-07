@@ -27,7 +27,7 @@ const PURPOSES = [
 
 export const AboutPurpose: React.FC = () => {
   return (
-    <section className="bg-[#0B1F3A] relative overflow-hidden py-20 sm:py-24 text-white">
+    <section className="bg-[#081121] relative overflow-hidden py-20 sm:py-24 text-white">
       {/* Background radial gold glow */}
       <div className="absolute inset-0 opacity-15 pointer-events-none">
         <div className="absolute top-0 left-0 h-full w-full bg-[radial-gradient(circle_at_50%_50%,#B8860B_0%,transparent_70%)]" />
@@ -46,7 +46,7 @@ export const AboutPurpose: React.FC = () => {
               key={purpose.num}
               className="group rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 hover:border-white/20"
             >
-              <div className="bg-[#B8860B] text-[#0B1F3A] mb-6 flex size-10 items-center justify-center rounded-full font-black text-base shadow-md">
+              <div className="bg-[#B8860B] text-[#081121] mb-6 flex size-10 items-center justify-center rounded-full font-black text-base shadow-md">
                 {purpose.num}
               </div>
               <h4 className="mb-4 text-xl font-black tracking-tighter text-white uppercase">

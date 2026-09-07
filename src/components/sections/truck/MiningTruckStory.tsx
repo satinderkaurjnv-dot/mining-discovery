@@ -317,25 +317,25 @@ export const MiningTruckStory: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                className="pointer-events-none absolute left-6 top-10 bottom-10 z-20 w-[420px] xl:w-[460px] 2xl:w-[480px] sm:left-10 lg:left-14 flex flex-col justify-center gap-5"
+                className="pointer-events-none absolute z-20 flex flex-col justify-center gap-3 sm:gap-5 left-4 sm:left-10 lg:left-14 right-4 sm:right-auto top-12 sm:top-10 bottom-auto lg:bottom-10 max-lg:bg-white/95 max-lg:p-4 sm:max-lg:p-5 max-lg:rounded-xl max-lg:shadow-lg max-lg:border max-lg:border-[#E5E4DE] max-lg:backdrop-blur-md w-auto lg:w-[420px] xl:w-[460px] 2xl:w-[480px]"
               >
                 {/* Eyebrow with gold hairline */}
-                <div className="flex flex-col items-start gap-2">
-                  <div className="w-10 h-0.5 bg-[#B8860B]" />
+                <div className="flex flex-col items-start gap-1.5 sm:gap-2">
+                  <div className="w-8 sm:w-10 h-0.5 bg-[#B8860B]" />
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B] animate-pulse" />
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[#9E7208]">
+                    <span className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#9E7208]">
                       STAGE 01 // WHO WE ARE
                     </span>
                   </div>
                 </div>
 
                 {/* WHO WE ARE Editorial Block */}
-                <div className="w-full flex flex-col pt-1">
-                  <h3 className="font-serif text-xl sm:text-2xl lg:text-[26px] font-normal leading-[1.18] tracking-[-0.015em] text-[#0B1F3A]">
+                <div className="w-full flex flex-col pt-0.5 sm:pt-1">
+                  <h3 className="font-serif text-lg sm:text-2xl lg:text-[26px] font-normal leading-[1.18] tracking-[-0.015em] text-[#0B1F3A]">
                     Clarity in an industry crowded with noise.
                   </h3>
-                  <p className="mt-2.5 text-xs sm:text-sm font-normal leading-relaxed text-[#57595E]">
+                  <p className="mt-1.5 sm:mt-2.5 text-xs sm:text-sm font-normal leading-relaxed text-[#57595E] line-clamp-3 sm:line-clamp-none">
                     Mining Discovery started from a single conviction — that a sector this consequential deserves reporting that cuts through the noise and the half-truths. Mining was never only rocks and machinery. It is people, communities, economies, and a meaningful share of the planet&apos;s future, and we cover it that way.
                   </p>
                 </div>
@@ -348,14 +348,14 @@ export const MiningTruckStory: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 30 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                className="pointer-events-none absolute right-6 top-10 bottom-10 z-20 w-[420px] xl:w-[460px] 2xl:w-[500px] sm:right-10 lg:right-14 flex flex-col justify-center gap-5"
+                className="pointer-events-none absolute z-20 flex flex-col justify-center gap-3 sm:gap-5 right-4 sm:right-10 lg:right-14 left-4 sm:left-auto bottom-12 sm:bottom-10 top-auto lg:top-10 max-lg:bg-white/95 max-lg:p-4 sm:max-lg:p-5 max-lg:rounded-xl max-lg:shadow-lg max-lg:border max-lg:border-[#E5E4DE] max-lg:backdrop-blur-md w-auto lg:w-[420px] xl:w-[460px] 2xl:w-[500px]"
               >
                 {/* Eyebrow / Stage tag */}
-                <div className="flex flex-col items-start gap-2">
-                  <div className="w-10 h-0.5 bg-[#B8860B]" />
+                <div className="flex flex-col items-start gap-1.5 sm:gap-2">
+                  <div className="w-8 sm:w-10 h-0.5 bg-[#B8860B]" />
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B] animate-pulse" />
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[#9E7208]">
+                    <span className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#9E7208]">
                       STAGE 02 // OUR EXPERTISE
                     </span>
                   </div>
@@ -363,15 +363,15 @@ export const MiningTruckStory: React.FC = () => {
 
                 {/* Headline & Body */}
                 <div className="w-full flex flex-col">
-                  <h3 className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#0B1F3A]">
+                  <h3 className="font-serif text-lg sm:text-2xl lg:text-[34px] font-normal leading-[1.16] tracking-[-0.015em] text-[#0B1F3A]">
                     The beats that actually move markets.
                   </h3>
-                  <p className="mt-3 text-xs sm:text-sm font-normal leading-relaxed text-[#57595E]">
+                  <p className="mt-1 sm:mt-3 text-xs sm:text-sm font-normal leading-relaxed text-[#57595E] hidden sm:block">
                     The industry had no dedicated, trustworthy voice for the stories that carry weight. These are the ones we committed to covering properly.
                   </p>
 
                   {/* 6 Key Areas (Grid of 2 columns) */}
-                  <ul className="mt-5 grid grid-cols-1 border-l-2 border-[#B8860B]/40 sm:grid-cols-2 sm:gap-x-4">
+                  <ul className="mt-2.5 sm:mt-5 grid grid-cols-2 border-l-2 border-[#B8860B]/40 gap-x-2 sm:gap-x-4">
                     {[
                       "Corporate actions",
                       "Sustainability",
@@ -382,12 +382,12 @@ export const MiningTruckStory: React.FC = () => {
                     ].map((item, itemIndex) => (
                       <li
                         key={item}
-                        className="flex items-baseline gap-2.5 border-b border-[#E5E4DE] py-2 pl-3"
+                        className="flex items-baseline gap-1.5 sm:gap-2.5 border-b border-[#E5E4DE] py-1.5 sm:py-2 pl-2 sm:pl-3"
                       >
-                        <span className="font-mono text-[11px] tabular-nums font-bold text-[#9E7208]">
+                        <span className="font-mono text-[9.5px] sm:text-[11px] tabular-nums font-bold text-[#9E7208]">
                           {String(itemIndex + 1).padStart(2, "0")}
                         </span>
-                        <span className="font-sans text-xs sm:text-sm font-medium tracking-tight text-[#0B1F3A]">
+                        <span className="font-sans text-[11px] sm:text-sm font-medium tracking-tight text-[#0B1F3A] truncate">
                           {item}
                         </span>
                       </li>
@@ -410,14 +410,14 @@ export const MiningTruckStory: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -30 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                className="pointer-events-none absolute left-6 top-10 bottom-10 z-20 w-[420px] xl:w-[460px] 2xl:w-[480px] sm:left-10 lg:left-14 flex flex-col justify-center gap-5"
+                className="pointer-events-none absolute z-20 flex flex-col justify-center gap-3 sm:gap-5 left-4 sm:left-10 lg:left-14 right-4 sm:right-auto top-12 sm:top-10 bottom-auto lg:bottom-10 max-lg:bg-white/95 max-lg:p-4 sm:max-lg:p-5 max-lg:rounded-xl max-lg:shadow-lg max-lg:border max-lg:border-[#E5E4DE] max-lg:backdrop-blur-md w-auto lg:w-[420px] xl:w-[460px] 2xl:w-[480px]"
               >
                 {/* Eyebrow / Stage tag */}
-                <div className="flex flex-col items-start gap-2">
-                  <div className="w-10 h-0.5 bg-[#B8860B]" />
+                <div className="flex flex-col items-start gap-1.5 sm:gap-2">
+                  <div className="w-8 sm:w-10 h-0.5 bg-[#B8860B]" />
                   <div className="flex items-center gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#B8860B] animate-pulse" />
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-[#9E7208]">
+                    <span className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.2em] text-[#9E7208]">
                       STAGE 03 // OUR APPROACH
                     </span>
                   </div>
@@ -425,7 +425,7 @@ export const MiningTruckStory: React.FC = () => {
 
                 {/* Large Distinct Heading */}
                 <div className="w-full flex flex-col">
-                  <h3 className="font-serif text-2xl sm:text-3xl lg:text-[38px] font-normal leading-[1.14] tracking-[-0.018em] text-[#0B1F3A]">
+                  <h3 className="font-serif text-lg sm:text-2xl lg:text-[38px] font-normal leading-[1.14] tracking-[-0.018em] text-[#0B1F3A]">
                     We don&apos;t just report the ground. We understand what&apos;s beneath it.
                   </h3>
                 </div>
@@ -438,18 +438,18 @@ export const MiningTruckStory: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 30 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                className="pointer-events-none absolute right-6 top-10 bottom-10 z-20 w-[420px] xl:w-[460px] 2xl:w-[500px] sm:right-10 lg:right-14 flex flex-col justify-center gap-6"
+                className="pointer-events-none absolute z-20 flex flex-col justify-center gap-3 sm:gap-6 right-4 sm:right-10 lg:right-14 left-4 sm:left-auto bottom-12 sm:bottom-10 top-auto lg:top-10 max-lg:bg-white/95 max-lg:p-4 sm:max-lg:p-5 max-lg:rounded-xl max-lg:shadow-lg max-lg:border max-lg:border-[#E5E4DE] max-lg:backdrop-blur-md w-auto lg:w-[420px] xl:w-[460px] 2xl:w-[500px]"
               >
                 <div className="w-full flex flex-col">
-                  <p className="text-sm sm:text-base lg:text-[17px] font-normal leading-relaxed text-[#57595E]">
+                  <p className="text-xs sm:text-base lg:text-[17px] font-normal leading-relaxed text-[#57595E] line-clamp-4 sm:line-clamp-none">
                     Our founder leads on a conviction that the global mining industry deserves better communication than it has had, with particular attention to U.S. markets. Our co-founder brings deep digital expertise across SEO, paid media and content strategy — building visibility that reaches the audiences who actually move markets.
                   </p>
 
                   {/* Call to Action Button */}
-                  <div className="mt-7 pointer-events-auto">
+                  <div className="mt-4 sm:mt-7 pointer-events-auto">
                     <Link
                       href="/about"
-                      className="group inline-flex items-center gap-2.5 rounded-lg bg-[#B8860B] px-6 py-3 font-sans text-xs font-semibold uppercase tracking-wider text-[#0B1F3A] shadow-sm transition-all duration-300 hover:bg-[#D4AF37] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
+                      className="group inline-flex items-center gap-2 sm:gap-2.5 rounded-lg bg-[#B8860B] px-5 py-2.5 sm:px-6 sm:py-3 font-sans text-xs font-semibold uppercase tracking-wider text-[#0B1F3A] shadow-sm transition-all duration-300 hover:bg-[#D4AF37] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B]"
                     >
                       <span>Learn More About Us</span>
                       <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />

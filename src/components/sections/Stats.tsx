@@ -474,7 +474,7 @@ const PrimaryCounter: React.FC<{ target: number; isInView: boolean }> = ({
     <motion.div
       whileHover={{ scale: 1.015 }}
       transition={{ duration: 0.2 }}
-      className="font-serif text-5xl sm:text-7xl lg:text-8xl font-normal text-[#0B1F3A] tracking-tight leading-none group-hover:text-[#B8860B] transition-colors duration-300 will-change-transform"
+      className="font-serif text-[clamp(2.5rem,8.5vw,6rem)] sm:text-7xl lg:text-8xl font-normal text-[#0B1F3A] tracking-tight leading-none group-hover:text-[#B8860B] transition-colors duration-300 will-change-transform"
     >
       {count.toLocaleString()}+
     </motion.div>
@@ -504,7 +504,7 @@ const SecondaryStatCard: React.FC<{
       transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
       onMouseEnter={onHover}
       whileHover={{ y: -3 }}
-      className={`group relative p-5 sm:p-6 bg-white/85 backdrop-blur-xs border border-[#E5E4DE] rounded-lg transition-all duration-300 hover:shadow-sm hover:border-[#B8860B]/40 ${
+      className={`group relative p-4 sm:p-6 bg-white/85 backdrop-blur-xs border border-[#E5E4DE] rounded-lg transition-all duration-300 hover:shadow-sm hover:border-[#B8860B]/40 ${
         isActive ? "border-[#B8860B]/50 bg-[#FAF5E8]/30" : ""
       }`}
     >
@@ -520,7 +520,7 @@ const SecondaryStatCard: React.FC<{
       <motion.div
         whileHover={{ scale: 1.015 }}
         transition={{ duration: 0.2 }}
-        className="font-serif text-4xl sm:text-5xl lg:text-6xl font-normal text-[#0B1F3A] tracking-tight leading-none group-hover:text-[#B8860B] transition-colors duration-300 will-change-transform"
+        className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[#0B1F3A] tracking-tight leading-none group-hover:text-[#B8860B] transition-colors duration-300 will-change-transform"
       >
         {count.toLocaleString()}+
       </motion.div>

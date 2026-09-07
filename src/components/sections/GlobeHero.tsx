@@ -267,45 +267,45 @@ export const GlobeHero: React.FC = () => {
             {/* FLOATING SCREEN-LOCKED COUNTRY HUD OVERLAY (Positioned top-left to never block the globe circles) */}
             <div
               className={`
-                pointer-events-none absolute top-16 sm:top-20 left-4 sm:left-8 lg:left-12 z-20 flex transition-all duration-500 ease-out
+                pointer-events-none absolute top-12 sm:top-16 lg:top-20 left-3 sm:left-8 lg:left-12 right-3 sm:right-auto z-20 flex transition-all duration-500 ease-out
                 ${isTourActive ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-6 pointer-events-none"}
               `}
             >
-              <div className="pointer-events-auto w-full max-w-sm sm:max-w-md rounded-2xl border border-[#B8860B]/45 bg-[#0B1F3A]/92 p-4 sm:p-5 backdrop-blur-xl shadow-2xl shadow-black/70 transition-all duration-300 hover:border-[#FFAE00]/70">
+              <div className="pointer-events-auto w-full max-w-[calc(100vw-1.5rem)] sm:max-w-md rounded-2xl border border-[#B8860B]/45 bg-[#0B1F3A]/92 p-3.5 sm:p-5 backdrop-blur-xl shadow-2xl shadow-black/70 transition-all duration-300 hover:border-[#FFAE00]/70">
                 {/* Stage Header & Status Bar */}
-                <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
-                  <div className="flex items-center gap-2">
-                    <span className="relative flex h-2.5 w-2.5">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <div className="flex items-center gap-1.5 sm:gap-2">
+                    <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
                       <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FFAE00] opacity-75" />
-                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#FFD700]" />
+                      <span className="relative inline-flex h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full bg-[#FFD700]" />
                     </span>
-                    <span className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[#FFAE00]">
+                    <span className="font-mono text-[9.5px] sm:text-[11px] font-bold uppercase tracking-[0.14em] sm:tracking-[0.18em] text-[#FFAE00]">
                       LOCKED JURISDICTION {activeCountryIdx + 1} OF {MINING_HUBS.length}
                     </span>
                   </div>
 
-                  <span className="font-mono text-[10.5px] font-semibold text-slate-400">
+                  <span className="font-mono text-[9.5px] sm:text-[10.5px] font-semibold text-slate-400">
                     {activeHub.countryCode}
                   </span>
                 </div>
 
                 {/* Country Main Info */}
-                <div className="mt-3">
-                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
-                    <h2 className="font-geist text-xl sm:text-2xl font-extrabold uppercase tracking-tight text-white">
+                <div className="mt-2.5 sm:mt-3">
+                  <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-0.5 sm:gap-1">
+                    <h2 className="font-geist text-lg sm:text-2xl font-extrabold uppercase tracking-tight text-white">
                       {activeHub.name}
                     </h2>
-                    <span className="font-mono text-[10.5px] font-semibold tracking-wider text-[#FFD700]/90">
+                    <span className="font-mono text-[9.5px] sm:text-[10.5px] font-semibold tracking-wider text-[#FFD700]/90">
                       {activeHub.region}
                     </span>
                   </div>
 
                   {/* Mineral Tag Badges */}
-                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                  <div className="mt-2 sm:mt-2.5 flex flex-wrap gap-1 sm:gap-1.5">
                     {activeHub.mineralTags.map((tag, i) => (
                       <span
                         key={i}
-                        className="inline-flex items-center rounded-md border border-[#B8860B]/35 bg-[#162E50]/80 px-2 py-0.5 font-mono text-[9.5px] sm:text-[10px] font-medium uppercase tracking-wider text-amber-200 shadow-xs"
+                        className="inline-flex items-center rounded-md border border-[#B8860B]/35 bg-[#162E50]/80 px-1.5 sm:px-2 py-0.5 font-mono text-[8.5px] sm:text-[10px] font-medium uppercase tracking-wider text-amber-200 shadow-xs"
                       >
                         {tag}
                       </span>
@@ -313,28 +313,28 @@ export const GlobeHero: React.FC = () => {
                   </div>
 
                   {/* Description */}
-                  <p className="mt-2.5 text-[12px] sm:text-[13px] leading-relaxed text-slate-300">
+                  <p className="mt-2 sm:mt-2.5 text-[11px] sm:text-[13px] leading-relaxed text-slate-300 line-clamp-3 sm:line-clamp-none">
                     {activeHub.description}
                   </p>
                 </div>
 
                 {/* Interactive Stage Lock Stepper Navigation Bar */}
-                <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3">
-                  <div className="flex items-center gap-1 sm:gap-1.5">
+                <div className="mt-3 sm:mt-4 flex items-center justify-between border-t border-white/10 pt-2.5 sm:pt-3 gap-2">
+                  <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                     {MINING_HUBS.map((hub, idx) => {
                       const isActive = idx === activeCountryIdx;
                       return (
                         <button
                           key={hub.id}
                           onClick={() => scrollToCountry(idx)}
-                          className={`group relative flex items-center justify-center rounded-lg transition-all duration-200 px-2 sm:px-2.5 py-1 ${
+                          className={`group relative flex shrink-0 items-center justify-center rounded-lg transition-all duration-200 px-2 sm:px-2.5 py-1 ${
                             isActive
                               ? "bg-[#B8860B] text-white font-bold shadow-md shadow-[#B8860B]/40 scale-105"
                               : "bg-white/5 text-slate-400 hover:bg-white/15 hover:text-white"
                           }`}
                           aria-label={`Jump to ${hub.name}`}
                         >
-                          <span className="font-mono text-[10px] sm:text-[11px]">
+                          <span className="font-mono text-[9.5px] sm:text-[11px]">
                             0{idx + 1}
                           </span>
                         </button>
@@ -342,8 +342,8 @@ export const GlobeHero: React.FC = () => {
                     })}
                   </div>
 
-                  <div className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
-                    <span>Scroll to explore</span>
+                  <div className="flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-slate-400 shrink-0">
+                    <span className="hidden xs:inline">Scroll</span>
                     <ChevronRight className="h-3.5 w-3.5 text-[#FFAE00] animate-pulse" />
                   </div>
                 </div>

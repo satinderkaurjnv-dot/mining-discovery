@@ -101,9 +101,9 @@ export const Footer: React.FC = () => {
           it that while leaving the four link columns exactly equal — which is what
           repeat(4, 1fr) would have done had the brand not been in the same row.
         */}
-        <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-12">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-8 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-12">
           {/* Brand */}
-          <RevealItem className="lg:col-span-4">
+          <RevealItem className="col-span-2 sm:col-span-2 lg:col-span-4">
             <Link
               href="/"
               className="inline-flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B1F3A]"
@@ -114,11 +114,11 @@ export const Footer: React.FC = () => {
                 alt="Mining Discovery Logo"
                 width={220}
                 height={85}
-                className="h-11 w-auto object-contain sm:h-12"
+                className="h-9 sm:h-11 md:h-12 w-auto object-contain"
               />
             </Link>
 
-            <p className="mt-5 max-w-sm text-sm font-normal leading-relaxed text-[#F0F4F8]/70">
+            <p className="mt-4 sm:mt-5 max-w-sm text-xs sm:text-sm font-normal leading-relaxed text-[#F0F4F8]/70">
               Mining Discovery is your trusted source for in-depth mining news, executive
               profiles, company insights, and industry analysis — connecting the global
               mining community with the stories that matter.
@@ -127,17 +127,17 @@ export const Footer: React.FC = () => {
 
           {/* Link columns */}
           {COLUMNS.map((column) => (
-            <RevealItem key={column.heading} className="lg:col-span-2">
+            <RevealItem key={column.heading} className="col-span-1 lg:col-span-2">
               <nav aria-label={column.heading}>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-[#D4AF37]">
+                <h2 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.12em] text-[#D4AF37]">
                   {column.heading}
                 </h2>
-                <ul className="mt-5 space-y-4">
+                <ul className="mt-3 sm:mt-5 space-y-2.5 sm:space-y-4">
                   {column.links.map((link) => (
                     <li key={link.name}>
                       <Link
                         href={link.href}
-                        className="text-sm font-normal text-[#F0F4F8]/70 underline-offset-4 transition-colors duration-200 hover:text-[#D4AF37] hover:underline focus:outline-none focus-visible:text-[#D4AF37] focus-visible:underline"
+                        className="text-xs sm:text-sm font-normal text-[#F0F4F8]/70 underline-offset-4 transition-colors duration-200 hover:text-[#D4AF37] hover:underline focus:outline-none focus-visible:text-[#D4AF37] focus-visible:underline"
                       >
                         {link.name}
                       </Link>
@@ -149,11 +149,11 @@ export const Footer: React.FC = () => {
           ))}
 
           {/* Social */}
-          <RevealItem className="lg:col-span-2">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-[#D4AF37]">
+          <RevealItem className="col-span-2 sm:col-span-2 lg:col-span-2">
+            <h2 className="text-xs sm:text-sm font-semibold uppercase tracking-[0.12em] text-[#D4AF37]">
               Follow Us
             </h2>
-            <ul className="mt-5 flex flex-wrap gap-3">
+            <ul className="mt-3 sm:mt-5 flex flex-wrap gap-2.5 sm:gap-3">
               {SOCIALS.map((social) => (
                 <li key={social.name}>
                   <a

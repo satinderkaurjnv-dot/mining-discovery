@@ -39,6 +39,17 @@ export const Header: React.FC = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
+
   return (
     <header className="fixed top-0 z-50 w-full font-sans bg-[#0B1F3A] backdrop-blur-md border-b border-white/10 shadow-lg py-2.5 transition-all duration-300">
       {/* Full-width container */}
@@ -56,7 +67,7 @@ export const Header: React.FC = () => {
             height={85}
             priority
             loading="eager"
-            className="h-11 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-102"
+            className="h-9 sm:h-11 md:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-102"
           />
         </Link>
 
@@ -89,10 +100,10 @@ export const Header: React.FC = () => {
         <button
           type="button"
           onClick={() => setMobileMenuOpen(true)}
-          className="lg:hidden p-1.5 rounded-md text-white hover:bg-white/10 focus:outline-none transition-colors"
+          className="lg:hidden p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-white hover:bg-white/10 active:bg-white/20 focus:outline-none transition-colors"
           aria-label="Open navigation menu"
         >
-          <Menu className="w-5 h-5" />
+          <Menu className="w-6 h-6" />
         </button>
       </div>
 
@@ -101,15 +112,15 @@ export const Header: React.FC = () => {
         <div className="fixed inset-0 z-50 lg:hidden">
           {/* Backdrop */}
           <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-xs transition-opacity duration-300"
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
             onClick={() => setMobileMenuOpen(false)}
           />
 
           {/* Drawer Content */}
-          <div className="fixed inset-y-0 right-0 w-full max-w-xs bg-[#0B1F3A] text-white shadow-2xl p-6 flex flex-col justify-between transform transition-transform duration-300 ease-out border-l border-white/15 font-sans">
+          <div className="fixed inset-y-0 right-0 w-full max-w-[280px] sm:max-w-xs h-[100dvh] bg-[#0B1F3A] text-white shadow-2xl p-5 sm:p-6 flex flex-col justify-between transform transition-transform duration-300 ease-out border-l border-white/15 font-sans overflow-y-auto">
             <div>
               {/* Drawer Header */}
-              <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-6">
+              <div className="flex items-center justify-between border-b border-white/15 pb-4 mb-5">
                 <Link
                   href="/"
                   onClick={() => setMobileMenuOpen(false)}
@@ -127,7 +138,7 @@ export const Header: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/10 focus:outline-none"
+                  className="p-2 min-h-[40px] min-w-[40px] flex items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20 focus:outline-none"
                   aria-label="Close navigation menu"
                 >
                   <X className="w-5 h-5" />
@@ -135,28 +146,29 @@ export const Header: React.FC = () => {
               </div>
 
               {/* Mobile Nav Links */}
-              <nav className="flex flex-col gap-4">
+              <nav className="flex flex-col gap-1">
                 {navLinks.map((link) => (
                   <Link
                     key={link.name}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="text-sm font-semibold uppercase tracking-wider text-white/90 hover:text-[#D4AF37] py-1 border-b border-white/10 transition-colors"
+                    className="text-xs sm:text-sm font-semibold uppercase tracking-wider text-white/90 hover:text-[#D4AF37] py-3 px-2 rounded-md hover:bg-white/5 border-b border-white/10 transition-colors flex items-center justify-between"
                   >
-                    {link.name}
+                    <span>{link.name}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-white/40" />
                   </Link>
                 ))}
               </nav>
             </div>
 
             {/* Mobile CTA */}
-            <div className="pt-6 border-t border-white/15">
+            <div className="pt-5 border-t border-white/15 mt-4">
               <Button
                 variant="gold"
                 size="md"
                 fullWidth
                 onClick={() => setMobileMenuOpen(false)}
-                className="font-sans font-semibold tracking-wide text-[#0B1F3A] bg-[#B8860B] hover:bg-[#D4AF37] shadow-md"
+                className="font-sans font-semibold tracking-wide text-[#0B1F3A] bg-[#B8860B] hover:bg-[#D4AF37] shadow-md py-3 text-xs"
               >
                 Get Featured
                 <ArrowRight className="w-4 h-4 ml-1" />

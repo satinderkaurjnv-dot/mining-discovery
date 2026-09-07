@@ -451,7 +451,7 @@ const CompanyCard: React.FC<{
 }> = ({ company, nodeIndex }) => {
   return (
     <div
-      className="group relative flex h-[84px] w-[188px] sm:h-[94px] sm:w-[220px] lg:h-[102px] lg:w-[245px] shrink-0 items-center justify-center rounded-xl border border-[#E8E8E6] bg-white px-4 sm:px-5 transition-all duration-350 ease-out cursor-pointer shadow-2xs group-hover/row:opacity-85 hover:!opacity-100 hover:!-translate-y-[3px] hover:!scale-[1.015] hover:z-30 hover:border-[#B8860B]/50 hover:shadow-[0_8px_22px_rgba(184,134,11,0.12)]"
+      className="group relative flex h-[74px] w-[160px] sm:h-[94px] sm:w-[220px] lg:h-[102px] lg:w-[245px] shrink-0 items-center justify-center rounded-xl border border-[#E8E8E6] bg-white px-3 sm:px-5 transition-all duration-350 ease-out cursor-pointer shadow-2xs group-hover/row:opacity-85 hover:!opacity-100 hover:!-translate-y-[3px] hover:!scale-[1.015] hover:z-30 hover:border-[#B8860B]/50 hover:shadow-[0_8px_22px_rgba(184,134,11,0.12)]"
       style={{
         backgroundImage: "radial-gradient(circle at center, rgba(184, 134, 11, 0.025), transparent 75%)",
       }}

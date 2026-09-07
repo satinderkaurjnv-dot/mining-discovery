@@ -91,10 +91,10 @@ export const ContactInformation: React.FC = () => {
               */}
               <a
                 href={`mailto:${CONTACT.email}`}
-                className="group/email mt-4 inline-flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-4"
+                className="group/email mt-4 inline-flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#B8860B] focus-visible:ring-offset-4 max-w-full"
               >
                 <span className="relative">
-                  <span className="font-geist text-[clamp(1.25rem,2.8vw,2rem)] font-semibold tracking-[-0.02em] text-[#0B1F3A] transition-colors duration-300 group-hover/email:text-[#B8860B]">
+                  <span className="font-geist text-[clamp(1.15rem,2.8vw,2rem)] font-semibold tracking-[-0.02em] text-[#0B1F3A] transition-colors duration-300 group-hover/email:text-[#B8860B] break-all sm:break-normal">
                     {CONTACT.email}
                   </span>
                   {/*

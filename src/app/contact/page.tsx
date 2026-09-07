@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { ContactHero, ContactInformation } from "@/components/contact";
+import { ContactHero, ContactInformation, ContactNewsletter } from "@/components/contact";
+import { AboutTrustedBrands } from "@/components/about";
 
 export const metadata: Metadata = {
   title: "Contact Us | Mining Discovery",
@@ -14,6 +15,12 @@ export default function ContactPage() {
 
       {/* 02 — Main Contact Form & Details Grid */}
       <ContactInformation />
+
+      {/* 03 — Our Trusted Brands */}
+      <AboutTrustedBrands />
+
+      {/* 04 — Subscribe to Our Latest News & Updates */}
+      <ContactNewsletter />
     </div>
   );
 }

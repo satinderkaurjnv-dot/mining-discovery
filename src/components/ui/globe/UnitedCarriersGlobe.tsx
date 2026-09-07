@@ -167,6 +167,31 @@ function createBeaconStarburstTexture(size = 128): THREE.CanvasTexture {
   return tex;
 }
 
+// Module-level preloader & cache singleton for instant globe display
+let cachedEarthGltfPromise: Promise<any> | null = null;
+function getEarthGltf(): Promise<any> {
+  if (!cachedEarthGltfPromise) {
+    const loader = new GLTFLoader();
+    cachedEarthGltfPromise = new Promise((resolve, reject) => {
+      loader.load(
+        "/assets/mining/earth.glb",
+        (gltf) => resolve(gltf),
+        undefined,
+        (err) => {
+          cachedEarthGltfPromise = null;
+          reject(err);
+        }
+      );
+    });
+  }
+  return cachedEarthGltfPromise;
+}
+
+// Start downloading immediately in the browser
+if (typeof window !== "undefined") {
+  getEarthGltf().catch(() => {});
+}
+
 export interface UnitedCarriersGlobeProps {
   className?: string;
   scrollProgress?: number;
@@ -259,13 +284,11 @@ export function UnitedCarriersGlobe({
 
     let mixer: THREE.AnimationMixer | null = null;
 
-    // 1. Load Genuine 3D Earth Model (earth.glb)
-    const gltfLoader = new GLTFLoader();
-    gltfLoader.load(
-      "/assets/mining/earth.glb",
-      (gltf) => {
+    // 1. Load Genuine 3D Earth Model (earth.glb) via cached preloaded singleton
+    getEarthGltf()
+      .then((gltf) => {
         if (isDisposed) return;
-        const model = gltf.scene;
+        const model = gltf.scene.clone(true);
 
         // Auto-scale model to exact radius 1.0 (diameter 2.0)
         const box = new THREE.Box3().setFromObject(model);
@@ -281,7 +304,7 @@ export function UnitedCarriersGlobe({
         model.position.sub(center.multiplyScalar(scaleFactor));
 
         // Configure textures and materials
-        model.traverse((child) => {
+        model.traverse((child: any) => {
           if ((child as THREE.Mesh).isMesh) {
             const mesh = child as THREE.Mesh;
             if (mesh.material) {
@@ -302,16 +325,14 @@ export function UnitedCarriersGlobe({
         // Cloud rotation animation
         if (gltf.animations && gltf.animations.length > 0) {
           mixer = new THREE.AnimationMixer(model);
-          gltf.animations.forEach((clip) => {
+          gltf.animations.forEach((clip: any) => {
             mixer?.clipAction(clip).play();
           });
         }
 
         globeGroup.add(model);
-      },
-      undefined,
-      (err) => console.error("earth.glb load error:", err)
-    );
+      })
+      .catch((err) => console.error("earth.glb load error:", err));
 
     let targetFocusRotY: number | null = null;
     let targetFocusRotX: number | null = null;

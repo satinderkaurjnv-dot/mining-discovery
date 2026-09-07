@@ -17,6 +17,17 @@ export const ContactInformation: React.FC = () => {
   return (
     <section className="pt-24 pb-8 sm:pt-28 sm:pb-10 lg:pt-32 lg:pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Contact Us Heading (clean on-screen text without blue hero block) */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#081121] tracking-tight">
+            Contact <span className="text-[#B8860B]">Us</span>
+          </h1>
+          <div className="mt-3 flex items-center">
+            <div className="size-2.5 shrink-0 rounded-full bg-[#B8860B]" />
+            <div className="h-px w-40 bg-gradient-to-r from-[#081121] to-transparent" />
+          </div>
+        </div>
+
         <div className="overflow-hidden rounded-2xl bg-white shadow-[0_0_60px_30px_rgba(0,0,0,0.04)] lg:grid lg:grid-cols-[360px_1fr]">
           {/* Left Column (360px): Navy card */}
           <div className="relative overflow-hidden bg-[#081121] px-10 py-12">

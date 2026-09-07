@@ -10,47 +10,14 @@ import {
   useTransform,
 } from "framer-motion";
 
-interface Company {
-  name: string;
-  logo: string;
-}
+import { TRUSTED_BRANDS, type TrustedBrand } from "@/data/trustedBrands";
 
-const companies: Company[] = [
-  { name: "Arras Minerals", logo: "https://www.miningdiscovery.com/trustedbrands/ARRAS Minerals LOGO.png" },
-  { name: "Afrikor", logo: "https://www.miningdiscovery.com/trustedbrands/Afrikor LOGO.png" },
-  { name: "Arizona Gold & Silver", logo: "https://www.miningdiscovery.com/trustedbrands/Arizona Gold & Silver LOGO.png" },
-  { name: "Astra Exploration", logo: "https://www.miningdiscovery.com/trustedbrands/Astra Exploration LOGO.png" },
-  { name: "Aurion Resources", logo: "https://www.miningdiscovery.com/trustedbrands/Aurion Resources LOGO.png" },
-  { name: "Bluenergies", logo: "https://www.miningdiscovery.com/trustedbrands/BBluenergies LOGO.png" },
-  { name: "Bactech", logo: "https://www.miningdiscovery.com/trustedbrands/Bactech LOGO.png" },
-  { name: "Digipower X", logo: "https://www.miningdiscovery.com/trustedbrands/DIGIPOWER X LOGO.png" },
-  { name: "Gold Hunter Resources", logo: "https://www.miningdiscovery.com/trustedbrands/Gold Hunter Resources LOGO.png" },
-  { name: "Golkor", logo: "https://www.miningdiscovery.com/trustedbrands/Golkor LOGO.png" },
-  { name: "Guanajuato", logo: "https://www.miningdiscovery.com/trustedbrands/Guanajuato LOGO.png" },
-  { name: "Harfang", logo: "https://www.miningdiscovery.com/trustedbrands/Harfang LOGO.png" },
-  { name: "He Capital", logo: "https://www.miningdiscovery.com/trustedbrands/He Capital LOGO.png" },
-  { name: "Kodiak Copper", logo: "https://www.miningdiscovery.com/trustedbrands/Kodiak Copper LOGO.png" },
-  { name: "Leviathan", logo: "https://www.miningdiscovery.com/trustedbrands/Leviathan LOGO.png" },
-  { name: "Loyalist", logo: "https://www.miningdiscovery.com/trustedbrands/Loyalist LOGO.png" },
-  { name: "Mining Investment Event", logo: "https://www.miningdiscovery.com/trustedbrands/Mining Investment Event LOGO.png" },
-  { name: "Noble Plains", logo: "https://www.miningdiscovery.com/trustedbrands/Noble Plains LOGO.png" },
-  { name: "Pan Global", logo: "https://www.miningdiscovery.com/trustedbrands/Pan Global LOGO.png" },
-  { name: "Phenom Resources", logo: "https://www.miningdiscovery.com/trustedbrands/Phenom Resources LOGO.png" },
-  { name: "Power Metallic", logo: "https://www.miningdiscovery.com/trustedbrands/Power Metallic LOGO.png" },
-  { name: "SilverWolf", logo: "https://www.miningdiscovery.com/trustedbrands/SilverWolf LOGO.png" },
-  { name: "Spacekor", logo: "https://www.miningdiscovery.com/trustedbrands/Spacekor LOGO.png" },
-  { name: "US Gold", logo: "https://www.miningdiscovery.com/trustedbrands/US GOLD LOGO.png" },
-  { name: "USDC", logo: "https://www.miningdiscovery.com/trustedbrands/USDC LOGO.png" },
-  { name: "Vivio Power", logo: "https://www.miningdiscovery.com/trustedbrands/Vivio Power LOGO.png" },
-  { name: "West Red Lake", logo: "https://www.miningdiscovery.com/trustedbrands/West Red Lake LOGO.png" },
-];
+// 3 balanced streams across all 26 companies
+const ROW_1 = TRUSTED_BRANDS.slice(0, 9);
+const ROW_2 = TRUSTED_BRANDS.slice(9, 18);
+const ROW_3 = TRUSTED_BRANDS.slice(18, 26);
 
-// 3 balanced streams (9 companies each)
-const ROW_1 = companies.slice(0, 9);
-const ROW_2 = companies.slice(9, 18);
-const ROW_3 = companies.slice(18, 27);
-
-const CompanyLogo: React.FC<{ company: Company; nodeIndex: number }> = ({ company, nodeIndex }) => {
+const CompanyLogo: React.FC<{ company: TrustedBrand; nodeIndex: number }> = ({ company, nodeIndex }) => {
   const [logoAvailable, setLogoAvailable] = useState(true);
 
   if (!logoAvailable) {
@@ -446,7 +413,7 @@ export const TrustedBy: React.FC = () => {
  * - Sibling dimming: same row only drops 10–15% (opacity: 0.85)
  */
 const CompanyCard: React.FC<{
-  company: Company;
+  company: TrustedBrand;
   nodeIndex: number;
 }> = ({ company, nodeIndex }) => {
   return (

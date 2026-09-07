@@ -27,7 +27,7 @@ export const ContactNewsletter: React.FC = () => {
   };
 
   return (
-    <section id="newsletter" className="bg-[#081121] relative w-full overflow-hidden py-20 text-white">
+    <section id="newsletter" className="bg-[#081121] relative w-full overflow-hidden py-12 sm:py-16 text-white">
       {/* Background radial gold glow effect */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute top-0 left-1/2 aspect-square w-[200%] max-w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,#B8860B1F_0%,transparent_70%)]" />

@@ -34,7 +34,7 @@ const BrandCard: React.FC<{ brand: TrustedBrand }> = ({ brand }) => {
 
 export const AboutTrustedBrands: React.FC = () => {
   return (
-    <section className="w-full border-t border-gray-200 bg-white py-14 sm:py-20 overflow-hidden select-none">
+    <section className="w-full border-t border-gray-100 bg-white pt-8 pb-10 sm:pt-10 sm:pb-14 overflow-hidden select-none">
       <style>{`
         @keyframes marquee-left {
           0% { transform: translate3d(0, 0, 0); }
@@ -67,12 +67,12 @@ export const AboutTrustedBrands: React.FC = () => {
       `}</style>
 
       {/* Header Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-10">
-        <div className="mb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+        <div className="mb-3">
           <h2 className="text-[#081121] text-2xl sm:text-3xl font-bold tracking-tight">
             Our Trusted <span className="text-[#B8860B]">Brands</span>
           </h2>
-          <div className="mt-3 flex items-center">
+          <div className="mt-2.5 flex items-center">
             <div className="size-2.5 shrink-0 rounded-full bg-[#B8860B]" />
             <div className="h-px w-40 bg-gradient-to-r from-[#081121] to-transparent" />
           </div>
@@ -80,14 +80,14 @@ export const AboutTrustedBrands: React.FC = () => {
       </div>
 
       {/* 2-Row Continuous Moving Stream Container */}
-      <div className="marquee-container relative flex flex-col gap-4 sm:gap-6 w-full overflow-hidden">
+      <div className="marquee-container relative flex flex-col gap-3.5 sm:gap-5 w-full overflow-hidden">
         {/* Soft Side Fades */}
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 sm:w-16 lg:w-24 bg-gradient-to-r from-white to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 sm:w-16 lg:w-24 bg-gradient-to-l from-white to-transparent" />
 
         {/* ROW 1 (Glides Left) */}
         <div className="overflow-hidden flex w-full">
-          <div className="animate-stream-left flex gap-4 sm:gap-6 shrink-0 items-center">
+          <div className="animate-stream-left flex gap-3.5 sm:gap-5 shrink-0 items-center">
             {[...ROW_1, ...ROW_1].map((brand, idx) => (
               <BrandCard key={`r1-${brand.name}-${idx}`} brand={brand} />
             ))}
@@ -96,7 +96,7 @@ export const AboutTrustedBrands: React.FC = () => {
 
         {/* ROW 2 (Glides Right) */}
         <div className="overflow-hidden flex w-full">
-          <div className="animate-stream-right flex gap-4 sm:gap-6 shrink-0 items-center">
+          <div className="animate-stream-right flex gap-3.5 sm:gap-5 shrink-0 items-center">
             {[...ROW_2, ...ROW_2].map((brand, idx) => (
               <BrandCard key={`r2-${brand.name}-${idx}`} brand={brand} />
             ))}
